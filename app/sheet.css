@@ -1,0 +1,87 @@
+@font-face {
+  font-family: "Sheet Inter";
+  src: url("/fonts/inter-latin-300-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300;
+  font-display: block;
+}
+@font-face {
+  font-family: "Sheet Inter";
+  src: url("/fonts/inter-latin-400-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Sheet Inter";
+  src: url("/fonts/inter-latin-700-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+}
+@font-face {
+  font-family: "Sheet Lora";
+  src: url("/fonts/lora-latin-700-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+}
+
+.sheet-page {
+  --sheet-blue: #243b98;
+  --sheet-coral: #ff5b4d;
+  position: relative;
+  width: 595.276pt;
+  height: 841.89pt;
+  overflow: hidden;
+  background: #fff;
+  color: #080808;
+  font-family: "Sheet Inter", Arial, sans-serif;
+  font-weight: 300;
+  box-sizing: border-box;
+}
+.sheet-page * { box-sizing: border-box; }
+.sheet-hero { position: absolute; inset: 0 0 auto 0; height: 298.15pt; overflow: hidden; }
+.sheet-hero-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 0 50%; }
+.sheet-eyebrow {
+  position: absolute; left: 25.5pt; top: 28.2pt; width: 270pt;
+  color: var(--sheet-blue); font: 700 9pt/1.18 "Sheet Lora", Georgia, serif;
+  white-space: pre-line;
+}
+.sheet-red-line { position: absolute; left: 25.5pt; top: 64pt; width: 24pt; height: 1.25pt; background: var(--sheet-coral); }
+.sheet-title {
+  position: absolute; left: 25.5pt; top: 84.6pt; width: 390pt;
+  color: var(--sheet-blue); font: 700 53.18pt/1.16 "Sheet Lora", Georgia, serif;
+  letter-spacing: -0.4pt;
+}
+.sheet-title > div { white-space: nowrap; }
+.sheet-title span { color: var(--sheet-coral); margin-left: 3pt; }
+.sheet-intro {
+  position: absolute; left: 25.5pt; top: 237.2pt; width: 390pt;
+  color: var(--sheet-blue); font: 700 9pt/1.18 "Sheet Lora", Georgia, serif;
+  white-space: pre-line;
+}
+.sheet-columns { position: absolute; left: 47.3pt; right: 47.5pt; top: 322pt; height: 339pt; display: grid; grid-template-columns: 228pt 240pt; column-gap: 32.5pt; }
+.sheet-column { height: 339pt; overflow: visible; }
+.sheet-section { margin: 0 0 13pt; }
+.sheet-section h2 { margin: 0 0 4pt; font: 700 11pt/1.12 "Sheet Inter", Arial, sans-serif; letter-spacing: -0.1pt; }
+.sheet-section p { margin: 0; font: 300 10pt/1.20 "Sheet Inter", Arial, sans-serif; white-space: pre-line; }
+.sheet-bottom { position: absolute; left: 57pt; right: 57pt; top: 707.7pt; height: 117pt; }
+.sheet-about { min-height: 42pt; border-top: .4pt solid #cbd6e4; border-bottom: .4pt solid #cbd6e4; padding: 4pt 0 4pt; font: 300 8.4pt/1.13 "Sheet Inter", Arial, sans-serif; }
+.sheet-about strong { font-weight: 700; }
+.sheet-footer { display: grid; grid-template-columns: 154pt 70pt 125pt 125pt; align-items: start; margin-top: 20pt; font: 400 7.8pt/1.1 "Sheet Inter", Arial, sans-serif; }
+.sheet-logo-group { padding-right: 10pt; }
+.astar-mark { height: 31pt; display: flex; align-items: center; color: #2258a2; }
+.astar-symbol { width: 35pt; height: 35pt; flex: 0 0 auto; }
+.astar-word { position: relative; font: 700 29pt/1 "Sheet Inter", Arial, sans-serif; letter-spacing: -2.4pt; }
+.astar-word small { display: block; text-align: right; font: 700 5.3pt/1 "Sheet Inter", Arial, sans-serif; letter-spacing: 0; }
+.sheet-address { margin-top: 3pt; text-align: center; font: 400 7pt/1.1 "Sheet Inter", Arial, sans-serif; white-space: nowrap; }
+.sheet-qr { min-height: 44pt; border-left: .4pt solid #d4deed; border-right: .4pt solid #d4deed; display: flex; justify-content: center; align-items: center; }
+.sheet-contact { padding: 11pt 7pt 0 16.5pt; display: flex; flex-direction: column; overflow-wrap: anywhere; }
+.sheet-contact strong { font-weight: 700; }
+
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  html, body { margin: 0 !important; padding: 0 !important; width: 210mm; height: 297mm; }
+  .sheet-page { margin: 0; page-break-inside: avoid; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
