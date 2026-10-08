@@ -143,3 +143,15 @@ Kontrollfiler och bilder finns i Git-ignorerade `work/check-ux.mjs`, `work/check
 ### Vercel och Supabase/RLS
 
 Ingen faktisk Vercel-miljö eller Supabase/RLS har provats. Ingen molnresurs eller godkännandeprocess har skapats.
+
+## Premiumtema – lokal kontroll 8 oktober 2026
+
+Användaren beställde ett visuellt omtag med en integrerad logga utan vit box och frihet att välja andra gränssnittsfärger än Astars. Gränssnittet använder nu grafit, elfenben och olivgrönt, lokala Inter/Lora-filer, förfinad rubrikhierarki, diskreta skuggor och avrundade kontroll-/kortytor. Toppbarens standardlogga visas i vitt med ett CSS-filter; bildfilen har verifierad transparens och behållaren saknar bakgrund. Ingen ny bildresurs eller beroende behövdes.
+
+- Typkontroll, lint och produktionsbuild passerade.
+- Lokal Chrome mot produktionsbuild på port 3001: bibliotek, exempelredigerare och mobilredigerare granskades visuellt. Vit logga ligger direkt mot grafitbakgrunden. Originalets proportioner behålls.
+- Befintliga användarflöden passerade: filter, bevarat skolval, Ctrl+S, sparmarkering, återöppning, återställning, avsnitt, previewnavigation, avbruten navigation med osparade ändringar, QR-vägledning, överfullhetsvarning, mobilväxling och PDF-export. Inga browserfel registrerades.
+- Helsida ryms utan scroll: cirka 58 % vid 1440 × 900, 46 % vid 1024 × 768 och 36 % vid 390 × 844. Zoomverktygen ligger fortsatt till höger.
+- Exportknappen gav HTTP 200. PDF: en stående A4 om 594,96 × 841,92 pt och fyra inbäddade fontdelmängder. Poppler-renderingen är pixelidentisk med tidigare export för samma innehåll. A4-mall och referens-PDF är oförändrade; tidigare dokumenterade font-/radbrytningsavvikelser mot referensen kvarstår.
+- Lokal QA använder `work/check-ux.mjs`, `work/check-ux-pdf.py` och `work/ux-*.png`/`work/ux-export.pdf` i Git-ignorerade `work/`.
+- Ingen Vercel-miljö eller Supabase/RLS har provats.

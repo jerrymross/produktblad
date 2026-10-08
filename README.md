@@ -54,6 +54,12 @@ Klicka på en text eller bild i preview för att öppna motsvarande redigeringsd
 
 Överfull text markeras och spärrar PDF-export. Detta är en teknisk provregel, ännu inte ett bekräftat produktbeslut. Text krymps eller kapas inte automatiskt. Förhandsvisningen och exporten bygger på samma bladkomponent, och servern kontrollerar även utrymmet när en PDF begärs direkt.
 
+## Gränssnittets visuella tema
+
+Gränssnittet använder en varm palett med elfenben, grafit och olivgrönt. Lokala Inter-filer används för kontroller och brödtext; Lora används för utvalda gränssnittsrubriker. Standardloggan är transparent och visas direkt på toppbarens grafitbakgrund, utan box eller bakgrund i loggbehållaren. Ett CSS-filter gör loggan vit i toppbaren. Originalbildfilen används fortfarande och ändras inte. Produktbladets logga, färger och fasta malltypografi behålls i preview och PDF.
+
+Temat definieras i `app/globals.css` och är separat från A4-mallens `app/sheet.css`. UI-färgvariablerna styr inte produktbladets form.
+
 ## Kontroller och projektfiler
 
 ```powershell
