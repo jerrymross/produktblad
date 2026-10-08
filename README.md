@@ -20,15 +20,19 @@ $env:PDF_BROWSER_PATH = 'C:/sökväg/till/chrome.exe'
 npm run dev
 ```
 
-Du kan redigera text i tre flikar och byta huvudbild via en lokal JPG-, PNG- eller WebP-fil under 2 MB. **Spara utkast** använder webbläsarens lokala lagring på den datorn; det är ännu ingen gemensam databas eller versionshistorik. **Exportera PDF** sparar utkastet lokalt och laddar ned `produktblad-kock-prototyp.pdf`.
+Du kan redigera text under **Omslag**, **Utbildning** och **Kontakt**, och byta huvudbild via en lokal JPG-, PNG- eller WebP-fil under 2 MB. **Spara utkast** använder webbläsarens lokala lagring på den datorn; det är ännu ingen gemensam databas eller versionshistorik. **Ladda ner PDF** sparar utkastet lokalt och laddar ned en PDF med skola och utbildning i filnamnet. Exempelbladet heter `produktblad-kock-exempel.pdf`.
 
 ## Skolornas produktblad
 
 Startsidan och `/produktblad` visar 136 poster för 24 skolor från användarens lista. Välj skola eller **Alla produktblad**, och sök på utbildning, skola eller utbildningsform. Exakta dubbletter efter trimning av inledande/avslutande blanksteg har slagits ihop; olika utbildningsnamn och utbildningsformer hålls separata.
 
-**Skapa blad** öppnar rätt skola och utbildning i den gemensamma A4-mallen. Nytt innehåll och nya kontaktfält är tomma; huvudbilden är tills vidare prototypens exempelbild. Långa utbildningsnamn kan behöva kortas i rubrikfältet för att passa mallen. Inga utbildningsfakta eller skolkontakter har hämtats automatiskt.
+Filtrera även på utbildningsform och **Alla**, **Sparade**, **Ej påbörjade** eller **Tidigare mall**. Siffrorna i snabbfiltren gäller den aktuella sökningen och skol-/utbildningsformsvalet. Filtervalen behålls i `sessionStorage` under samma browserflik när du återvänder från redigeraren. **Rensa filter** och tomlägets **Visa alla produktblad** återgår till hela biblioteket. Hela produktkortet är klickbart och har en namngiven länk för tangentbordsnavigation. Översikten över skolor, blad och sparade utkast gäller hela biblioteket.
 
-Efter **Spara utkast** visas en grön markering med **Sparat produktblad** i biblioteket. Den gäller enbart kombinationen skola, utbildningsform, utbildning och aktuell mallversion. Den visar att något sparats, inte att bladet är komplett eller godkänt. Sparning i en skola markerar inte motsvarande utbildning i en annan skola. **Återställ till tomt blad** tar bort den sparade versionen och dess gröna markering.
+**Skapa produktblad** öppnar rätt skola och utbildning i den gemensamma A4-mallen. **Fortsätt redigera** öppnar ett sparat eller tidigare utkast. Nytt innehåll och nya kontaktfält är tomma; huvudbilden är tills vidare prototypens exempelbild. Långa utbildningsnamn kan behöva kortas i rubrikfältet för att passa mallen. Inga utbildningsfakta eller skolkontakter har hämtats automatiskt.
+
+Efter **Spara utkast** visas en grön markering med **Sparat utkast** i biblioteket. Den gäller enbart kombinationen skola, utbildningsform, utbildning och aktuell mallversion. Den visar att något sparats, inte att bladet är komplett eller godkänt. Sparning i en skola markerar inte motsvarande utbildning i en annan skola. **Återställ till tomt blad**, under **Om mallen & fler alternativ**, tar bort den sparade versionen och dess gröna markering.
+
+**Ctrl+S / ⌘S** sparar det öppna utkastet. Redigeraren visar osparat/sparat läge och varnar vid omladdning, stängning eller sin länk tillbaka till biblioteket när ändringar är osparade. Inget autosparande har införts. Browsern bestämmer om och hur en varning vid stängning visas.
 
 Utkast och markeringar finns bara i samma webbläsare och på samma origin (värd och port). Biblioteket är ingen åtkomstkontroll. Kock-exempelbladet finns via **Öppna Kock-mallens exempelblad** (`/?exempel=1`) och kopplas inte automatiskt till en skola. Underlaget finns i `fixtures/produktblad.json`.
 
@@ -36,15 +40,17 @@ Utkast och markeringar finns bara i samma webbläsare och på samma origin (vär
 
 **Övre etikett** är en rullista med exakt **KOMVUX** och **ARBETSMARKNADSUTBILDNING**. Nya skolblad börjar med KOMVUX för Komvux-poster, annars ARBETSMARKNADSUTBILDNING för AF/AF RUB. Du kan själv byta valet.
 
-Under **Innehåll** har varje avsnitt ett separat rubrikfält och textfält. De tidigare rubrikerna används som standard, inklusive punkter och frågetecken. Klicka på den runda **↺**-knappen bredvid ett fält för att återställa dess standardtext. Knappen ändrar bara det fältet; spara sedan utkastet. För nya skolblad är standarden för brödtext tom, eftersom underlaget inte innehåller utbildningstexter. Kock-exempelbladet återställs till sin tydligt märkta exempeltext.
+Under **Utbildning** öppnar du ett textavsnitt i taget. Varje avsnitt har ett separat rubrikfält och textfält. De tidigare rubrikerna används som standard, inklusive punkter och frågetecken. Klicka på den runda **↺**-knappen bredvid ett fält för att återställa dess standardtext. Knappen ändrar bara det fältet; spara sedan utkastet. För nya skolblad är standarden för brödtext tom, eftersom underlaget inte innehåller utbildningstexter. Kock-exempelbladet återställs till sin tydligt märkta exempeltext. **Kontakt** grupperar skoluppgifter, två kontaktpersoner och QR-adress i egna avsnitt. ”Innehåll finns” betyder bara att text skrivits i avsnittet, inte att informationen är komplett.
 
-Det nya fältschemat hör till mall `kock-1.1.0-prototyp`. Äldre utkast från `kock-1.0.2-prototyp` och den ursprungliga Kock-prototypen läses in med standardrubriker och en etikett utifrån utbildningsformen. Appen meddelar att utkastet behöver sparas i den nya mallen. Den äldre sparningen skrivs inte över. Biblioteket visar **Sparat i tidigare mall** tills bladet sparats för aktuell mall; därefter blir markeringen grön. Återställning av hela bladet återupplivar inte ett äldre utkast.
+Det nya fältschemat hör till mall `kock-1.1.0-prototyp`. Äldre utkast från `kock-1.0.2-prototyp` och den ursprungliga Kock-prototypen läses in med standardrubriker och en etikett utifrån utbildningsformen. Appen meddelar att utkastet behöver sparas i den nya mallen. Den äldre sparningen skrivs inte över. Biblioteket visar **Tidigare mall** tills bladet sparats för aktuell mall; därefter blir markeringen grön. Återställning av hela bladet återupplivar inte ett äldre utkast.
 
 ## Fast förhandsvisning och zoom
 
 På desktop ryms redigeraren i browserfönstret. Vänstersidans fält scrollas separat, medan förhandsvisningen ligger kvar på högersidan. **Visa hela bladet** är standard och anpassar bladet efter både tillgänglig bredd och höjd, även när fönstret ändras.
 
-Zoomkontrollerna ligger i en smal list till höger om bladet för att ge förhandsvisningen mer höjd. Använd **+**, **−** eller **100 %** för att granska detaljer. Förstorade blad scrollas inom förhandsvisningen; **Visa hela bladet** återgår till hela sidan och nollställer scrollningen. Zoom ändrar bara visningen, inte mallens typografi, radbrytningar, PDF-storlek eller kontrollen av överfullt innehåll. På mobil ligger förhandsvisningen under redigeraren och har en egen yta med samma zoomkontroller till höger.
+Zoomkontrollerna ligger i en smal list till höger om bladet för att ge förhandsvisningen mer höjd. Använd **+**, **−** eller **100 %** för att granska detaljer. Förstorade blad scrollas inom förhandsvisningen; **Visa hela bladet** återgår till hela sidan och nollställer scrollningen. Zoom ändrar bara visningen, inte mallens typografi, radbrytningar, PDF-storlek eller kontrollen av överfullt innehåll. På mobil växlar du mellan **Redigera** och **Förhandsvisa** i samma arbetsyta. Previewns geometri mäts även när den är dold på mobil, så utrymmeskontrollen fortsätter fungera.
+
+Klicka på en text eller bild i preview för att öppna motsvarande redigeringsdel och fokusera fältet. Samma fält nås med tangentbord via redigerarens flikar och avsnitt. En överfullhetsvarning har en länk till första berörda fältet; andra berörda avsnitt markeras. Saknad QR-adress eller adress utan `http://`/`https://` upptäcks före export, enligt PDF-routens befintliga regel. Utkast kan fortfarande sparas. Inga nya krav på ifyllda utbildningstexter eller kontaktpersoner har införts.
 
 Överfull text markeras och spärrar PDF-export. Detta är en teknisk provregel, ännu inte ett bekräftat produktbeslut. Text krymps eller kapas inte automatiskt. Förhandsvisningen och exporten bygger på samma bladkomponent, och servern kontrollerar även utrymmet när en PDF begärs direkt.
 
@@ -60,6 +66,7 @@ npm run build
 - [Designregler](docs/DESIGNREGLER.md) och [mätning av referensen](docs/REFERENSMATT.md): fast A4-form, mått och avvikelser.
 - [Byggplan](docs/BYGGPLAN.md) och [verifiering av steg 1](docs/VERIFIERING.md): vad som är provat och vad som återstår.
 - [AGENTS.md](AGENTS.md): instruktioner för fortsatt arbete med Codex.
+- [UX-förslag](docs/UX-FORSLAG.md): prioriterade förbättringsidéer, ännu inte godkända produktbeslut.
 - [Kock.pdf](references/Kock.pdf): oförändrad originalreferens. `public/reference-hero.jpg` är dess inbäddade foto utlyft till den lokala prototypen.
 - `public/fonts/`: lokala Inter- och Lora-filer med respektive licenstext. Referens-PDF:ens delmängdsfonter har inte återanvänts som appfont.
 - `public/logo_liggande.png`: gemensam standardlogga för sidans header, browserikon, produktbladets förhandsvisning och PDF-export. Bilden behåller sina proportioner. Headerns loggyta styrs av `app/globals.css`; produktbladets placering och storlek styrs av mallen i `app/sheet.css`.

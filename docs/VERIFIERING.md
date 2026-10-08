@@ -104,3 +104,42 @@ Mallversion `kock-1.1.0-prototyp` har två fasta etiketter, sex separata rubrikf
 - Exportknappen provades även i lokal produktionsbuild: HTTP 200 och vald arbetsmarknadsetikett samt standardrubrik skickades med.
 
 Kontrollfiler finns i Git-ignorerade `work/check-fields.mjs`, `fields-*.png` och `fields-export.pdf`. Ingen Vercel-miljö eller Supabase/RLS har provats.
+
+## UI/UX-omtag – lokal kontroll 8 oktober 2026
+
+Omtaget gäller biblioteket och redigerarens arbetsyta. Bladkomponent, mallversion, fältschema, lagringsnycklar, A4-geometri och PDF-route har inte ändrats. Förslag för fortsatt arbete finns i `UX-FORSLAG.md`; steg 2 har inte påbörjats.
+
+### Statiska kontroller
+
+`npm run typecheck`, `npm run lint` och `npm run build` passerade. React-granskningen omfattade effektberoenden, städning av lyssnare/ResizeObserver, versionsbundna lokala data, härledda filterräknare, formuläretiketter, tangentbordsfokus och aria-status för filter/avsnitt. Inga beroenden installerades eller uppdaterades.
+
+### Lokal browser
+
+Verkliga flöden kördes med Chrome mot lokal produktionsbuild på port 3001. Bilderna granskades på desktop och mobil. Inga JavaScript-fel registrerades.
+
+| Prov | Resultat |
+|---|---|
+| Bibliotek | 136 blad, 24 skolor. Kombinerad skol-/sökfiltrering, statusfilter med antal och återställning från tomläge fungerar. |
+| Återvänd till bibliotek | Skola Umeå och sökord Kock behålls efter redigering. Filter lagras bara i samma browserfliks session. |
+| Sparning | Ctrl+S sparar, status ändras till Sparat lokalt, ändrad text finns kvar efter omladdning. Grön markering och Sparade-filter visar rätt skolblad. |
+| Återställning | Efter bekräftad återställning och omladdning är bladet tomt och dess gröna markering borttagen. |
+| Avsnitt | Utbildning visar ett öppet avsnitt i taget. Rubrikåterställning ändrar inte brödtexten. |
+| Klicka på preview | Klick på en innehållsrubrik öppnar rätt flik/avsnitt och fokuserar rubrikfältet. På mobil växlar samma klick tillbaka till redigeringen. |
+| Osparad navigation | Länken Till biblioteket varnar. Avbruten navigation lämnar användaren och osparat innehåll kvar. `beforeunload` registreras endast när bladet är ändrat; browserns egna dialogregler gäller. |
+| QR-adress | Nya blad visar en direktlänk till QR-fältet. Export är avstängd tills en adress med http/https-prefix har angetts. Sparning av ett ofullständigt utkast fungerar fortsatt. |
+| Överfull rubrik | Lång obruten rubrik i ett stängt avsnitt spärrar export även från annan flik. Varningen öppnar rätt avsnitt och fokuserar fältet. Återställning tar bort varningen. |
+| Desktop 1440 × 900 | Helsida cirka 58 %, ingen scroll på sidan eller i helsidepreview. Zoomverktyg ligger till höger. |
+| Laptop 1024 × 768 | Helsida cirka 46 %, ingen scroll i helsidepreview. |
+| Mobil 390 × 844 | Växling mellan Redigera/Förhandsvisa fungerar. Helsida cirka 36 %, ingen horisontell sidscroll eller scroll i helsidepreview. Skola/utbildning syns även i mobilpreview. |
+| Zoom | 100 %, plus och Visa hela bladet fungerar; återgång till helsida ger ingen intern scroll. Hoverkontrast och större mobila tryckytor granskades. |
+| Exportknapp | HTTP 200; vald arbetsmarknadsetikett och ändrad rubrik skickas till PDF-routen. |
+
+### Lokal exporterad PDF
+
+Exporten renderades med Poppler och granskades. En stående A4, 594,96 × 841,92 pt, fyra inbäddade fontdelmängder och standardlogga. Exporten med arbetsmarknadsetikett och rubriken ”Din väg till yrket” är pixelidentisk med exporten före UI/UX-omtaget vid samma 1200 px skala. Det visar att detta omtag inte ändrat bladets renderade geometri eller radbrytningar. Tidigare dokumenterade avvikelser från referensens font-/radbrytning kvarstår. `references/Kock.pdf` har oförändrad SHA-256: `970CB056F85731AC8C5EBDF435AF2180490664B425A0BEE96C45BA028EE6DDCA`.
+
+Kontrollfiler och bilder finns i Git-ignorerade `work/check-ux.mjs`, `work/check-ux-pdf.py`, `work/ux-*.png` och `work/ux-export.pdf`. De är lokala QA-filer.
+
+### Vercel och Supabase/RLS
+
+Ingen faktisk Vercel-miljö eller Supabase/RLS har provats. Ingen molnresurs eller godkännandeprocess har skapats.

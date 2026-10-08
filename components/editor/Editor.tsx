@@ -8,6 +8,19 @@ import { measureSheetOverflow } from "@/lib/overflow";
 import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, type CatalogEntry } from "@/lib/catalog";
 
 const GROUPS = ["Omslag", "Innehåll", "Nederdel"] as const;
+const GROUP_LABELS = { Omslag: "Omslag", Innehåll: "Utbildning", Nederdel: "Kontakt" };
+const SECTIONS: { id: string; label: string; group: string; keys: (keyof SheetData)[] }[] = [
+  { id: "why", label: "Om utbildningen", group: "Innehåll", keys: ["whyTitle", "why"] },
+  { id: "learn", label: "Det här lär du dig", group: "Innehåll", keys: ["learnTitle", "learn"] },
+  { id: "process", label: "Så här går det till", group: "Innehåll", keys: ["processTitle", "process"] },
+  { id: "form", label: "Utbildningsform", group: "Innehåll", keys: ["formTitle", "form"] },
+  { id: "audience", label: "Vem kan söka?", group: "Innehåll", keys: ["audienceTitle", "audience"] },
+  { id: "finance", label: "Ekonomisk kompensation", group: "Innehåll", keys: ["financeTitle", "finance"] },
+  { id: "school", label: "Om Astar & skolans adress", group: "Nederdel", keys: ["about", "address"] },
+  { id: "contact-one", label: "Kontaktperson 1", group: "Nederdel", keys: ["contactOneName", "contactOneRole", "contactOneEmail"] },
+  { id: "contact-two", label: "Kontaktperson 2", group: "Nederdel", keys: ["contactTwoName", "contactTwoRole", "contactTwoEmail"] },
+  { id: "qr", label: "Webbadress & QR-kod", group: "Nederdel", keys: ["qrUrl"] },
+];
 
 function shortFieldName(key: string) {
   return textFields.find(field => field.key === key)?.label ?? key;
@@ -26,6 +39,9 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const [hasSaved, setHasSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [activeSection, setActiveSection] = useState<string | null>("why");
+  const [focusKey, setFocusKey] = useState<string | null>(null);
+  const [mobilePane, setMobilePane] = useState("editor");
   const stageRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -49,6 +65,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       const style = getComputedStyle(node);
       const width = node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       const height = node.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      if (width <= 0 || height <= 0) return;
       setFitScale(Math.max(0.05, Math.min(1, width / 794, height / 1123)));
     });
     observer.observe(node);
@@ -70,7 +87,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     setMessage("");
   }
 
-  function save() {
+  const save = useCallback(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(data));
       localStorage.removeItem(`${storageKey}:reset`);
@@ -82,7 +99,42 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       setMessage("Det gick inte att spara lokalt. Kontrollera webbläsarens lagringsutrymme.");
       return false;
     }
+  }, [data, storageKey]);
+
+  useEffect(() => {
+    const keyboard = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (!busy) save();
+      }
+    };
+    const leave = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("keydown", keyboard);
+    if (dirty) window.addEventListener("beforeunload", leave);
+    return () => { window.removeEventListener("keydown", keyboard); window.removeEventListener("beforeunload", leave); };
+  }, [save, dirty, busy]);
+
+  useEffect(() => {
+    if (!focusKey) return;
+    const frame = requestAnimationFrame(() => {
+      const node = document.getElementById(focusKey);
+      node?.focus({ preventScroll: true });
+      node?.scrollIntoView({ block: "nearest" });
+      setFocusKey(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusKey, activeGroup, activeSection]);
+
+  function openField(key: string) {
+    const actualKey = key === "title" ? "profession" : key === "image" ? "image-input" : key;
+    const field = textFields.find(field => field.key === actualKey);
+    setActiveGroup(field ? field.group as (typeof GROUPS)[number] : "Omslag");
+    setActiveSection(SECTIONS.find(section => section.keys.includes(actualKey as keyof SheetData))?.id ?? null);
+    setMobilePane("editor");
+    setFocusKey(actualKey === "image-input" ? "change-image" : actualKey);
   }
+
+  const validQr = /^https?:\/\//i.test(data.qrUrl);
 
   async function uploadImage(file?: File) {
     if (!file) return;
@@ -98,8 +150,8 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   }
 
   async function exportPdf() {
-    if (overflow.length) {
-      setMessage("Korta texten i de markerade fälten innan PDF kan skapas. Det här är en föreslagen regel som ännu ska bekräftas.");
+    if (overflow.length || !validQr) {
+      setMessage(overflow.length ? "Korta texten i de markerade fälten innan PDF kan skapas." : "Ange en QR-adress som börjar med https:// eller http://.");
       return;
     }
     if (!save()) return;
@@ -116,7 +168,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = "produktblad-kock-prototyp.pdf";
+      anchor.download = `produktblad-${entry ? `${entry.school}-${entry.title}` : "kock-exempel"}.pdf`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-");
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
       setMessage("PDF är klar. Utkastet sparades lokalt före exporten.");
@@ -144,43 +196,61 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     return field;
   });
 
-  return <div className="workspace editor-workspace">
+  function renderField(field: (typeof textFields)[number]) {
+    const tooLong = overflow.includes(field.key);
+    const qrError = field.key === "qrUrl" && !validQr;
+    const label = activeGroup === "Innehåll" ? field.key.endsWith("Title") ? "Rubrik" : "Text" : field.key === "qrUrl" ? "QR-adress" : field.label;
+    return <div className={`field ${tooLong || qrError ? "field-error" : ""}`} key={field.key}>
+      <div className="field-top"><label htmlFor={field.key}>{label}</label><div className="field-tools">{tooLong && <span className="overflow-label">Får inte plats</span>}{field.group === "Innehåll" && <button type="button" className="reset-field" title={`Återställ standardtext: ${field.label}`} aria-label={`Återställ standardtext: ${field.label}`} disabled={data[field.key] === defaults[field.key]} onClick={() => { change(field.key, defaults[field.key]); setMessage("Fältets standardtext är återställd. Spara för att behålla ändringen."); }}>↺</button>}</div></div>
+      {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "learn" || field.key === "why" ? 7 : 4} value={data[field.key]} aria-invalid={tooLong || undefined} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} aria-invalid={tooLong || qrError || undefined} aria-describedby={field.key === "qrUrl" ? "qr-help" : undefined} onChange={event => change(field.key, event.target.value)} />}
+      {field.multiline && <span className="field-count">{data[field.key].length} tecken</span>}
+      {field.key === "qrUrl" && <small id="qr-help">{validQr ? "QR-koden uppdateras direkt. Kontrollera att adressen leder till rätt utbildning." : "Ange skolans eller utbildningens webbadress med https://. Adressen behövs för PDF-export."}</small>}
+    </div>;
+  }
+
+  return <div className={`workspace editor-workspace mobile-${mobilePane}`}>
     <header className="app-header">
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="brand-logo" src="/logo_liggande.png" alt="Astar Education" width={784} height={219} />
       </div>
       <div className="header-center"><span className="header-kicker">{entry?.school ?? "PRODUKTBLAD"}</span><span className="header-title">{entry?.title ?? "Kock"} <span>/</span> Mall 01</span></div>
-      <div className="header-right"><span className="status-dot" /> Lokal prototyp <span className="header-divider" /> {dirty ? "Osparade ändringar" : hasSaved ? "Sparat lokalt" : "Inte sparat än"}</div>
+      <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`}><span className="status-dot" />{dirty ? "Osparade ändringar" : hasSaved ? "Sparat lokalt" : "Inte sparat än"}</div>
     </header>
+
+    <nav className="mobile-pane-switch" aria-label="Arbetsyta"><button type="button" aria-pressed={mobilePane === "editor"} onClick={() => setMobilePane("editor")}>Redigera</button><button type="button" aria-pressed={mobilePane === "preview"} onClick={() => setMobilePane("preview")}>Förhandsvisa</button></nav>
 
     <div className="workspace-body">
       <aside className="editor-panel">
-        <div className="panel-heading"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>← Alla produktblad</Link><span className="eyebrow-ui">{entry ? `${entry.school} · ${entry.program}` : "REDAKTÖR / STEG 1"}</span><h1>Forma ditt blad</h1><p>Ändra innehållet. Mallens typografi och placering är fasta.</p></div>
-        <div className="prototype-note"><span>i</span><div><strong>{entry ? "Fyll i utbildningens innehåll" : "Prototyp med exempeldata"}</strong><br />{entry ? "Kontrollera text, kontaktuppgifter och bild för den valda skolan. Bilden är tills vidare ett exempel." : "Utbildningsuppgifter och kontaktuppgifter är hämtade från referensen och behöver faktagranskas."}</div></div>
+        <div className="panel-heading"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>← Till biblioteket</Link><span className="eyebrow-ui">{entry ? `${entry.school} · ${entry.program}` : "EXEMPELBLAD · KOCK"}</span><h1>{entry?.title ?? "Kock"}</h1><p>Redigera innehållet. Följ ändringarna på bladet.</p></div>
         <nav className="editor-tabs" aria-label="Redigeringsdelar">
-          {GROUPS.map((group, index) => <button key={group} type="button" className={activeGroup === group ? "active" : ""} onClick={() => setActiveGroup(group)}><span>0{index + 1}</span>{group}</button>)}
+          {GROUPS.map((group, index) => <button key={group} type="button" aria-pressed={activeGroup === group} className={activeGroup === group ? "active" : ""} onClick={() => { setActiveGroup(group); setActiveSection(group === "Innehåll" ? "why" : "school"); }}><span>{index + 1}</span>{GROUP_LABELS[group]}{overflow.some(key => textFields.find(field => field.key === key)?.group === group) && <span className="tab-error" aria-label="Text får inte plats">!</span>}</button>)}
         </nav>
         <div className="fields-scroll">
-          <div className="section-heading"><h2>{activeGroup}</h2><span>{visibleFields.length} fält</span></div>
-          {activeGroup === "Omslag" && <div className="image-field"><div className="field-top"><label htmlFor="image-input">Huvudbild</label><span>FAST BILDYTA</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>Bild i övre delen</strong><p>JPG, PNG eller WebP. Bilden beskärs inom mallen.</p><button type="button" onClick={() => fileRef.current?.click()}>Byt bild</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => void uploadImage(event.target.files?.[0])} /></div>}
-          {visibleFields.map(field => <div className={`field ${overflow.includes(field.key) ? "field-error" : ""}`} key={field.key}>
-            <div className="field-top"><label htmlFor={field.key}>{field.label}</label><div className="field-tools">{overflow.includes(field.key) && <span className="overflow-label">FÅR INTE PLATS</span>}{field.group === "Innehåll" && <button type="button" className="reset-field" title={`Återställ standardtext: ${field.label}`} aria-label={`Återställ standardtext: ${field.label}`} disabled={data[field.key] === defaults[field.key]} onClick={() => { change(field.key, defaults[field.key]); setMessage("Fältets standardtext är återställd. Spara utkast för att behålla ändringen."); }}>↺</button>}</div></div>
-            {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "learn" || field.key === "why" ? 6 : 3} value={data[field.key]} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} onChange={event => change(field.key, event.target.value)} />}
-            {field.key === "qrUrl" && <small>{entry ? "Ange rätt webbadress för skolan eller utbildningen, med https://." : "Prototypens QR-kod pekar på en testadress."}</small>}
-          </div>)}
-          <div className="editor-bottom-actions"><button type="button" className="text-button" onClick={reset}>{entry ? "Återställ till tomt blad" : "Återställ exempeldata"}</button></div>
+          <p className="section-help">{activeGroup === "Omslag" ? "Bild, rubrik och ingress är det första läsaren ser." : activeGroup === "Innehåll" ? "Öppna ett avsnitt i taget. Rubrik och text ändras var för sig." : "Fyll i rätt skoluppgifter och adressen till QR-koden."}</p>
+          {activeGroup === "Omslag" && <><div className="image-field"><div className="field-top"><label htmlFor="image-input">Huvudbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild uppladdad"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Byt bild →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>{visibleFields.map(renderField)}</>}
+          {SECTIONS.filter(section => section.group === activeGroup).map(section => {
+            const sectionError = section.keys.some(key => overflow.includes(key)) || (section.id === "qr" && !validQr);
+            const bodyKey = section.keys.find(key => !key.endsWith("Title"));
+            const titleKey = section.keys.find(key => key.endsWith("Title"));
+            const label = titleKey ? data[titleKey] || section.label : section.label;
+            return <section className={`editor-section ${activeSection === section.id ? "is-open" : ""} ${sectionError ? "has-error" : ""}`} key={section.id}>
+              <button type="button" className="section-toggle" id={`toggle-${section.id}`} aria-expanded={activeSection === section.id} aria-controls={`section-${section.id}`} onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}><span><strong>{label}</strong><small>{sectionError ? "Behöver rättas" : bodyKey && data[bodyKey].trim() ? "Innehåll finns" : "Inte ifyllt"}</small></span><span aria-hidden="true">{activeSection === section.id ? "−" : "+"}</span></button>
+              <div id={`section-${section.id}`} hidden={activeSection !== section.id} aria-labelledby={`toggle-${section.id}`}>{section.keys.map(key => visibleFields.find(field => field.key === key)).filter((field): field is (typeof textFields)[number] => Boolean(field)).map(renderField)}</div>
+            </section>;
+          })}
+          <details className="editor-options"><summary>Om mallen & fler alternativ</summary><p>{entry ? "Nya blad har tomma texter. Exempelbilden behöver bytas till en bild för utbildningen." : "Detta är exempeldata från referensen. Utbildnings- och kontaktuppgifter behöver faktagranskas."} Layouten är fast. Mallen är en lokal prototyp.</p><button type="button" className="text-button" onClick={reset}>{entry ? "Återställ till tomt blad" : "Återställ exempeldata"}</button></details>
         </div>
         <div className="editor-actions">
-          {overflow.length > 0 && <div className="overflow-alert"><strong>Innehåll ryms inte på A4</strong><span>{overflow.map(shortFieldName).join(", ")}</span></div>}
+          {(overflow.length > 0 || !validQr) && <div className="overflow-alert"><strong>{overflow.length ? "Text får inte plats på A4" : "QR-adress saknas eller är ogiltig"}</strong><button type="button" onClick={() => openField(overflow[0] ?? "qrUrl")}>Gå till {overflow.length ? shortFieldName(overflow[0]) : "QR-adress"} →{overflow.length > 1 ? ` (+${overflow.length - 1})` : ""}</button></div>}
           {message && <p className="message" role="status">{message}</p>}
-          <div className="action-row"><button type="button" className="save-button" onClick={save}>Spara utkast</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || overflow.length > 0}>{busy ? "Skapar PDF …" : "Exportera PDF ↓"}</button></div>
-          <p className="save-hint">Utkast sparas bara i den här webbläsaren. Exportspärr vid överfull text är ett förslag under prov.</p>
+          <div className="action-row"><button type="button" className="save-button" onClick={save} disabled={busy} title="Spara utkast (Ctrl+S eller ⌘S)">Spara utkast</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || overflow.length > 0 || !validQr}>{busy ? "Skapar PDF …" : "Ladda ner PDF ↓"}</button></div>
+          <p className="save-hint">Sparas i den här webbläsaren · Ctrl+S / ⌘S</p>
         </div>
       </aside>
 
       <main className="preview-panel">
-        <div className="preview-toolbar"><div><span className="eyebrow-ui">FÖRHANDSVISNING</span><h2>Så ser bladet ut</h2></div><div className="preview-meta"><span className="meta-pill">A4 · Stående</span><span className="meta-pill">{TEMPLATE_VERSION}</span></div></div>
+        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">Klicka på en text för att redigera den.</span></p></div><div className="preview-meta"><span className="meta-pill">A4 · 1 sida</span><span className="meta-pill" title={TEMPLATE_VERSION}>Mall 01</span></div></div>
         <div className="preview-zoom" role="group" aria-label="Zoom för förhandsvisningen">
           <button type="button" aria-label="Zooma ut" disabled={scale <= 0.05} onClick={() => setZoom(Math.max(0.05, scale - 0.1))}>−</button>
           <output className="zoom-value" aria-label="Zoomnivå">{Math.round(scale * 100)} %</output>
@@ -188,7 +258,12 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
           <button type="button" className="zoom-actual" onClick={() => setZoom(1)}>100 %</button>
           <button type="button" className="zoom-fit" aria-pressed={zoom === null} onClick={() => { setZoom(null); stageRef.current?.scrollTo({ top: 0, left: 0 }); }}>Visa hela bladet</button>
         </div>
-        <div className="preview-canvas" ref={stageRef} tabIndex={0} aria-label="Förhandsvisning av produktblad. Zoomade blad kan scrollas här.">
+        <div className="preview-canvas" ref={stageRef} tabIndex={0} aria-label="Förhandsvisning av produktblad. Zoomade blad kan scrollas här." onClick={event => {
+          const target = event.target as HTMLElement;
+          const field = target.closest<HTMLElement>("[data-field]");
+          if (field?.dataset.field) openField(field.dataset.field);
+          else if (target.closest(".sheet-hero-image")) openField("image");
+        }}>
           <div className="preview-size" style={{ width: 794 * scale, height: 1123 * scale }}>
             <div className="preview-transform" style={{ transform: `scale(${scale})` }}><Sheet data={data} /></div>
           </div>
