@@ -156,6 +156,19 @@ Användaren beställde ett visuellt omtag med en integrerad logga utan vit box o
 - Lokal QA använder `work/check-ux.mjs`, `work/check-ux-pdf.py` och `work/ux-*.png`/`work/ux-export.pdf` i Git-ignorerade `work/`.
 - Ingen Vercel-miljö eller Supabase/RLS har provats.
 
+## Bildgradient – lokal kontroll 8 oktober 2026
+
+Mall `kock-1.2.0-prototyp` lägger till `gradientStyle` (none/white/navy) och `gradientStrength` (strängvärden 1–4). Förinställd riktning är vänster till transparent åt höger; styrkorna är 25/45/65/85 procents opacitet vid vänsterkanten. Mörkblått ger vit omslagstext, med fortsatt korallfärgat yrkesord. Ingen gradient är standard. Detta är användarens uttryckligen beställda, begränsade mallval.
+
+- Typkontroll, lint och produktionsbuild passerade.
+- Lokal Chrome mot produktionsbuild på port 3001: båda färgerna och alla fyra styrkor gav åtta olika gradienter. Rubrikens uppmätta position och storlek är oförändrade. Ingen tar bort överlägget och stänger av styrkeknapparna.
+- Vit och mörkblå styrka 4 sparades, laddades om och exporterades genom browserknappen med HTTP 200. Valen finns i samma frysta innehåll som skickas till PDF-routen. Även direkt export utan gradient gav HTTP 200.
+- API-anrop med annan färg, styrka 5 eller numerisk styrka nekades med HTTP 400. Parametrarna kan inte användas för att ange godtycklig CSS.
+- Tidigare 1.1-utkast med egen rubrik, egen text, ett uttryckligt tomt fält och manuellt vald arbetsmarknadsetikett lästes in utan ändring och utan gradient. Sparning skapade aktuell version och grön markering; den äldre JSON-snapshoten är oförändrad. Tidigare återställningsflagga hindrar att en 1.0.2-snapshot återupplivas.
+- Mobil 390 × 844 granskades i redigerings- och previewläge. Gradientvalet går att använda utan horisontell sidscroll.
+- Lokal PDF: alla tre exporter har en stående A4 om 594,96 × 841,92 pt med fyra inbäddade fontdelmängder. Poppler-renderingarna granskades. Exporten utan gradient är pixelidentisk med tidigare mall för samma innehåll. För vit/mörkblå finns pixeländringar endast i omslagsbildens område; samtliga pixlar i textspalter och footer är oförändrade. Referens-PDF ändrades inte; tidigare dokumenterade font-/radbrytningsavvikelser kvarstår.
+- Kontrollfiler finns i Git-ignorerade `work/check-gradient.mjs`, `work/check-gradient-pdf.py` och `work/gradient-*.png`/`work/gradient-*.pdf`. Ingen Vercel-miljö eller Supabase/RLS har provats.
+
 ## Förinställd Komvuxtext – lokal kontroll 8 oktober 2026
 
 Användarens fyra texter om upplägg, utbildningsform, målgrupp och ekonomi ligger i `KOMVUX_DEFAULT_CONTENT`. Nya katalogblad med program Komvux får dessa texter, och fältens återställningsknappar använder samma standard. AF/AF RUB behåller tomma brödtexter. Textens inklistrade radbrytningar har sammanfogats inom styckena så att mallen styr radbrytningen. Mallgeometri, fältschema, version och lagringsnycklar är oförändrade.

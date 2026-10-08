@@ -18,15 +18,23 @@ export function initialSheet(entry: CatalogEntry): SheetData {
   // Catalog rows are assignments, not evidence for education facts or contacts.
   const blank = Object.fromEntries(Object.keys(exampleSheet).map(key => [key, ""])) as SheetData;
   return { ...blank, ...defaultHeadings(entry.title), ...(entry.program === "Komvux" ? KOMVUX_DEFAULT_CONTENT : {}), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
-    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", image: "/reference-hero.jpg" };
+    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2" };
 }
 
 export function readPreviousDraft(entry?: CatalogEntry): SheetData | null {
   try {
     if (localStorage.getItem(`${entry ? draftKey(entry.id) : EXAMPLE_STORAGE_KEY}:reset`)) return null;
-    const key = entry ? `produktbladsapp:blad:${entry.id}:kock-1.0.2-prototyp` : LEGACY_STORAGE_KEY;
-    const stored = localStorage.getItem(key);
-    return stored ? upgradePreviousDraft(JSON.parse(stored), entry?.program) : null;
+    const previousKey = entry ? `produktbladsapp:blad:${entry.id}:kock-1.1.0-prototyp` : "produktbladsapp:exempel:kock-1.1.0-prototyp";
+    if (localStorage.getItem(`${previousKey}:reset`)) return null;
+    const keys = [previousKey, entry ? `produktbladsapp:blad:${entry.id}:kock-1.0.2-prototyp` : LEGACY_STORAGE_KEY];
+    for (const key of keys) {
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const upgraded = upgradePreviousDraft(JSON.parse(stored), entry?.program);
+        if (upgraded) return upgraded;
+      }
+    }
+    return null;
   } catch { return null; }
 }
 

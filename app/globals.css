@@ -213,3 +213,20 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) { .catalog-card { transition: none; } }
 .workspace input::placeholder, .workspace textarea::placeholder { color: #a0aec6; opacity: 1; }
 .preview-canvas .sheet-page { color-scheme: light; }
+.gradient-control { margin: 0 0 24px; padding: 14px; border: 1px solid var(--ui-border); border-radius: 10px; min-width: 0; }
+.gradient-control legend, .gradient-label { font-size: 12px; font-weight: 700; }
+.gradient-control legend { padding: 0 5px; }
+.gradient-label { display: block; margin: 15px 0 8px; }
+.gradient-colors, .gradient-levels { display: grid; gap: 6px; }
+.gradient-colors { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gradient-levels { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.gradient-control button { min-height: 44px; padding: 8px 4px; border: 1px solid #41516e; border-radius: 6px; background: #1b2943; color: #c0cce1; font-size: 11px; }
+.gradient-colors button { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.gradient-control button[aria-pressed="true"] { border-color: #d98278; background: #3f2e3b; color: #f3b4aa; }
+.gradient-control button:disabled { opacity: .4; }
+.gradient-control small { display: block; margin-top: 3px; font-size: 9px; }
+.gradient-control p { color: var(--ui-muted); font-size: 10px; line-height: 1.5; margin: 12px 0 0; }
+.gradient-swatch { width: 13px; height: 13px; border: 1px solid #8593ac; border-radius: 50%; flex-shrink: 0; }
+.swatch-white { background: #fff; }
+.swatch-navy { background: #102246; }
+.swatch-none { background: linear-gradient(135deg, transparent 43%, #8593ac 44% 56%, transparent 57%); }

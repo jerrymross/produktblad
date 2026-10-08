@@ -46,6 +46,12 @@ Komvuxtexterna definieras i `KOMVUX_DEFAULT_CONTENT` i `lib/sheet.ts` och använ
 
 Det nya fältschemat hör till mall `kock-1.1.0-prototyp`. Äldre utkast från `kock-1.0.2-prototyp` och den ursprungliga Kock-prototypen läses in med standardrubriker och en etikett utifrån utbildningsformen. Appen meddelar att utkastet behöver sparas i den nya mallen. Den äldre sparningen skrivs inte över. Biblioteket visar **Tidigare mall** tills bladet sparats för aktuell mall; därefter blir markeringen grön. Återställning av hela bladet återupplivar inte ett äldre utkast.
 
+## Bildgradient
+
+Under **Omslag → Gradient över bilden** väljer du **Ingen**, **Vit** eller **Mörkblå**. Båda färgerna har fyra styrkor: **1 Lätt**, **2 Mjuk**, **3 Tydlig** och **4 Stark**. Gradientens opacitet vid vänsterkanten är 25, 45, 65 respektive 85 procent och tonas till transparent åt höger. Texten ligger ovanpå gradienten. Mörkblått ger vit etikett, rubrik och ingress; yrkesordet behåller korallfärgen. **Ingen** är standard och återger det tidigare utseendet.
+
+Valet sparas med innehållet som `gradientStyle` och `gradientStrength`. Preview och PDF använder samma gradient i den gemensamma bladrenderaren. Mallversionen är nu `kock-1.2.0-prototyp`. Utkast från 1.1.0 läses in med bevarade rubriker, texter, etikett och bild, utan gradient; spara för att behålla dem i den nya mallen. Äldre sparningar finns kvar och skrivs inte över. Biblioteket visar **Tidigare mall** tills aktuell mall sparas och blir grön. Tidigare återställningar respekteras så att äldre snapshots inte återkommer oavsiktligt.
+
 ## Fast förhandsvisning och zoom
 
 På desktop ryms redigeraren i browserfönstret. Vänstersidans fält scrollas separat, medan förhandsvisningen ligger kvar på högersidan. **Visa hela bladet** är standard och anpassar bladet efter både tillgänglig bredd och höjd, även när fönstret ändras.

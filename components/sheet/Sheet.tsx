@@ -24,10 +24,11 @@ function AstarMark() {
 export function Sheet({ data, imageSrc }: Props) {
   const qrValue = /^https?:\/\//i.test(data.qrUrl) ? data.qrUrl : "https://example.org/produktblad";
   return <article className="sheet-page" data-template={TEMPLATE_VERSION} aria-label="Produktblad, en A4-sida">
-    <div className="sheet-hero">
+    <div className="sheet-hero" data-overlay={data.gradientStyle}>
       {/* The local prototype uses an image extracted from the supplied PDF. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="sheet-hero-image" src={imageSrc ?? data.image} alt="Kockar arbetar i kök" />
+      {data.gradientStyle !== "none" && <div className="sheet-hero-gradient" data-gradient={data.gradientStyle} data-strength={data.gradientStrength} aria-hidden="true" />}
       <div className="sheet-eyebrow" data-field="eyebrow">{data.eyebrow}</div>
       <div className="sheet-red-line" />
       <div className="sheet-title" data-field="title">

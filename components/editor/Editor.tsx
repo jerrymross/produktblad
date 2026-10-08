@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sheet } from "@/components/sheet/Sheet";
-import { exampleSheet, EYEBROW_OPTIONS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
+import { exampleSheet, EYEBROW_OPTIONS, GRADIENT_STRENGTHS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
 import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, type CatalogEntry } from "@/lib/catalog";
 
@@ -229,7 +229,12 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
         </nav>
         <div className="fields-scroll">
           <p className="section-help">{activeGroup === "Omslag" ? "Bild, rubrik och ingress är det första läsaren ser." : activeGroup === "Innehåll" ? "Öppna ett avsnitt i taget. Rubrik och text ändras var för sig." : "Fyll i rätt skoluppgifter och adressen till QR-koden."}</p>
-          {activeGroup === "Omslag" && <><div className="image-field"><div className="field-top"><label htmlFor="image-input">Huvudbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild uppladdad"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Byt bild →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>{visibleFields.map(renderField)}</>}
+          {activeGroup === "Omslag" && <><div className="image-field"><div className="field-top"><label htmlFor="image-input">Huvudbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild uppladdad"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Byt bild →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>
+            <fieldset className="gradient-control"><legend>Gradient över bilden</legend>
+              <div className="gradient-colors" role="group" aria-label="Gradientfärg">{([["none", "Ingen"], ["white", "Vit"], ["navy", "Mörkblå"]] as const).map(([value, label]) => <button type="button" key={value} aria-pressed={data.gradientStyle === value} onClick={() => change("gradientStyle", value)}><span className={`gradient-swatch swatch-${value}`} aria-hidden="true" />{label}</button>)}</div>
+              <span className="gradient-label">Styrka</span><div className="gradient-levels" role="group" aria-label="Gradientens styrka">{GRADIENT_STRENGTHS.map((level, index) => <button type="button" key={level} disabled={data.gradientStyle === "none"} aria-pressed={data.gradientStrength === level} onClick={() => change("gradientStrength", level)}>{level}<small>{["Lätt", "Mjuk", "Tydlig", "Stark"][index]}</small></button>)}</div>
+              <p>Tonas från vänster till höger. Mörkblå gradient ger vit rubrik och ingress.</p>
+            </fieldset>{visibleFields.map(renderField)}</>}
           {SECTIONS.filter(section => section.group === activeGroup).map(section => {
             const sectionError = section.keys.some(key => overflow.includes(key)) || (section.id === "qr" && !validQr);
             const bodyKey = section.keys.find(key => !key.endsWith("Title"));

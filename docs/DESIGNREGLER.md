@@ -8,6 +8,8 @@ Varje produktblad är en enda stående A4, 210 × 297 mm. Mallen styr typsnitt, 
 
 Flera mallar får ha olika layout men ska ingå i samma grafiska form. Publicerad mallversion är oföränderlig; en ändrad layout blir en ny version. Befintliga blad och historik ska inte byta utseende utan en uttrycklig malluppgradering.
 
+Användaren beställde 8 oktober 2026 ett begränsat bildgradientval. Mall `kock-1.2.0-prototyp` tillåter Ingen, Vit eller Mörkblå samt fyra fasta styrkor. Riktning och placering styrs av mallen: från vänster till transparent åt höger, över bilden och under texten. Mörkblått använder vit rubrik/etikett/ingress med fortsatt korallfärgat yrkesord. Detta är fasta mallvarianter, inte fri färg-, typografi- eller layoutredigering. Utgångsläget och inlästa äldre utkast har ingen gradient.
+
 ## 2. Referensen Kock.pdf
 
 `../references/Kock.pdf` är en oförändrad kopia av `C:/Users/JerryRoss/Downloads/Kock.pdf`. Referensen har i ursprungsgranskningen rapporterats som en sida, 595,276 × 841,89 punkter, motsvarande A4.

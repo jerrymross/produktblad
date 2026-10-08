@@ -1,5 +1,6 @@
-export const TEMPLATE_VERSION = "kock-1.1.0-prototyp";
+export const TEMPLATE_VERSION = "kock-1.2.0-prototyp";
 export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING"] as const;
+export const GRADIENT_STRENGTHS = ["1", "2", "3", "4"] as const;
 
 export function defaultHeadings(profession: string) {
   return {
@@ -40,6 +41,8 @@ export type SheetData = {
   contactTwoEmail: string;
   qrUrl: string;
   image: string;
+  gradientStyle: "none" | "white" | "navy";
+  gradientStrength: (typeof GRADIENT_STRENGTHS)[number];
 };
 
 // Användarens förinställda Komvuxtexter, beställda 8 oktober 2026.
@@ -71,6 +74,8 @@ export const exampleSheet: SheetData = {
   contactTwoEmail: "amanda.olheden@astar.se",
   qrUrl: "https://example.org/produktblad",
   image: "/reference-hero.jpg",
+  gradientStyle: "none",
+  gradientStrength: "2",
 };
 
 export const textFields: { key: keyof SheetData; label: string; multiline?: boolean; group: string }[] = [
@@ -106,6 +111,8 @@ export function isSheetData(value: unknown): value is SheetData {
   if (!value || typeof value !== "object") return false;
   const object = value as Record<string, unknown>;
   return EYEBROW_OPTIONS.some(option => object.eyebrow === option)
+    && ["none", "white", "navy"].includes(object.gradientStyle as string)
+    && GRADIENT_STRENGTHS.some(level => object.gradientStrength === level)
     && [...textFields.map(field => field.key), "image"].every(key => typeof object[key] === "string" && object[key].length <= (key === "image" ? 7_000_000 : 15_000));
 }
 
@@ -116,6 +123,8 @@ export function upgradePreviousDraft(value: unknown, program = "Komvux"): SheetD
   const keys = textFields.map(field => field.key).filter(key => !key.endsWith("Title"));
   if (![...keys, "image"].every(key => typeof old[key] === "string" && old[key].length <= (key === "image" ? 7_000_000 : 15_000))) return null;
   const headings = defaultHeadings(old.profession as string);
-  const data = { ...old, ...headings, eyebrow: program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING" };
+  const data = { ...headings, ...old,
+    eyebrow: EYEBROW_OPTIONS.some(option => old.eyebrow === option) ? old.eyebrow : program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING",
+    gradientStyle: old.gradientStyle ?? "none", gradientStrength: old.gradientStrength ?? "2" };
   return isSheetData(data) ? data : null;
 }
