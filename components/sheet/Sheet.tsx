@@ -31,9 +31,9 @@ export function Sheet({ data, imageSrc }: Props) {
       {data.gradientStyle !== "none" && <div className="sheet-hero-gradient" data-gradient={data.gradientStyle} data-strength={data.gradientStrength} aria-hidden="true" />}
       <div className="sheet-eyebrow" data-field="eyebrow">{data.eyebrow}</div>
       <div className="sheet-red-line" />
-      <div className="sheet-title" data-field="title">
-        <div>{data.titleLine}</div>
-        <div>{data.titlePrefix} <span>{data.profession}</span></div>
+      <div className="sheet-title" data-field="title" data-rows={data.titleRows}>
+        <div data-color={data.titleLineColor}>{data.titleLine}</div>
+        <div><span className="title-prefix" data-color={data.titlePrefixColor}>{data.titlePrefix}</span>{data.titlePrefix && " "}<span className="title-profession" data-color={data.professionColor}>{data.profession}</span></div>
       </div>
       <div className="sheet-intro" data-field="intro">{data.intro}</div>
     </div>

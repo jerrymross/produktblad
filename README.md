@@ -96,3 +96,12 @@ För fortsatt arbete i Codex: öppna projektmappen, be Codex läsa `AGENTS.md`, 
 ## Standardtext om Astar
 
 Alla nya blad har användarens standardtext i Om Astar längst ner, direkt efter det fasta fetstilta ordet Astar. Texten definieras i DEFAULT_ABOUT i lib/sheet.ts och används av Komvux, AF, AF RUB och exempelbladet. Befintliga sparade fält bevaras. Under Kontakt kan du använda ↺ vid Om Astar för att lägga in standardtexten i ett befintligt blad. Texten är fortsatt redigerbar och följer med i PDF-exporten.
+
+
+## Rubrik med två eller tre rader
+
+Under Omslag väljer du Rubrikens layout: två rader med 53,18 pt eller upp till tre rader med fast 42 pt. Treradsläget bryter yrkesnamnet automatiskt vid ordgränser. Enter i Yrke ger en egen radbrytning. Rubrikens bredd, placering och radavstånd är mallstyrda. Text som kräver fler rader eller kolliderar med ingressen markeras och blockerar export; text kapas inte.
+
+Textfärg väljs separat för första raden, inledande ord och yrkesnamn: Blå, Korall eller Automatisk. Automatisk är blå på vanlig/vit bild och vit med mörkblå gradient. Ett uttryckligt färgval gäller även över mörkblå gradient. Standard är automatisk färg för de två första delarna och korall för yrket.
+
+Mallversion `kock-1.3.0-prototyp` sparar layout och färger med innehållet. Tidigare 1.2-utkast läses in med två rader och tidigare färgbeteende; originalsparningen finns kvar. Spara i den nya versionen för aktuell grön markering. Preview och PDF använder samma rubrikrenderare.

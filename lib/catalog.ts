@@ -1,5 +1,5 @@
 import rows from "@/fixtures/produktblad.json";
-import { DEFAULT_ABOUT, defaultHeadings, exampleSheet, isSheetData, KOMVUX_DEFAULT_CONTENT, TEMPLATE_VERSION, upgradePreviousDraft, type SheetData } from "@/lib/sheet";
+import { TITLE_DEFAULTS, DEFAULT_ABOUT, defaultHeadings, exampleSheet, isSheetData, KOMVUX_DEFAULT_CONTENT, TEMPLATE_VERSION, upgradePreviousDraft, type SheetData } from "@/lib/sheet";
 
 export type CatalogEntry = { id: string; school: string; program: string; title: string };
 export const catalog: CatalogEntry[] = rows.map(row => ({
@@ -17,7 +17,7 @@ export function draftKey(id: string) {
 export function initialSheet(entry: CatalogEntry): SheetData {
   // Catalog rows are assignments, not evidence for education facts or contacts.
   const blank = Object.fromEntries(Object.keys(exampleSheet).map(key => [key, ""])) as SheetData;
-  return { ...blank, ...defaultHeadings(entry.title), ...(entry.program === "Komvux" ? KOMVUX_DEFAULT_CONTENT : {}), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
+  return { ...blank, ...TITLE_DEFAULTS, ...defaultHeadings(entry.title), ...(entry.program === "Komvux" ? KOMVUX_DEFAULT_CONTENT : {}), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
     eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2" };
 }
 
@@ -25,9 +25,10 @@ export function readPreviousDraft(entry?: CatalogEntry): SheetData | null {
   try {
     if (localStorage.getItem(`${entry ? draftKey(entry.id) : EXAMPLE_STORAGE_KEY}:reset`)) return null;
     const previousKey = entry ? `produktbladsapp:blad:${entry.id}:kock-1.1.0-prototyp` : "produktbladsapp:exempel:kock-1.1.0-prototyp";
-    if (localStorage.getItem(`${previousKey}:reset`)) return null;
-    const keys = [previousKey, entry ? `produktbladsapp:blad:${entry.id}:kock-1.0.2-prototyp` : LEGACY_STORAGE_KEY];
+    const latestKey = entry ? `produktbladsapp:blad:${entry.id}:kock-1.2.0-prototyp` : "produktbladsapp:exempel:kock-1.2.0-prototyp";
+    const keys = [latestKey, previousKey, entry ? `produktbladsapp:blad:${entry.id}:kock-1.0.2-prototyp` : LEGACY_STORAGE_KEY];
     for (const key of keys) {
+      if (localStorage.getItem(`${key}:reset`)) return null;
       const stored = localStorage.getItem(key);
       if (stored) {
         const upgraded = upgradePreviousDraft(JSON.parse(stored), entry?.program);

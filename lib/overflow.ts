@@ -21,6 +21,11 @@ export function measureSheetOverflow(): string[] {
       if (item && (item.getBoundingClientRect().bottom > heroLimit || item.scrollWidth > item.clientWidth + 1)) violations.add(key);
     }
     const title = root.querySelector<HTMLElement>(".sheet-title");
+    if (title) {
+      const intro = root.querySelector<HTMLElement>(".sheet-intro");
+      const maxHeight = parseFloat(getComputedStyle(title).lineHeight) * Number(title.dataset.rows ?? 2);
+      if (title.getBoundingClientRect().height / visualScale > maxHeight + 1 || (intro?.textContent?.trim() && title.getBoundingClientRect().bottom > intro.getBoundingClientRect().top - 3 * visualScale)) violations.add("profession");
+    }
     if (title && (title.scrollWidth > title.clientWidth + 1 || title.getBoundingClientRect().bottom > heroLimit)) violations.add("profession");
   }
   const pageBottom = root.getBoundingClientRect().bottom;

@@ -219,3 +219,13 @@ Efter användarens ändrade färgval ersattes elfenben/olivgrönt med ett mörkt
 - Skärmbilder av bibliotek, omslag, utbildningsfält och mobil granskade lokalt. Bildreferensen styr arbetsytan; den oföränderliga Kock-referensen och A4-mallen har inte ändrats.
 - Lokal export via den synliga PDF-knappen gav HTTP 200. Exporten har en A4-sida, 594,96 × 841,92 pt och fyra inbäddade fonter. Rasterisering vid 1200 px är pixelidentisk med tidigare verifierad export för samma innehåll (work/fields-pdf.png). Renderad PDF granskad.
 - Ingen Vercel-miljö eller Supabase/RLS har ändrats eller verifierats.
+
+
+## Tre rubrikrader och färgval – 8 oktober 2026
+
+- Statiskt: build, lint och typecheck godkända. Mallversion 1.3 med validerade layout-/färgvärden. Gemensam renderare och overflowkontroll för preview/export.
+- Lokal Chrome: Bagare och konditor ger exakt tre rader i det fasta 42 pt-läget. Blå och korall kan väljas per rubrikdel och överlever sparning/omladdning. Mobil preview vid 390 × 844 har ingen horisontell sidscroll.
+- Ett 1.2-utkast lästes in med två rader och standardfärger utan att äldre snapshot skrevs över. Återställningsmarkörer respekteras i versionsordning.
+- Tre lokala PDF-prov (tvåradigt exempel, treradigt yrke och treradigt med omvända färger över mörkblå gradient) gav HTTP 200, en A4-sida 594,96 × 841,92 pt och inbäddade fonter. Treradiga exporter rasteriserade och visuellt granskade mot preview: radbrytning, färger och avstånd till ingress stämmer. Kock.pdf är oförändrad; tre rader är en uttryckligt beställd mallvariant.
+- För lång rubrik nekades med HTTP 422. Ogiltig färg nekades med HTTP 400. Ingen automatisk krympning eller klippning infördes.
+- Vercel och Supabase/RLS har inte ändrats eller verifierats.

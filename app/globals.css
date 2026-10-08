@@ -329,3 +329,8 @@ button:disabled { cursor: default; }
  .catalog-header { min-height: 76px; }.catalog-main { padding-top: 28px; }
 }
 .dialog-close { color: #172943; background: white; border: 1px solid #cfd7e3; border-radius: 7px; padding: 12px 20px; }
+
+.title-color { margin-top: 8px; }
+.title-color label { display: block; font-size: 10px; color: var(--ui-muted); margin-bottom: 4px; }
+.title-color select { font-size: 11px; padding: 8px; }
+.field:has(#profession) textarea { font-family: "App Lora",Georgia,serif; font-size: 20px; }

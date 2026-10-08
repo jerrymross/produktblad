@@ -63,7 +63,12 @@
   letter-spacing: -0.4pt;
 }
 .sheet-title > div { white-space: nowrap; }
-.sheet-title span { color: var(--sheet-coral); margin-left: 3pt; }
+.sheet-title .title-profession { margin-left: 3pt; }
+.sheet-title [data-color="auto"] { color: inherit; }
+.sheet-title [data-color="blue"] { color: var(--sheet-blue); }
+.sheet-title [data-color="coral"] { color: var(--sheet-coral); }
+.sheet-title[data-rows="3"] { font-size: 42pt; line-height: 1.16; }
+.sheet-title[data-rows="3"] > div { white-space: pre-wrap; }
 .sheet-intro {
   position: absolute; left: 25.5pt; top: 237.2pt; width: 390pt;
   color: var(--sheet-blue); font: 700 9pt/1.18 "Sheet Lora", Georgia, serif;
