@@ -56,7 +56,7 @@ Klicka på en text eller bild i preview för att öppna motsvarande redigeringsd
 
 ## Gränssnittets visuella tema
 
-Gränssnittet använder en varm palett med elfenben, grafit och olivgrönt. Lokala Inter-filer används för kontroller och brödtext; Lora används för utvalda gränssnittsrubriker. Standardloggan är transparent och visas direkt på toppbarens grafitbakgrund, utan box eller bakgrund i loggbehållaren. Ett CSS-filter gör loggan vit i toppbaren. Originalbildfilen används fortfarande och ändras inte. Produktbladets logga, färger och fasta malltypografi behålls i preview och PDF.
+Gränssnittet använder en mörk Astar-inspirerad palett med djup marinblå bakgrund (`#111a2d`), blågrå ytor och dämpad korall (`#d98278`) som accent på huvudknappar, aktiva val och fokusmarkeringar. Sparade utkast behåller sin gröna markering. Lokala Inter-filer används för kontroller och brödtext; Lora används för utvalda gränssnittsrubriker. Standardloggan är transparent och visas direkt på toppbarens marinblå bakgrund, utan box eller bakgrund i loggbehållaren. Ett CSS-filter gör gränssnittets logga vit, även på felsidan. Originalbildfilen används fortfarande och ändras inte. Produktbladets logga, färger och fasta malltypografi behålls i preview och PDF.
 
 Temat definieras i `app/globals.css` och är separat från A4-mallens `app/sheet.css`. UI-färgvariablerna styr inte produktbladets form.
 

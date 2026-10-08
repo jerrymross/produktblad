@@ -155,3 +155,14 @@ Användaren beställde ett visuellt omtag med en integrerad logga utan vit box o
 - Exportknappen gav HTTP 200. PDF: en stående A4 om 594,96 × 841,92 pt och fyra inbäddade fontdelmängder. Poppler-renderingen är pixelidentisk med tidigare export för samma innehåll. A4-mall och referens-PDF är oförändrade; tidigare dokumenterade font-/radbrytningsavvikelser mot referensen kvarstår.
 - Lokal QA använder `work/check-ux.mjs`, `work/check-ux-pdf.py` och `work/ux-*.png`/`work/ux-export.pdf` i Git-ignorerade `work/`.
 - Ingen Vercel-miljö eller Supabase/RLS har provats.
+
+## Mörk Astar-palett med korallaccent – 8 oktober 2026
+
+Efter användarens ändrade färgval ersattes elfenben/olivgrönt med ett mörkt Astar-inspirerat gränssnitt: djup marinblå (`#111a2d`), blågrå ytor och dämpad korall (`#d98278`) på huvudknappar, aktiva val och fokusmarkeringar. Sparade utkast är fortsatt gröna. Standardloggan visas vit och utan box även på felsidan. Ändringen gäller bara gränssnittets CSS, inte A4-mallen.
+
+- Typkontroll, lint och produktionsbuild passerade.
+- Lokal Chrome på port 3001: bibliotek, exempelredigerare och mobilredigerare granskades. Befintliga browserflöden i `work/check-ux.mjs` passerade utan JavaScript-fel.
+- Helsida: cirka 58 % på desktop 1440 × 900, 46 % på laptop 1024 × 768 och 36 % på mobil 390 × 844. Ingen scroll i helsidepreview.
+- Kontrast mätt från faktiska browserfärger: exportknapp 5,68:1, textfält 12,74:1 och sparhjälptext 7,41:1. Felsidans vita logga verifierades i browser. Detta är riktade kontrastprov, inte en fullständig tillgänglighetsrevision.
+- PDF-export: HTTP 200, en stående A4 om 594,96 × 841,92 pt och fyra inbäddade fontdelmängder. Poppler-renderingen är pixelidentisk med tidigare export för samma innehåll. Tidigare dokumenterade avvikelser mot originalreferensen kvarstår.
+- QA-filer ligger i Git-ignorerade `work/`, inklusive `check-dark-colors.mjs` och `dark-not-found.png`. Ingen Vercel-miljö eller Supabase/RLS har provats.
