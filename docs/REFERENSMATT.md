@@ -24,3 +24,5 @@ Fotoextraktionen gjordes direkt från referens-PDF:ens enda bildobjekt, `Im0.jpg
 Ursprungliga måttabellen gäller `kock-1.0.0-prototyp`. `kock-1.0.1-prototyp` byter endast logotyp och dess proportionella inpassning; övriga layoutvärden behålls. Den lokala prototypen har ännu inget versionsarkiv för äldre mallrenderare.
 
 `kock-1.0.2-prototyp` används även av skolbiblioteket. Layoutvärdena är desamma; första vänsterrubriken heter ”Om utbildningen” när yrkesfältet inte är ”kock”. Kock-exempelbladet behåller sin ursprungliga rubrik. Nya biblioteksposter får tomma innehålls- och kontaktfält och samma tydligt märkta exempelbild tills redaktören väljer rätt bild.
+
+`kock-1.1.0-prototyp` inför användarens två fasta etikettval och sex redigerbara avsnittsrubriker. Standardrubrikerna är de tidigare visade texterna. Font, storlek, marginaler, bildyta och övriga geometrivärden är oförändrade. Övre etiketten är avsiktligt en annan text än i originalreferensen. Äldre lokala snapshots bevaras separat vid inläsning till nya mallen; prototypen har fortfarande inget komplett arkiv av äldre renderare eller PDF-exporter.

@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { catalog, readDraft, schools } from "@/lib/catalog";
+import { catalog, readDraft, readPreviousDraft, schools } from "@/lib/catalog";
 import { TEMPLATE_VERSION } from "@/lib/sheet";
 
 export function Catalog() {
   const [school, setSchool] = useState("");
   const [query, setQuery] = useState("");
   const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [previous, setPrevious] = useState<Set<string>>(new Set());
   useEffect(() => {
-    const refresh = () => setSaved(new Set(catalog.filter(entry => readDraft(entry.id)).map(entry => entry.id)));
+    const refresh = () => {
+      setSaved(new Set(catalog.filter(entry => readDraft(entry.id)).map(entry => entry.id)));
+      setPrevious(new Set(catalog.filter(entry => readPreviousDraft(entry)).map(entry => entry.id)));
+    };
     refresh();
     window.addEventListener("storage", refresh);
     window.addEventListener("pageshow", refresh);
@@ -37,9 +41,9 @@ export function Catalog() {
       <div className="catalog-summary" role="status"><span>{filtered.length} produktblad · {school || "Alla skolor"}</span><span>Sparade blad: {filtered.filter(entry => saved.has(entry.id)).length} · Mall 01</span></div>
       <div className="catalog-grid">
         {filtered.map(entry => <article className="catalog-card" key={entry.id} data-school={entry.school}>
-          <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{saved.has(entry.id) ? "Sparat produktblad" : "Inget sparat blad"}</span></div>
+          <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{saved.has(entry.id) ? "Sparat produktblad" : previous.has(entry.id) ? "Sparat i tidigare mall" : "Inget sparat blad"}</span></div>
           <h2>{entry.title}</h2><p className="catalog-school">{entry.school}</p>
-          <div className="catalog-card-bottom"><span title={TEMPLATE_VERSION}>Mall 01 · A4</span><Link href={`/?blad=${encodeURIComponent(entry.id)}`}>{saved.has(entry.id) ? "Öppna blad" : "Skapa blad"}<span aria-hidden="true"> →</span></Link></div>
+          <div className="catalog-card-bottom"><span title={TEMPLATE_VERSION}>Mall 01 · A4</span><Link href={`/?blad=${encodeURIComponent(entry.id)}`}>{saved.has(entry.id) || previous.has(entry.id) ? "Öppna blad" : "Skapa blad"}<span aria-hidden="true"> →</span></Link></div>
         </article>)}
       </div>
       {!filtered.length && <p className="catalog-empty">Inga produktblad matchar ditt val. Prova en annan sökning eller välj Alla produktblad.</p>}

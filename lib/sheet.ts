@@ -1,4 +1,16 @@
-export const TEMPLATE_VERSION = "kock-1.0.2-prototyp";
+export const TEMPLATE_VERSION = "kock-1.1.0-prototyp";
+export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING"] as const;
+
+export function defaultHeadings(profession: string) {
+  return {
+    whyTitle: profession.toLocaleLowerCase("sv") === "kock" ? "Varför bli kock?" : "Om utbildningen",
+    learnTitle: "Det här lär du dig",
+    processTitle: "Så här går det till.",
+    formTitle: "Utbildningsform.",
+    audienceTitle: "Vem kan söka?",
+    financeTitle: "Ekonomisk kompensation.",
+  };
+}
 
 export type SheetData = {
   eyebrow: string;
@@ -6,6 +18,12 @@ export type SheetData = {
   titlePrefix: string;
   profession: string;
   intro: string;
+  whyTitle: string;
+  learnTitle: string;
+  processTitle: string;
+  formTitle: string;
+  audienceTitle: string;
+  financeTitle: string;
   why: string;
   learn: string;
   process: string;
@@ -26,7 +44,8 @@ export type SheetData = {
 
 // Layoutreferensens text är bara exempeldata, inte faktagranskad utbildningsinformation.
 export const exampleSheet: SheetData = {
-  eyebrow: "PRAKTISK UTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB",
+  ...defaultHeadings("kock"),
+  eyebrow: "KOMVUX",
   titleLine: "Utbilda dig",
   titlePrefix: "till",
   profession: "kock",
@@ -50,16 +69,22 @@ export const exampleSheet: SheetData = {
 };
 
 export const textFields: { key: keyof SheetData; label: string; multiline?: boolean; group: string }[] = [
-  { key: "eyebrow", label: "Övre etikett", multiline: true, group: "Omslag" },
+  { key: "eyebrow", label: "Övre etikett", group: "Omslag" },
   { key: "titleLine", label: "Rubrik, rad 1", group: "Omslag" },
   { key: "titlePrefix", label: "Rubrik, inledande ord rad 2", group: "Omslag" },
   { key: "profession", label: "Yrke", group: "Omslag" },
   { key: "intro", label: "Ingress", multiline: true, group: "Omslag" },
-  { key: "why", label: "Varför bli kock?", multiline: true, group: "Innehåll" },
+  { key: "whyTitle", label: "Rubrik – Varför bli kock?", group: "Innehåll" },
+  { key: "why", label: "Text – Varför bli kock?", multiline: true, group: "Innehåll" },
+  { key: "learnTitle", label: "Rubrik – Det här lär du dig", group: "Innehåll" },
   { key: "learn", label: "Det här lär du dig", multiline: true, group: "Innehåll" },
+  { key: "processTitle", label: "Rubrik – Så här går det till", group: "Innehåll" },
   { key: "process", label: "Så här går det till", multiline: true, group: "Innehåll" },
+  { key: "formTitle", label: "Rubrik – Utbildningsform", group: "Innehåll" },
   { key: "form", label: "Utbildningsform", multiline: true, group: "Innehåll" },
+  { key: "audienceTitle", label: "Rubrik – Vem kan söka?", group: "Innehåll" },
   { key: "audience", label: "Vem kan söka?", multiline: true, group: "Innehåll" },
+  { key: "financeTitle", label: "Rubrik – Ekonomisk kompensation", group: "Innehåll" },
   { key: "finance", label: "Ekonomisk kompensation", multiline: true, group: "Innehåll" },
   { key: "about", label: "Om Astar", multiline: true, group: "Nederdel" },
   { key: "address", label: "Skolans adress", group: "Nederdel" },
@@ -75,5 +100,17 @@ export const textFields: { key: keyof SheetData; label: string; multiline?: bool
 export function isSheetData(value: unknown): value is SheetData {
   if (!value || typeof value !== "object") return false;
   const object = value as Record<string, unknown>;
-  return [...textFields.map(field => field.key), "image"].every(key => typeof object[key] === "string" && object[key].length <= (key === "image" ? 7_000_000 : 15_000));
+  return EYEBROW_OPTIONS.some(option => object.eyebrow === option)
+    && [...textFields.map(field => field.key), "image"].every(key => typeof object[key] === "string" && object[key].length <= (key === "image" ? 7_000_000 : 15_000));
+}
+
+// Read old prototype drafts without rewriting their stored snapshots.
+export function upgradePreviousDraft(value: unknown, program = "Komvux"): SheetData | null {
+  if (!value || typeof value !== "object") return null;
+  const old = value as Record<string, unknown>;
+  const keys = textFields.map(field => field.key).filter(key => !key.endsWith("Title"));
+  if (![...keys, "image"].every(key => typeof old[key] === "string" && old[key].length <= (key === "image" ? 7_000_000 : 15_000))) return null;
+  const headings = defaultHeadings(old.profession as string);
+  const data = { ...old, ...headings, eyebrow: program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING" };
+  return isSheetData(data) ? data : null;
 }

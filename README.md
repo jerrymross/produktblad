@@ -30,7 +30,15 @@ Startsidan och `/produktblad` visar 136 poster för 24 skolor från användarens
 
 Efter **Spara utkast** visas en grön markering med **Sparat produktblad** i biblioteket. Den gäller enbart kombinationen skola, utbildningsform, utbildning och aktuell mallversion. Den visar att något sparats, inte att bladet är komplett eller godkänt. Sparning i en skola markerar inte motsvarande utbildning i en annan skola. **Återställ till tomt blad** tar bort den sparade versionen och dess gröna markering.
 
-Utkast och markeringar finns bara i samma webbläsare och på samma origin (värd och port). Biblioteket är ingen åtkomstkontroll. Äldre Kock-exempelutkast finns via **Öppna Kock-mallens exempelblad** (`/?exempel=1`) och kopplas inte automatiskt till en skola. Underlaget finns i `fixtures/produktblad.json`.
+Utkast och markeringar finns bara i samma webbläsare och på samma origin (värd och port). Biblioteket är ingen åtkomstkontroll. Kock-exempelbladet finns via **Öppna Kock-mallens exempelblad** (`/?exempel=1`) och kopplas inte automatiskt till en skola. Underlaget finns i `fixtures/produktblad.json`.
+
+## Etikett, innehållsrubriker och standardtext
+
+**Övre etikett** är en rullista med exakt **KOMVUX** och **ARBETSMARKNADSUTBILDNING**. Nya skolblad börjar med KOMVUX för Komvux-poster, annars ARBETSMARKNADSUTBILDNING för AF/AF RUB. Du kan själv byta valet.
+
+Under **Innehåll** har varje avsnitt ett separat rubrikfält och textfält. De tidigare rubrikerna används som standard, inklusive punkter och frågetecken. Klicka på den runda **↺**-knappen bredvid ett fält för att återställa dess standardtext. Knappen ändrar bara det fältet; spara sedan utkastet. För nya skolblad är standarden för brödtext tom, eftersom underlaget inte innehåller utbildningstexter. Kock-exempelbladet återställs till sin tydligt märkta exempeltext.
+
+Det nya fältschemat hör till mall `kock-1.1.0-prototyp`. Äldre utkast från `kock-1.0.2-prototyp` och den ursprungliga Kock-prototypen läses in med standardrubriker och en etikett utifrån utbildningsformen. Appen meddelar att utkastet behöver sparas i den nya mallen. Den äldre sparningen skrivs inte över. Biblioteket visar **Sparat i tidigare mall** tills bladet sparats för aktuell mall; därefter blir markeringen grön. Återställning av hela bladet återupplivar inte ett äldre utkast.
 
 ## Fast förhandsvisning och zoom
 

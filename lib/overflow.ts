@@ -9,6 +9,8 @@ export function measureSheetOverflow(): string[] {
     const limit = column.getBoundingClientRect().bottom + 0.5 * visualScale;
     column.querySelectorAll<HTMLElement>(".sheet-section").forEach(section => {
       if (section.getBoundingClientRect().bottom > limit) violations.add(section.dataset.field ?? "innehåll");
+      const heading = section.querySelector<HTMLElement>("h2");
+      if (heading && (heading.scrollWidth > heading.clientWidth + 1 || heading.getBoundingClientRect().bottom > limit)) violations.add(heading.dataset.field ?? "rubrik");
     });
   });
   const hero = root.querySelector<HTMLElement>(".sheet-hero");

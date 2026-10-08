@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Sheet } from "@/components/sheet/Sheet";
-import { exampleSheet, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
+import { exampleSheet, EYEBROW_OPTIONS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
-import { draftKey, initialSheet, LEGACY_STORAGE_KEY, type CatalogEntry } from "@/lib/catalog";
+import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, type CatalogEntry } from "@/lib/catalog";
 
 const GROUPS = ["Omslag", "Innehåll", "Nederdel"] as const;
 
@@ -14,7 +14,8 @@ function shortFieldName(key: string) {
 }
 
 export function Editor({ entry }: { entry?: CatalogEntry }) {
-  const storageKey = entry ? draftKey(entry.id) : LEGACY_STORAGE_KEY;
+  const storageKey = entry ? draftKey(entry.id) : EXAMPLE_STORAGE_KEY;
+  const defaults = entry ? initialSheet(entry) : exampleSheet;
   const [data, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
   const [activeGroup, setActiveGroup] = useState<(typeof GROUPS)[number]>("Omslag");
   const [fitScale, setFitScale] = useState(0.5);
@@ -33,15 +34,18 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed: unknown = JSON.parse(stored);
-        if (isSheetData(parsed)) queueMicrotask(() => { setData(parsed); setHasSaved(true); });
+        if (isSheetData(parsed)) { queueMicrotask(() => { setData(parsed); setHasSaved(true); }); return; }
       }
+      const previous = readPreviousDraft(entry);
+      if (previous) queueMicrotask(() => { setData(previous); setDirty(true); setMessage("Ditt tidigare utkast har lästs in i den nya mallen. Spara utkast för att behålla det här; den äldre sparningen finns kvar."); });
     } catch { /* Corrupt local draft does not block the prototype. */ }
-  }, [storageKey]);
+  }, [storageKey, entry]);
 
   useEffect(() => {
     const node = stageRef.current;
     if (!node) return;
     const observer = new ResizeObserver(() => {
+      if (!node.isConnected) return;
       const style = getComputedStyle(node);
       const width = node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       const height = node.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
@@ -69,6 +73,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   function save() {
     try {
       localStorage.setItem(storageKey, JSON.stringify(data));
+      localStorage.removeItem(`${storageKey}:reset`);
       setDirty(false);
       setHasSaved(true);
       setMessage("Utkastet är sparat i den här webbläsaren.");
@@ -121,16 +126,20 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   }
 
   function reset() {
-    if (!window.confirm(entry ? "Återställ till ett tomt blad? Ditt sparade lokala blad tas bort." : "Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
+    if (!window.confirm(entry ? "Återställ till ett tomt blad? Sparningen i den aktuella mallen tas bort." : "Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
+    try {
+      localStorage.setItem(`${storageKey}:reset`, "1");
+      localStorage.removeItem(storageKey);
+    } catch { setMessage("Det gick inte att återställa den lokala sparningen. Ditt innehåll finns kvar."); return; }
     setData(entry ? initialSheet(entry) : exampleSheet);
-    localStorage.removeItem(storageKey);
     setDirty(false);
     setHasSaved(false);
-    setMessage(entry ? "Bladet är återställt. Ingen sparad version finns kvar." : "Exempeltexten är återställd.");
+    setMessage(entry ? "Bladet är återställt. Ingen sparad version finns i den aktuella mallen." : "Exempeltexten är återställd.");
   }
 
   const visibleFields = textFields.filter(field => field.group === activeGroup).map(field => {
-    if (entry && field.key === "why") return { ...field, label: "Om utbildningen" };
+    if (entry && field.key === "why") return { ...field, label: `Text – ${defaults.whyTitle}` };
+    if (entry && field.key === "whyTitle") return { ...field, label: `Rubrik – ${defaults.whyTitle}` };
     if (entry && field.key === "qrUrl") return { ...field, label: "QR-adress" };
     return field;
   });
@@ -156,8 +165,8 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
           <div className="section-heading"><h2>{activeGroup}</h2><span>{visibleFields.length} fält</span></div>
           {activeGroup === "Omslag" && <div className="image-field"><div className="field-top"><label htmlFor="image-input">Huvudbild</label><span>FAST BILDYTA</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>Bild i övre delen</strong><p>JPG, PNG eller WebP. Bilden beskärs inom mallen.</p><button type="button" onClick={() => fileRef.current?.click()}>Byt bild</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => void uploadImage(event.target.files?.[0])} /></div>}
           {visibleFields.map(field => <div className={`field ${overflow.includes(field.key) ? "field-error" : ""}`} key={field.key}>
-            <div className="field-top"><label htmlFor={field.key}>{field.label}</label>{overflow.includes(field.key) && <span className="overflow-label">FÅR INTE PLATS</span>}</div>
-            {field.multiline ? <textarea id={field.key} rows={field.key === "learn" || field.key === "why" ? 6 : 3} value={data[field.key]} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} onChange={event => change(field.key, event.target.value)} />}
+            <div className="field-top"><label htmlFor={field.key}>{field.label}</label><div className="field-tools">{overflow.includes(field.key) && <span className="overflow-label">FÅR INTE PLATS</span>}{field.group === "Innehåll" && <button type="button" className="reset-field" title={`Återställ standardtext: ${field.label}`} aria-label={`Återställ standardtext: ${field.label}`} disabled={data[field.key] === defaults[field.key]} onClick={() => { change(field.key, defaults[field.key]); setMessage("Fältets standardtext är återställd. Spara utkast för att behålla ändringen."); }}>↺</button>}</div></div>
+            {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "learn" || field.key === "why" ? 6 : 3} value={data[field.key]} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} onChange={event => change(field.key, event.target.value)} />}
             {field.key === "qrUrl" && <small>{entry ? "Ange rätt webbadress för skolan eller utbildningen, med https://." : "Prototypens QR-kod pekar på en testadress."}</small>}
           </div>)}
           <div className="editor-bottom-actions"><button type="button" className="text-button" onClick={reset}>{entry ? "Återställ till tomt blad" : "Återställ exempeldata"}</button></div>

@@ -89,3 +89,18 @@ Zoomkontrollerna flyttades till en separat 80 px bred kolumn till höger om prev
 - Zoom, återgång till helsida, separat redigerarscroll och overflowspärr vid 5 % passerade.
 - PDF från 110 % zoom: HTTP 200, en stående A4 om 594,96 × 841,92 pt och fyra inbäddade fontdelmängder. Poppler-renderingen är pixelidentisk med exporten före flytten av zoomkontrollerna.
 - Vercel och Supabase/RLS har inte provats.
+
+## Etikettval, rubriker och återställning – 8 oktober 2026
+
+Mallversion `kock-1.1.0-prototyp` har två fasta etiketter, sex separata rubrikfält och en rund återställningsknapp per rubrik/textfält under Innehåll. Tidigare standardrubriker behålls. Textstorlek och placering kan inte ändras.
+
+- Typkontroll, lint och build passerade.
+- Lokal browser: rullistan har exakt KOMVUX och ARBETSMARKNADSUTBILDNING. Valet syns direkt i preview. De sex rubrikerna börjar med sina tidigare texter.
+- Ändrad rubrik och brödtext syns i preview och finns kvar efter sparning/omladdning. Rubrikåterställning ändrar endast den valda rubriken; brödtextåterställning ändrar endast sitt eget textfält.
+- Överfull, obruten rubrik markerar rätt rubrikfält och spärrar export. Direkt API-anrop med annan etikett nekas med HTTP 400.
+- Äldre Borås/AF-utkast från mall 1.0.2 läses in med sin bevarade ingress, nya standardrubriker och arbetsmarknadsetikett. Efter ny sparning finns båda snapshots kvar och aktuell mall får grön markering. Helbladsåterställning hindrar att det äldre utkastet återkommer efter omladdning, utan att radera dess snapshot.
+- Browserbilder granskades vid 1440 × 900 och 390 × 844. Ingen horisontell mobilscroll.
+- Lokal PDF med arbetsmarknadsetikett och rubriken ”Din väg till yrket” gav HTTP 200. Texten kan extraheras. PDF är en stående A4 om 594,96 × 841,92 pt med fyra inbäddade fontdelmängder. Poppler-renderingen granskades mot preview och den oförändrade referensen: nya texter visas utan överlappning, övriga fasta ytor är bevarade. Tidigare dokumenterade font-/radbrytningsavvikelser kvarstår.
+- Exportknappen provades även i lokal produktionsbuild: HTTP 200 och vald arbetsmarknadsetikett samt standardrubrik skickades med.
+
+Kontrollfiler finns i Git-ignorerade `work/check-fields.mjs`, `fields-*.png` och `fields-export.pdf`. Ingen Vercel-miljö eller Supabase/RLS har provats.

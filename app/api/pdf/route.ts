@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 import { isSheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
+import { EXAMPLE_STORAGE_KEY } from "@/lib/catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     // The local prototype's own preview is the source of the printable DOM.
     // A large uploaded image is applied separately to avoid localStorage limits.
     const storedData = { ...data, image: "/reference-hero.jpg" };
-    await page.evaluate((value) => localStorage.setItem("produktbladsapp:kock:lokalt-utkast:v1", JSON.stringify(value)), storedData);
+    await page.evaluate(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: EXAMPLE_STORAGE_KEY, value: storedData });
     await page.reload({ waitUntil: "networkidle0" });
     await page.waitForSelector(".sheet-page");
     await page.evaluate((customImage) => {

@@ -6,9 +6,9 @@ type Props = {
   imageSrc?: string;
 };
 
-function Section({ title, field, children }: { title: string; field: keyof SheetData; children: string }) {
+function Section({ title, titleField, field, children }: { title: string; titleField: keyof SheetData; field: keyof SheetData; children: string }) {
   return <section className="sheet-section" data-field={field}>
-    <h2>{title}</h2>
+    <h2 data-field={titleField}>{title}</h2>
     <p>{children}</p>
   </section>;
 }
@@ -39,14 +39,14 @@ export function Sheet({ data, imageSrc }: Props) {
 
     <div className="sheet-columns">
       <div className="sheet-column sheet-left" data-column="left">
-        <Section title={data.profession.toLocaleLowerCase("sv") === "kock" ? "Varför bli kock?" : "Om utbildningen"} field="why">{data.why}</Section>
-        <Section title="Det här lär du dig" field="learn">{data.learn}</Section>
+        <Section title={data.whyTitle} titleField="whyTitle" field="why">{data.why}</Section>
+        <Section title={data.learnTitle} titleField="learnTitle" field="learn">{data.learn}</Section>
       </div>
       <div className="sheet-column sheet-right" data-column="right">
-        <Section title="Så här går det till." field="process">{data.process}</Section>
-        <Section title="Utbildningsform." field="form">{data.form}</Section>
-        <Section title="Vem kan söka?" field="audience">{data.audience}</Section>
-        <Section title="Ekonomisk kompensation." field="finance">{data.finance}</Section>
+        <Section title={data.processTitle} titleField="processTitle" field="process">{data.process}</Section>
+        <Section title={data.formTitle} titleField="formTitle" field="form">{data.form}</Section>
+        <Section title={data.audienceTitle} titleField="audienceTitle" field="audience">{data.audience}</Section>
+        <Section title={data.financeTitle} titleField="financeTitle" field="finance">{data.finance}</Section>
       </div>
     </div>
 

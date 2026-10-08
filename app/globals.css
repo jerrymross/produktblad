@@ -71,8 +71,14 @@ button { cursor: pointer; }
 .field-top label { font-size: 12px; font-weight: 700; color: #293750; }
 .field-top > span { font-size: 9px; letter-spacing: 1px; color: #95a0b3; font-weight: 700; white-space: nowrap; }
 .field-top > .overflow-label { color: #c43f39; }
-.field input, .field textarea { width: 100%; padding: 10px 11px; border: 1px solid #d9e0eb; border-radius: 7px; background: #fff; color: #263246; font-size: 12px; line-height: 1.5; outline: none; resize: vertical; }
-.field input:focus, .field textarea:focus { border-color: #335fab; box-shadow: 0 0 0 3px #dce8ff; }
+.field input, .field textarea, .field select { width: 100%; padding: 10px 11px; border: 1px solid #d9e0eb; border-radius: 7px; background: #fff; color: #263246; font-size: 12px; line-height: 1.5; outline: none; resize: vertical; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: #335fab; box-shadow: 0 0 0 3px #dce8ff; }
+.field-tools { display: flex; align-items: center; gap: 8px; }
+.field-tools .overflow-label { color: #c43f39; font-size: 9px; white-space: nowrap; }
+.reset-field { display: inline-grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border: 1px solid #ccd8ec; border-radius: 50%; background: #f2f6fd; color: #2454a8; font-size: 18px; line-height: 1; }
+.reset-field:hover:not(:disabled) { background: #e0eafa; }
+.reset-field:disabled { opacity: .35; cursor: default; }
+.reset-field:focus-visible { outline: 3px solid #b6cef5; outline-offset: 2px; }
 .field-error input, .field-error textarea { border-color: #e4837a; background: #fffafa; }
 .field small { display: block; margin-top: 6px; font-size: 10px; color: #7b889a; }
 .image-picker { display: flex; align-items: center; gap: 12px; border: 1px solid #d9e0eb; border-radius: 8px; padding: 8px; }
