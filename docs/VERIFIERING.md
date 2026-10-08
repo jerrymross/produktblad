@@ -156,6 +156,17 @@ Användaren beställde ett visuellt omtag med en integrerad logga utan vit box o
 - Lokal QA använder `work/check-ux.mjs`, `work/check-ux-pdf.py` och `work/ux-*.png`/`work/ux-export.pdf` i Git-ignorerade `work/`.
 - Ingen Vercel-miljö eller Supabase/RLS har provats.
 
+## Förinställd Komvuxtext – lokal kontroll 8 oktober 2026
+
+Användarens fyra texter om upplägg, utbildningsform, målgrupp och ekonomi ligger i `KOMVUX_DEFAULT_CONTENT`. Nya katalogblad med program Komvux får dessa texter, och fältens återställningsknappar använder samma standard. AF/AF RUB behåller tomma brödtexter. Textens inklistrade radbrytningar har sammanfogats inom styckena så att mallen styr radbrytningen. Mallgeometri, fältschema, version och lagringsnycklar är oförändrade.
+
+- Typkontroll, lint och produktionsbuild passerade.
+- Lokal Chrome på port 3001: nya Komvuxblad för Umeå och Borås visar standardtexterna. Ändrad text och ett uttryckligt tomt sparat fält bevaras efter omladdning. Återställning av ett fält återför bara dess text och lämnar andra ändringar kvar.
+- Helbladsåterställning återför standardinnehållet och tar bort aktuell sparning. Standardtexter räknas inte som ett sparat utkast innan användaren sparar. AF-blad i Borås har fortsatt tomma brödtexter.
+- Export via browserknappen gav HTTP 200 och skickade alla fyra standardtexter. Lokal PDF har en stående A4 om 594,96 × 841,92 pt. Tre använda fontdelmängder är inbäddade i detta blad med tomma övriga fält; alla fyra stycken kan extraheras ur PDF.
+- Browser-preview och Poppler-rendering granskades: högerkolumnens standardtexter ryms utan överlappning och följer den befintliga mallgeometrin. Oförändrad referenslayout och tidigare dokumenterade font-/radbrytningsavvikelser kvarstår.
+- Kontrollfiler finns i Git-ignorerade `work/check-komvux-defaults.mjs`, `work/check-komvux-pdf.py`, `work/komvux-defaults.png`, `work/komvux-defaults.pdf` och `work/komvux-defaults-pdf.png`. Ingen Vercel-miljö eller Supabase/RLS har provats.
+
 ## Mörk Astar-palett med korallaccent – 8 oktober 2026
 
 Efter användarens ändrade färgval ersattes elfenben/olivgrönt med ett mörkt Astar-inspirerat gränssnitt: djup marinblå (`#111a2d`), blågrå ytor och dämpad korall (`#d98278`) på huvudknappar, aktiva val och fokusmarkeringar. Sparade utkast är fortsatt gröna. Standardloggan visas vit och utan box även på felsidan. Ändringen gäller bara gränssnittets CSS, inte A4-mallen.

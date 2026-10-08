@@ -29,6 +29,7 @@ function shortFieldName(key: string) {
 export function Editor({ entry }: { entry?: CatalogEntry }) {
   const storageKey = entry ? draftKey(entry.id) : EXAMPLE_STORAGE_KEY;
   const defaults = entry ? initialSheet(entry) : exampleSheet;
+  const hasKomvuxDefaults = entry?.program === "Komvux";
   const [data, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
   const [activeGroup, setActiveGroup] = useState<(typeof GROUPS)[number]>("Omslag");
   const [fitScale, setFitScale] = useState(0.5);
@@ -178,7 +179,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   }
 
   function reset() {
-    if (!window.confirm(entry ? "Återställ till ett tomt blad? Sparningen i den aktuella mallen tas bort." : "Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
+    if (!window.confirm(entry ? hasKomvuxDefaults ? "Återställ till standardinnehållet? Sparningen i den aktuella mallen tas bort." : "Återställ till ett tomt blad? Sparningen i den aktuella mallen tas bort." : "Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
     try {
       localStorage.setItem(`${storageKey}:reset`, "1");
       localStorage.removeItem(storageKey);
@@ -186,7 +187,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     setData(entry ? initialSheet(entry) : exampleSheet);
     setDirty(false);
     setHasSaved(false);
-    setMessage(entry ? "Bladet är återställt. Ingen sparad version finns i den aktuella mallen." : "Exempeltexten är återställd.");
+    setMessage(entry ? "Bladet är återställt till standardinnehållet. Ingen sparad version finns i den aktuella mallen." : "Exempeltexten är återställd.");
   }
 
   const visibleFields = textFields.filter(field => field.group === activeGroup).map(field => {
@@ -239,7 +240,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
               <div id={`section-${section.id}`} hidden={activeSection !== section.id} aria-labelledby={`toggle-${section.id}`}>{section.keys.map(key => visibleFields.find(field => field.key === key)).filter((field): field is (typeof textFields)[number] => Boolean(field)).map(renderField)}</div>
             </section>;
           })}
-          <details className="editor-options"><summary>Om mallen & fler alternativ</summary><p>{entry ? "Nya blad har tomma texter. Exempelbilden behöver bytas till en bild för utbildningen." : "Detta är exempeldata från referensen. Utbildnings- och kontaktuppgifter behöver faktagranskas."} Layouten är fast. Mallen är en lokal prototyp.</p><button type="button" className="text-button" onClick={reset}>{entry ? "Återställ till tomt blad" : "Återställ exempeldata"}</button></details>
+          <details className="editor-options"><summary>Om mallen & fler alternativ</summary><p>{entry ? `${hasKomvuxDefaults ? "Komvuxblad har förinställd text om upplägg, utbildningsform, målgrupp och ekonomi. Övriga innehållsfält är tomma." : "Nya blad har tomma texter."} Exempelbilden behöver bytas till en bild för utbildningen.` : "Detta är exempeldata från referensen. Utbildnings- och kontaktuppgifter behöver faktagranskas."} Layouten är fast. Mallen är en lokal prototyp.</p><button type="button" className="text-button" onClick={reset}>{entry ? hasKomvuxDefaults ? "Återställ standardinnehåll" : "Återställ till tomt blad" : "Återställ exempeldata"}</button></details>
         </div>
         <div className="editor-actions">
           {(overflow.length > 0 || !validQr) && <div className="overflow-alert"><strong>{overflow.length ? "Text får inte plats på A4" : "QR-adress saknas eller är ogiltig"}</strong><button type="button" onClick={() => openField(overflow[0] ?? "qrUrl")}>Gå till {overflow.length ? shortFieldName(overflow[0]) : "QR-adress"} →{overflow.length > 1 ? ` (+${overflow.length - 1})` : ""}</button></div>}

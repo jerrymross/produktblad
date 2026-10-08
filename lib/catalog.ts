@@ -1,5 +1,5 @@
 import rows from "@/fixtures/produktblad.json";
-import { defaultHeadings, exampleSheet, isSheetData, TEMPLATE_VERSION, upgradePreviousDraft, type SheetData } from "@/lib/sheet";
+import { defaultHeadings, exampleSheet, isSheetData, KOMVUX_DEFAULT_CONTENT, TEMPLATE_VERSION, upgradePreviousDraft, type SheetData } from "@/lib/sheet";
 
 export type CatalogEntry = { id: string; school: string; program: string; title: string };
 export const catalog: CatalogEntry[] = rows.map(row => ({
@@ -17,7 +17,7 @@ export function draftKey(id: string) {
 export function initialSheet(entry: CatalogEntry): SheetData {
   // Catalog rows are assignments, not evidence for education facts or contacts.
   const blank = Object.fromEntries(Object.keys(exampleSheet).map(key => [key, ""])) as SheetData;
-  return { ...blank, ...defaultHeadings(entry.title), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
+  return { ...blank, ...defaultHeadings(entry.title), ...(entry.program === "Komvux" ? KOMVUX_DEFAULT_CONTENT : {}), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
     eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", image: "/reference-hero.jpg" };
 }
 

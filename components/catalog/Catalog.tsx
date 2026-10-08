@@ -86,7 +86,7 @@ export function Catalog() {
         </article>)}
       </div>
       {!filtered.length && <div className="catalog-empty"><h2>Inga blad matchar ditt val</h2><p>{filters.status === "saved" ? "Här visas bara blad som sparats i den här webbläsaren. Prova Alla för att skapa ett nytt blad." : "Prova ett annat sökord eller ta bort ett filter."}</p><button type="button" className="save-button" onClick={() => setFilters(emptyFilters)}>Visa alla produktblad</button></div>}
-      <footer className="catalog-note"><p>Grönt visar sparning, inte godkännande eller faktagranskning. Nya blad har tomma texter och en exempelbild. Utkasten finns på den här datorn, i den här webbläsaren.</p><Link className="catalog-example" href="/?exempel=1">Se hur ett ifyllt exempelblad ser ut →</Link></footer>
+      <footer className="catalog-note"><p>Grönt visar sparning, inte godkännande eller faktagranskning. Nya Komvuxblad har förinställda standardtexter. Alla nya blad har en exempelbild. Utkasten finns på den här datorn, i den här webbläsaren.</p><Link className="catalog-example" href="/?exempel=1">Se hur ett ifyllt exempelblad ser ut →</Link></footer>
     </main>
   </div>;
 }
