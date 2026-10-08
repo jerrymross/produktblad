@@ -32,6 +32,12 @@ Efter **Spara utkast** visas en grön markering med **Sparat produktblad** i bib
 
 Utkast och markeringar finns bara i samma webbläsare och på samma origin (värd och port). Biblioteket är ingen åtkomstkontroll. Äldre Kock-exempelutkast finns via **Öppna Kock-mallens exempelblad** (`/?exempel=1`) och kopplas inte automatiskt till en skola. Underlaget finns i `fixtures/produktblad.json`.
 
+## Fast förhandsvisning och zoom
+
+På desktop ryms redigeraren i browserfönstret. Vänstersidans fält scrollas separat, medan förhandsvisningen ligger kvar på högersidan. **Visa hela bladet** är standard och anpassar bladet efter både tillgänglig bredd och höjd, även när fönstret ändras.
+
+Använd **+**, **−** eller **100 %** för att granska detaljer. Förstorade blad scrollas inom förhandsvisningen; **Visa hela bladet** återgår till hela sidan och nollställer scrollningen. Zoom ändrar bara visningen, inte mallens typografi, radbrytningar, PDF-storlek eller kontrollen av överfullt innehåll. På mobil ligger förhandsvisningen under redigeraren och har en egen yta med samma zoomkontroller.
+
 Överfull text markeras och spärrar PDF-export. Detta är en teknisk provregel, ännu inte ett bekräftat produktbeslut. Text krymps eller kapas inte automatiskt. Förhandsvisningen och exporten bygger på samma bladkomponent, och servern kontrollerar även utrymmet när en PDF begärs direkt.
 
 ## Kontroller och projektfiler

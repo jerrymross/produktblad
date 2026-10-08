@@ -59,3 +59,22 @@ Kontrollfiler finns i Git-ignorerade `work/`, bland annat `check-catalog.mjs`, b
 Biblioteksposter är underlag för blad, inte 136 färdiga PDF:er. Nya poster har inga påhittade utbildningsfakta eller kontakter. Grönt betyder ett giltigt sparat lokalt utkast, enligt användarens beslut; ingen godkännandeprocess infördes. Utkastens nyckel innehåller skol-/utbildningsidentitet och mallversion. Kock-exempelutkastets tidigare nyckel behålls separat. Inget automatiskt byte av skola eller kopiering av dess uppgifter sker.
 
 Ingen Vercel-miljö eller Supabase/RLS har provats. Skolfiltret är endast lokal navigation och innebär ingen serverbaserad behörighetskontroll; steg 2 väntar fortsatt.
+
+## Fast förhandsvisning och zoom – lokal kontroll 8 oktober 2026
+
+På desktop håller redigerarens arbetsyta browserfönstrets höjd. Förhandsvisningen ligger kvar medan vänsterfält scrollas separat. Standardläget ”Visa hela bladet” mäter både tillgänglig bredd och höjd med ResizeObserver. Manuell zoom (5–200 %), 100 % och återgång till helsida finns. Zoom ändrar endast previewns transform, inte mallversion eller innehåll. Överfullhetskontrollens geometriska toleranser följer visningsskalan så att samma text inte blir godkänd vid utzoomning.
+
+| Kontroll | Resultat |
+|---|---|
+| Typkontroll, lint, build | Godkända. |
+| Desktop 1440 × 900 | Hela bladet ryms vid cirka 52 %. Ingen horisontell eller vertikal scroll i preview eller på sidan. |
+| Laptop 1024 × 768 | Hela bladet ryms vid cirka 40 %; sidan saknar vertikal scroll. |
+| Separat redigerarscroll | Scrollning av vänsterfält flyttar inte högersidans förhandsvisning. |
+| Zoom | 100 %, plus och minus fungerar. Förstorad preview kan scrollas internt. Helsideknappen återgår till anpassning och nollställer scrollningen. |
+| Ändrad fönsterstorlek | Anpassningen räknas om efter ändring av bredd och höjd. |
+| Mobil 390 × 844 | Preview ligger under redigeraren; hela A4 ryms i dess egen previewyta. Ingen horisontell sidscroll. |
+| Overflow | Överfull ingress spärrar export vid anpassad zoom, 100 % och 5 %. |
+| PDF vid manuell zoom | Export från 110 % preview gav HTTP 200. PDF är en stående A4, 594,96 × 841,92 pt, med fyra inbäddade fontdelmängder och standardlogga. |
+| Visuell PDF-kontroll | Exporten renderades med Poppler. Rasterjämförelse mot föregående export vid samma 1200 px skala gav ingen pixelavvikelse. Tidigare dokumenterade avvikelser mot referensen är oförändrade. |
+
+Browserflödet finns lokalt i `work/check-zoom.mjs`; browserbilder, `zoom-export.pdf` och `zoom-pdf.png` ligger i samma Git-ignorerade mapp. Vercel och Supabase/RLS har inte provats i denna uppdatering.

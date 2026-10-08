@@ -17,7 +17,9 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const storageKey = entry ? draftKey(entry.id) : LEGACY_STORAGE_KEY;
   const [data, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
   const [activeGroup, setActiveGroup] = useState<(typeof GROUPS)[number]>("Omslag");
-  const [scale, setScale] = useState(0.82);
+  const [fitScale, setFitScale] = useState(0.5);
+  const [zoom, setZoom] = useState<number | null>(null);
+  const scale = zoom ?? fitScale;
   const [overflow, setOverflow] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
@@ -39,7 +41,12 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   useEffect(() => {
     const node = stageRef.current;
     if (!node) return;
-    const observer = new ResizeObserver(() => setScale(Math.min(1, (node.clientWidth - 26) / 794)));
+    const observer = new ResizeObserver(() => {
+      const style = getComputedStyle(node);
+      const width = node.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const height = node.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      setFitScale(Math.max(0.05, Math.min(1, width / 794, height / 1123)));
+    });
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
@@ -128,7 +135,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     return field;
   });
 
-  return <div className="workspace">
+  return <div className="workspace editor-workspace">
     <header className="app-header">
       <div className="brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -165,7 +172,14 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
 
       <main className="preview-panel">
         <div className="preview-toolbar"><div><span className="eyebrow-ui">FÖRHANDSVISNING</span><h2>Så ser bladet ut</h2></div><div className="preview-meta"><span className="meta-pill">A4 · Stående</span><span className="meta-pill">{TEMPLATE_VERSION}</span></div></div>
-        <div className="preview-canvas" ref={stageRef}>
+        <div className="preview-zoom" role="group" aria-label="Zoom för förhandsvisningen">
+          <button type="button" aria-label="Zooma ut" disabled={scale <= 0.05} onClick={() => setZoom(Math.max(0.05, scale - 0.1))}>−</button>
+          <output className="zoom-value" aria-label="Zoomnivå">{Math.round(scale * 100)} %</output>
+          <button type="button" aria-label="Zooma in" disabled={scale >= 2} onClick={() => setZoom(Math.min(2, scale + 0.1))}>+</button>
+          <button type="button" className="zoom-actual" onClick={() => setZoom(1)}>100 %</button>
+          <button type="button" className="zoom-fit" aria-pressed={zoom === null} onClick={() => { setZoom(null); stageRef.current?.scrollTo({ top: 0, left: 0 }); }}>Visa hela bladet</button>
+        </div>
+        <div className="preview-canvas" ref={stageRef} tabIndex={0} aria-label="Förhandsvisning av produktblad. Zoomade blad kan scrollas här.">
           <div className="preview-size" style={{ width: 794 * scale, height: 1123 * scale }}>
             <div className="preview-transform" style={{ transform: `scale(${scale})` }}><Sheet data={data} /></div>
           </div>

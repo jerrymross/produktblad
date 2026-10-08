@@ -3,9 +3,10 @@
 export function measureSheetOverflow(): string[] {
   const root = document.querySelector<HTMLElement>(".sheet-page");
   if (!root) return ["blad"];
+  const visualScale = root.getBoundingClientRect().width / parseFloat(getComputedStyle(root).width);
   const violations = new Set<string>();
   root.querySelectorAll<HTMLElement>(".sheet-column").forEach(column => {
-    const limit = column.getBoundingClientRect().bottom + 0.5;
+    const limit = column.getBoundingClientRect().bottom + 0.5 * visualScale;
     column.querySelectorAll<HTMLElement>(".sheet-section").forEach(section => {
       if (section.getBoundingClientRect().bottom > limit) violations.add(section.dataset.field ?? "innehåll");
     });
@@ -22,11 +23,11 @@ export function measureSheetOverflow(): string[] {
   }
   const pageBottom = root.getBoundingClientRect().bottom;
   const footer = root.querySelector<HTMLElement>(".sheet-footer");
-  if (footer && footer.getBoundingClientRect().bottom > pageBottom - 2) violations.add("contactOneEmail");
+  if (footer && footer.getBoundingClientRect().bottom > pageBottom - 2 * visualScale) violations.add("contactOneEmail");
   const about = root.querySelector<HTMLElement>(".sheet-about");
-  if (about && footer && about.getBoundingClientRect().bottom > footer.getBoundingClientRect().top - 5) violations.add("about");
+  if (about && footer && about.getBoundingClientRect().bottom > footer.getBoundingClientRect().top - 5 * visualScale) violations.add("about");
   root.querySelectorAll<HTMLElement>(".sheet-contact, .sheet-address").forEach(item => {
-    if (item.scrollWidth > item.clientWidth + 1 || item.getBoundingClientRect().bottom > pageBottom - 2) violations.add(item.dataset.field ?? "address");
+    if (item.scrollWidth > item.clientWidth + 1 || item.getBoundingClientRect().bottom > pageBottom - 2 * visualScale) violations.add(item.dataset.field ?? "address");
   });
   return [...violations];
 }

@@ -47,8 +47,10 @@ button { cursor: pointer; }
 .header-right { display: flex; align-items: center; gap: 9px; color: #d0dcf0; font-size: 12px; white-space: nowrap; }
 .status-dot, .blue-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #69caac; }
 .header-divider { height: 17px; width: 1px; background: #5470a4; margin: 0 7px; }
-.workspace-body { flex: 1; display: grid; grid-template-columns: 430px minmax(0, 1fr); min-height: calc(100vh - 76px); }
-.editor-panel { display: flex; flex-direction: column; min-height: 0; background: #fff; border-right: 1px solid #e1e7f0; }
+.editor-workspace { height: 100dvh; min-height: 0; overflow: hidden; }
+.workspace-body { flex: 1; display: grid; grid-template-columns: 430px minmax(0, 1fr); min-height: 0; overflow: hidden; }
+.editor-panel { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; background: #fff; border-right: 1px solid #e1e7f0; }
+.editor-panel > :not(.fields-scroll) { flex-shrink: 0; }
 .panel-heading { padding: 30px 32px 23px; }
 .eyebrow-ui { color: #4164a3; }
 .panel-heading h1 { font-size: 28px; line-height: 1.1; margin: 11px 0 8px; letter-spacing: -.8px; color: #17295a; }
@@ -60,7 +62,7 @@ button { cursor: pointer; }
 .editor-tabs button { background: none; color: #78849a; border: 0; border-bottom: 2px solid transparent; padding: 12px 5px 14px; font-size: 12px; font-weight: 700; }
 .editor-tabs button span { font-size: 10px; margin-right: 6px; opacity: .65; }
 .editor-tabs button.active { color: #1e4a9b; border-color: #1e4a9b; }
-.fields-scroll { flex: 1; padding: 24px 32px 18px; overflow-y: auto; min-height: 250px; max-height: calc(100vh - 430px); }
+.fields-scroll { flex: 1; padding: 24px 32px 18px; overflow-y: auto; min-height: 120px; }
 .section-heading { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
 .section-heading h2 { margin: 0; font-size: 18px; color: #1a2c54; }
 .section-heading span { font-size: 11px; color: #8791a3; }
@@ -91,16 +93,26 @@ button { cursor: pointer; }
 .export-button:hover:not(:disabled) { background: #173e85; }
 .export-button:disabled { opacity: .48; cursor: not-allowed; }
 .save-hint { margin: 10px 0 0; font-size: 10px; line-height: 1.4; color: #8b95a7; }
-.preview-panel { min-width: 0; display: flex; flex-direction: column; }
+.preview-panel { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .preview-toolbar { min-height: 106px; padding: 27px 38px 20px; display: flex; justify-content: space-between; gap: 20px; align-items: flex-end; }
 .preview-toolbar h2 { color: #1b2c52; margin: 7px 0 0; font-size: 20px; }
 .preview-meta { display: flex; align-items: center; gap: 7px; padding-bottom: 3px; }
 .meta-pill { border: 1px solid #dbe3ef; border-radius: 5px; color: #647796; background: #fff; font-size: 10px; padding: 6px 8px; white-space: nowrap; }
-.preview-canvas { flex: 1; min-width: 0; padding: 21px 13px 48px; display: flex; justify-content: center; align-items: flex-start; overflow: auto; background-color: #eef1f5; background-image: radial-gradient(#c9d0db 0.6px, transparent 0.6px); background-size: 16px 16px; }
-.preview-size { flex: 0 0 auto; box-shadow: 0 12px 45px #2a39512a, 0 1px 4px #2a39511c; background: white; }
+.preview-toolbar, .preview-zoom, .preview-footer { flex-shrink: 0; }
+.preview-zoom { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 38px 18px; }
+.preview-zoom button { min-width: 36px; min-height: 36px; border: 1px solid #cbd8ec; border-radius: 6px; color: #25447d; background: #fff; font-size: 16px; }
+.preview-zoom button:disabled { opacity: .4; cursor: not-allowed; }
+.preview-zoom button:hover:not(:disabled) { background: #e8eef9; }
+.preview-zoom button:focus-visible, .preview-canvas:focus-visible { outline: 3px solid #b6cef5; outline-offset: -3px; }
+.preview-zoom .zoom-fit, .preview-zoom .zoom-actual { padding: 0 12px; font-size: 12px; font-weight: 700; }
+.preview-zoom .zoom-fit[aria-pressed="true"] { color: #fff; background: #1f4d9f; border-color: #1f4d9f; }
+.preview-zoom .zoom-fit[aria-pressed="true"]:hover { background: #173e85; }
+.zoom-value { min-width: 55px; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; color: #536a91; }
+.preview-canvas { flex: 1; min-width: 0; min-height: 0; padding: 20px; overflow: auto; overscroll-behavior: contain; background-color: #eef1f5; background-image: radial-gradient(#c9d0db 0.6px, transparent 0.6px); background-size: 16px 16px; }
+.preview-size { margin: 0 auto; overflow: hidden; box-shadow: 0 12px 45px #2a39512a, 0 1px 4px #2a39511c; background: white; }
 .preview-transform { transform-origin: top left; width: 794px; height: 1123px; }
 .preview-footer { display: flex; justify-content: space-between; gap: 10px; padding: 14px 38px; background: #fff; color: #8090a9; font-size: 11px; border-top: 1px solid #e0e6ef; }
 .preview-footer span { display: inline-flex; align-items: center; gap: 7px; }
 .blue-dot { background: #315da9; }
 @media (max-width: 1150px) { .app-header { grid-template-columns: 380px 1fr auto; } .workspace-body { grid-template-columns: 380px minmax(0,1fr); } .header-right { font-size: 0; } .header-right .status-dot { width: 9px; height: 9px; } .header-divider { display: none; } }
-@media (max-width: 850px) { .app-header { grid-template-columns: 1fr auto; height: 64px; padding: 0 18px; } .header-center { display: none; } .workspace-body { display: flex; flex-direction: column; } .editor-panel { min-height: 600px; } .fields-scroll { max-height: 420px; } .preview-toolbar { min-height: 80px; padding: 22px 18px; } .preview-meta .meta-pill:last-child { display: none; } .preview-footer { padding: 12px 18px; } }
+@media (max-width: 850px) { .app-header { grid-template-columns: 1fr auto; height: 64px; padding: 0 18px; } .header-center { display: none; } .editor-workspace { height: auto; min-height: 100dvh; overflow: visible; } .workspace-body { display: flex; flex-direction: column; overflow: visible; flex: 0 0 auto; } .editor-panel { min-height: 600px; } .fields-scroll { max-height: 420px; } .preview-panel { height: calc(100dvh - 64px); min-height: 420px; } .preview-toolbar { min-height: 80px; padding: 22px 18px; } .preview-zoom { padding: 0 18px 14px; } .preview-meta .meta-pill:last-child { display: none; } .preview-footer { padding: 12px 18px; flex-wrap: wrap; } }
