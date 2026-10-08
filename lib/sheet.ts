@@ -1,5 +1,5 @@
 export const TEMPLATE_VERSION = "kock-1.2.0-prototyp";
-export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING"] as const;
+export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING", "PRAKTISK UTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB"] as const;
 export const GRADIENT_STRENGTHS = ["1", "2", "3", "4"] as const;
 
 export function defaultHeadings(profession: string) {

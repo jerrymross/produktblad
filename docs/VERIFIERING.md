@@ -156,6 +156,15 @@ Användaren beställde ett visuellt omtag med en integrerad logga utan vit box o
 - Lokal QA använder `work/check-ux.mjs`, `work/check-ux-pdf.py` och `work/ux-*.png`/`work/ux-export.pdf` i Git-ignorerade `work/`.
 - Ingen Vercel-miljö eller Supabase/RLS har provats.
 
+## Ny övre etikett – 8 oktober 2026
+
+Rullistan har även **PRAKTISK UTBILDNING / MED STORA MÖJLIGHETER TILL JOBB**, med lagrad radbrytning efter UTBILDNING. Befintlig `white-space: pre-line` ger två rader utan ändrade mallmått.
+
+- Typkontroll, lint och produktionsbuild passerade.
+- Lokal Chrome: valet sparades och fanns kvar efter omladdning. Etiketten mäter två rader, ryms inom sin bredd och slutar ovanför korallstrecket.
+- Browserexport gav HTTP 200. Export-PDF granskades efter Poppler-rendering: två textrader utan överlappning, en stående A4 om 594,96 × 841,92 pt och fyra fontresurser. Båda textraderna kan extraheras.
+- QA-filer: Git-ignorerade `work/check-practical-label.mjs`, `work/practical-label.png`, `work/practical-label.pdf` och `work/practical-label-pdf.png`. Vercel och Supabase/RLS har inte provats.
+
 ## Bildgradient – lokal kontroll 8 oktober 2026
 
 Mall `kock-1.2.0-prototyp` lägger till `gradientStyle` (none/white/navy) och `gradientStrength` (strängvärden 1–4). Förinställd riktning är vänster till transparent åt höger; styrkorna är 25/45/65/85 procents opacitet vid vänsterkanten. Mörkblått ger vit omslagstext, med fortsatt korallfärgat yrkesord. Ingen gradient är standard. Detta är användarens uttryckligen beställda, begränsade mallval.

@@ -38,7 +38,7 @@ Utkast och markeringar finns bara i samma webbläsare och på samma origin (vär
 
 ## Etikett, innehållsrubriker och standardtext
 
-**Övre etikett** är en rullista med exakt **KOMVUX** och **ARBETSMARKNADSUTBILDNING**. Nya skolblad börjar med KOMVUX för Komvux-poster, annars ARBETSMARKNADSUTBILDNING för AF/AF RUB. Du kan själv byta valet.
+**Övre etikett** är en rullista med **KOMVUX**, **ARBETSMARKNADSUTBILDNING** och **PRAKTISK UTBILDNING / MED STORA MÖJLIGHETER TILL JOBB**. Det tredje valet visas på två rader på bladet, med radbrytning efter UTBILDNING. Nya skolblad börjar med KOMVUX för Komvux-poster, annars ARBETSMARKNADSUTBILDNING för AF/AF RUB. Du kan själv byta valet; det sparas med innehållet och används även i PDF-exporten.
 
 Under **Utbildning** öppnar du ett textavsnitt i taget. Varje avsnitt har ett separat rubrikfält och textfält. De tidigare rubrikerna används som standard, inklusive punkter och frågetecken. Klicka på den runda **↺**-knappen bredvid ett fält för att återställa dess standardtext. Knappen ändrar bara det fältet; spara sedan utkastet. För Komvux återställs **Så här går det till**, **Utbildningsform**, **Vem kan söka?** och **Ekonomisk kompensation** till användarens texter, beställda 8 oktober 2026. Övriga skolblads brödtexter har tom standard. Kock-exempelbladet återställs till sin tydligt märkta exempeltext. **Kontakt** grupperar skoluppgifter, två kontaktpersoner och QR-adress i egna avsnitt. ”Innehåll finns” betyder bara att text finns i avsnittet, inte att informationen är komplett.
 
