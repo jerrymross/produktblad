@@ -156,6 +156,15 @@ Användaren beställde ett visuellt omtag med en integrerad logga utan vit box o
 - Lokal QA använder `work/check-ux.mjs`, `work/check-ux-pdf.py` och `work/ux-*.png`/`work/ux-export.pdf` i Git-ignorerade `work/`.
 - Ingen Vercel-miljö eller Supabase/RLS har provats.
 
+## Gemensam text om Astar – 8 oktober 2026
+
+Användarens text är standard i nederdelen för alla nya blad. Ett fast fetstilt Astar följs av ett mellanrum och brödtexten. Även äldre värden som börjar med Astar visas utan dubblerat företagsnamn. Om Astar har en egen återställningsknapp under Kontakt; sparade egna texter behålls.
+
+- Typkontroll, lint och build passerade.
+- Lokal browser: Komvux, AF och AF RUB visar samma standardtext. Egen text bevaras vid sparning/omladdning; ↺ återför standardtexten.
+- Lokal PDF gav HTTP 200 och en stående A4 om 594,96 × 841,92 pt. Poppler-renderingen granskades: standardtexten ryms mellan nederdelens linjer, med Astar i fetstil och utan överlappning med logga eller kontakter.
+- QA-filer finns i Git-ignorerade `work/check-about.mjs` och `work/about-default*`. Vercel och Supabase/RLS har inte provats.
+
 ## Ny övre etikett – 8 oktober 2026
 
 Rullistan har även **PRAKTISK UTBILDNING / MED STORA MÖJLIGHETER TILL JOBB**, med lagrad radbrytning efter UTBILDNING. Befintlig `white-space: pre-line` ger två rader utan ändrade mallmått.

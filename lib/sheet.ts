@@ -1,6 +1,7 @@
 export const TEMPLATE_VERSION = "kock-1.2.0-prototyp";
 export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING", "PRAKTISK UTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB"] as const;
 export const GRADIENT_STRENGTHS = ["1", "2", "3", "4"] as const;
+export const DEFAULT_ABOUT = "är ett av Sveriges största utbildningsföretag. Vår ambition är att bidra till en stark och livskraftig arbetsmarknad. Vi erbjuder en bred variation av utbildningar och kurser inom olika områden och samarbetar tätt med de branscher som vi utbildar för.";
 
 export function defaultHeadings(profession: string) {
   return {
@@ -64,7 +65,7 @@ export const exampleSheet: SheetData = {
   intro: "Drömmer du om att jobba i köket?\nDå ska du läsa en utbildning till Kock med oss!",
   why: "Som kock arbetar du direkt med råvaror och skapar rätter som serveras till gäster varje dag. Du lär dig laga mat för olika tillfällen. Allt från vardagsrätter till festmåltider samt restauranger, hotell, skolor, catering eller event.\nMed mattrender som förändras och restaurangbranschen utvecklas, kommer det alltid att finnas en efterfrågan efter dig som kan laga, planera och presentera maten på ett professionellt sätt.",
   learn: "Du lär dig om olika råvaror och hur de hanteras på ett säkert sätt. Du får grundläggande kunskaper i näringslära, hygienregler och livsmedelssäkerhet samt lär dig laga balanserade måltider.\nDu får också kunskap om olika typer av kost, till exempel allergianpassad och vegetarisk kost, och om hur ett kök är organiserat för att arbetet ska flyta smidigt och ge gästen bästa möjliga service. Genom arbetsplatsförlagt lärande (APL) får du laga mat tillsammans med erfarna kockar i riktiga kök och arbeta med verkliga menyer. Samtidigt bygger du värdefulla kontakter i restaurang- och livsmedelsbranschen.",
-  about: "Astar är ett av Sveriges största utbildningsföretag. Vår ambition är att bidra till en stark och livskraftig arbetsmarknad. Vi erbjuder en bred variation av utbildningar och kurser inom olika områden och samarbetar tätt med de branscher som vi utbildar för.",
+  about: DEFAULT_ABOUT,
   address: "Industrivägen 28  901 30 Umeå",
   contactOneName: "LenaMaria Nilsson",
   contactOneRole: "Administratör",

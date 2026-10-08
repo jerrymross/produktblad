@@ -52,7 +52,7 @@ export function Sheet({ data, imageSrc }: Props) {
     </div>
 
     <div className="sheet-bottom">
-      <div className="sheet-about" data-field="about"><strong>Astar</strong>{data.about.replace(/^Astar/, "")}</div>
+      <div className="sheet-about" data-field="about"><strong>Astar</strong>{data.about ? ` ${data.about.replace(/^Astar\s*/, "").trimStart()}` : ""}</div>
       <div className="sheet-footer">
         <div className="sheet-logo-group">
           <AstarMark />
