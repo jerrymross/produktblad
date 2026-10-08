@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AppSidebar } from "@/components/AppSidebar";
 import { useEffect, useState } from "react";
 import { catalog, readDraft, readPreviousDraft, schools } from "@/lib/catalog";
 import { TEMPLATE_VERSION } from "@/lib/sheet";
@@ -54,14 +55,8 @@ export function Catalog() {
   const hasFilters = filters.school || filters.query || filters.program || filters.status !== "all";
 
   return <div className="workspace catalog-workspace">
-    <header className="app-header catalog-header">
-      <div className="brand">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="brand-logo" src="/logo_liggande.png" alt="Astar Education" width={784} height={219} />
-      </div>
-      <div className="header-center"><span className="header-title">Produktblad</span><span className="header-kicker">BIBLIOTEK & REDIGERING</span></div>
-      <span className="local-badge">Sparas i din webbläsare</span>
-    </header>
+    <AppSidebar />
+    <header className="app-header catalog-header"><div className="header-center"><span className="header-kicker">ASTAR · PRODUKTBLAD</span><span className="header-title">Bibliotek</span></div><span className="local-badge">Sparas i din webbläsare</span></header>
     <main className="catalog-main" id="main-content">
       <div className="catalog-intro">
         <div className="catalog-heading"><span className="eyebrow-ui">DITT BIBLIOTEK</span><h1>Rätt blad. Rätt skola.</h1><p>Hitta utbildningen, öppna bladet och gör det till ditt.</p></div>

@@ -54,9 +54,9 @@ Valet sparas med innehållet som `gradientStyle` och `gradientStrength`. Preview
 
 ## Fast förhandsvisning och zoom
 
-På desktop ryms redigeraren i browserfönstret. Vänstersidans fält scrollas separat, medan förhandsvisningen ligger kvar på högersidan. **Visa hela bladet** är standard och anpassar bladet efter både tillgänglig bredd och höjd, även när fönstret ändras.
+På desktop ryms redigeraren i browserfönstret. Vänstersidans fält scrollas separat, medan förhandsvisningen ligger kvar på högersidan. **Anpassa** är standard och anpassar bladet efter både tillgänglig bredd och höjd, även när fönstret ändras.
 
-Zoomkontrollerna ligger i en smal list till höger om bladet för att ge förhandsvisningen mer höjd. Använd **+**, **−** eller **100 %** för att granska detaljer. Förstorade blad scrollas inom förhandsvisningen; **Visa hela bladet** återgår till hela sidan och nollställer scrollningen. Zoom ändrar bara visningen, inte mallens typografi, radbrytningar, PDF-storlek eller kontrollen av överfullt innehåll. På mobil växlar du mellan **Redigera** och **Förhandsvisa** i samma arbetsyta. Previewns geometri mäts även när den är dold på mobil, så utrymmeskontrollen fortsätter fungera.
+Zoomkontrollerna ligger i en flytande horisontell list under bladet, enligt den nya bildreferensen. Knappen med expansionspilar döljer redigeraren och ger preview mer bredd; samma knapp tar tillbaka redigeraren. Använd **+**, **−** eller **100 %** för att granska detaljer. Förstorade blad scrollas inom förhandsvisningen; **Anpassa** återgår till hela sidan och nollställer scrollningen. Zoom ändrar bara visningen, inte mallens typografi, radbrytningar, PDF-storlek eller kontrollen av överfullt innehåll. På mobil växlar du mellan **Redigera** och **Förhandsvisa** i samma arbetsyta. Previewns geometri mäts även när den är dold på mobil, så utrymmeskontrollen fortsätter fungera.
 
 Klicka på en text eller bild i preview för att öppna motsvarande redigeringsdel och fokusera fältet. Samma fält nås med tangentbord via redigerarens flikar och avsnitt. En överfullhetsvarning har en länk till första berörda fältet; andra berörda avsnitt markeras. Saknad QR-adress eller adress utan `http://`/`https://` upptäcks före export, enligt PDF-routens befintliga regel. Utkast kan fortfarande sparas. Inga nya krav på ifyllda utbildningstexter eller kontaktpersoner har införts.
 
@@ -64,7 +64,9 @@ Klicka på en text eller bild i preview för att öppna motsvarande redigeringsd
 
 ## Gränssnittets visuella tema
 
-Gränssnittet använder en mörk Astar-inspirerad palett med djup marinblå bakgrund (`#111a2d`), blågrå ytor och dämpad korall (`#d98278`) som accent på huvudknappar, aktiva val och fokusmarkeringar. Sparade utkast behåller sin gröna markering. Lokala Inter-filer används för kontroller och brödtext; Lora används för utvalda gränssnittsrubriker. Standardloggan är transparent och visas direkt på toppbarens marinblå bakgrund, utan box eller bakgrund i loggbehållaren. Ett CSS-filter gör gränssnittets logga vit, även på felsidan. Originalbildfilen används fortfarande och ändras inte. Produktbladets logga, färger och fasta malltypografi behålls i preview och PDF.
+Gränssnittet följer användarens bildreferens: marinblå sidomeny, vit toppbar och redigerare, varm ljusgrå previewyta samt korallfärgade primärknappar. Spara utkast och Ladda ner PDF ligger i toppbaren. Sparade utkast behåller sin gröna markering. Inter används för kontroller och Lora för större gränssnittsrubriker. Sidomenyn använder den befintliga stående loggan `public/logo_stand.png`, vit via CSS-filter och utan box. Produktbladet använder fortsatt `public/logo_liggande.png` i originalfärger.
+
+Bibliotek öppnar skolornas blad. Mallar öppnar den befintliga Mall 01 med exempeldata. Inställningar visar information om lokal sparning och återställning i en tangentbordstillgänglig dialog. Länkar ut från redigeraren varnar vid osparade ändringar. På mobil blir sidomenyn en kompakt toppmeny. Produktbladets fasta layout är oförändrad; denna uppdatering gäller appens arbetsyta.
 
 Temat definieras i `app/globals.css` och är separat från A4-mallens `app/sheet.css`. UI-färgvariablerna styr inte produktbladets form.
 

@@ -208,3 +208,14 @@ Efter användarens ändrade färgval ersattes elfenben/olivgrönt med ett mörkt
 - Kontrast mätt från faktiska browserfärger: exportknapp 5,68:1, textfält 12,74:1 och sparhjälptext 7,41:1. Felsidans vita logga verifierades i browser. Detta är riktade kontrastprov, inte en fullständig tillgänglighetsrevision.
 - PDF-export: HTTP 200, en stående A4 om 594,96 × 841,92 pt och fyra inbäddade fontdelmängder. Poppler-renderingen är pixelidentisk med tidigare export för samma innehåll. Tidigare dokumenterade avvikelser mot originalreferensen kvarstår.
 - QA-filer ligger i Git-ignorerade `work/`, inklusive `check-dark-colors.mjs` och `dark-not-found.png`. Ingen Vercel-miljö eller Supabase/RLS har provats.
+
+
+## Bildreferens för arbetsytan – 8 oktober 2026
+
+- Vit redigerare och toppbar, marinblå sidomeny, stående befintlig Astar-logga, korallaccent och varm previewyta. Sparknappar i toppbaren och zoom under bladet. Biblioteket följer samma tema.
+- Statiskt: lint, TypeScript och produktionsbuild godkända. React-granskning: befintliga hooks behåller cleanup, dialog har rubrik och Escape-stängning, knappar och navigationslänkar har tillgängliga namn.
+- Lokal Chrome på port 3001: bibliotek/filter, sparning med Ctrl+S, återläsning, grön sparstatus, återställning, varning före navigation, klick från preview till rätt fält, overflow och QR-validering godkända. Inga browserfel.
+- Hela bladet ryms utan horisontell eller vertikal scroll i Anpassa vid 1440 × 900, 1024 × 768 och 390 × 844. Mobilens växling mellan redigering och preview fungerar. Expansionsknapp och inställningsdialog provade.
+- Skärmbilder av bibliotek, omslag, utbildningsfält och mobil granskade lokalt. Bildreferensen styr arbetsytan; den oföränderliga Kock-referensen och A4-mallen har inte ändrats.
+- Lokal export via den synliga PDF-knappen gav HTTP 200. Exporten har en A4-sida, 594,96 × 841,92 pt och fyra inbäddade fonter. Rasterisering vid 1200 px är pixelidentisk med tidigare verifierad export för samma innehåll (work/fields-pdf.png). Renderad PDF granskad.
+- Ingen Vercel-miljö eller Supabase/RLS har ändrats eller verifierats.

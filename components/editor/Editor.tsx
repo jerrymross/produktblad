@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Sheet } from "@/components/sheet/Sheet";
 import { exampleSheet, EYEBROW_OPTIONS, GRADIENT_STRENGTHS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
@@ -42,6 +43,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const [message, setMessage] = useState("");
   const [activeSection, setActiveSection] = useState<string | null>("why");
   const [focusKey, setFocusKey] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const [mobilePane, setMobilePane] = useState("editor");
   const stageRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -132,6 +134,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     setActiveGroup(field ? field.group as (typeof GROUPS)[number] : "Omslag");
     setActiveSection(SECTIONS.find(section => section.keys.includes(actualKey as keyof SheetData))?.id ?? null);
     setMobilePane("editor");
+    setExpanded(false);
     setFocusKey(actualKey === "image-input" ? "change-image" : actualKey);
   }
 
@@ -209,32 +212,30 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     </div>;
   }
 
-  return <div className={`workspace editor-workspace mobile-${mobilePane}`}>
+  return <div className={`workspace editor-workspace mobile-${mobilePane} ${expanded ? "preview-expanded" : ""}`}>
+    <AppSidebar dirty={dirty} example={!entry} />
     <header className="app-header">
-      <div className="brand">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="brand-logo" src="/logo_liggande.png" alt="Astar Education" width={784} height={219} />
-      </div>
-      <div className="header-center"><span className="header-kicker">{entry?.school ?? "PRODUKTBLAD"}</span><span className="header-title">{entry?.title ?? "Kock"} <span>/</span> Mall 01</span></div>
+      <div className="header-center"><div className="breadcrumbs"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>Bibliotek</Link><span>/</span><span>{entry?.school ?? "Exempelblad"}</span><span>/</span><span>{entry?.program ?? "Komvux"}</span></div><h1 className="header-title">{entry?.title ?? "Kock"}</h1></div>
       <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`}><span className="status-dot" />{dirty ? "Osparade ändringar" : hasSaved ? "Sparat lokalt" : "Inte sparat än"}</div>
+          <div className="action-row"><button type="button" className="save-button" onClick={save} disabled={busy} title="Spara utkast (Ctrl+S eller ⌘S)">Spara utkast</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || overflow.length > 0 || !validQr}>{busy ? "Skapar PDF …" : "Ladda ner PDF ↓"}</button></div>
     </header>
 
     <nav className="mobile-pane-switch" aria-label="Arbetsyta"><button type="button" aria-pressed={mobilePane === "editor"} onClick={() => setMobilePane("editor")}>Redigera</button><button type="button" aria-pressed={mobilePane === "preview"} onClick={() => setMobilePane("preview")}>Förhandsvisa</button></nav>
 
     <div className="workspace-body">
       <aside className="editor-panel">
-        <div className="panel-heading"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>← Till biblioteket</Link><span className="eyebrow-ui">{entry ? `${entry.school} · ${entry.program}` : "EXEMPELBLAD · KOCK"}</span><h1>{entry?.title ?? "Kock"}</h1><p>Redigera innehållet. Följ ändringarna på bladet.</p></div>
+        <div className="panel-heading"><span className="eyebrow-ui">REDIGERA PRODUKTBLAD</span><h2>Innehåll</h2><p>Dina ändringar syns direkt på bladet.</p></div>
         <nav className="editor-tabs" aria-label="Redigeringsdelar">
-          {GROUPS.map((group, index) => <button key={group} type="button" aria-pressed={activeGroup === group} className={activeGroup === group ? "active" : ""} onClick={() => { setActiveGroup(group); setActiveSection(group === "Innehåll" ? "why" : "school"); }}><span>{index + 1}</span>{GROUP_LABELS[group]}{overflow.some(key => textFields.find(field => field.key === key)?.group === group) && <span className="tab-error" aria-label="Text får inte plats">!</span>}</button>)}
+          {GROUPS.map(group => <button key={group} type="button" aria-pressed={activeGroup === group} className={activeGroup === group ? "active" : ""} onClick={() => { setActiveGroup(group); setActiveSection(group === "Innehåll" ? "why" : "school"); }}>{GROUP_LABELS[group]}{overflow.some(key => textFields.find(field => field.key === key)?.group === group) && <span className="tab-error" aria-label="Text får inte plats">!</span>}</button>)}
         </nav>
         <div className="fields-scroll">
           <p className="section-help">{activeGroup === "Omslag" ? "Bild, rubrik och ingress är det första läsaren ser." : activeGroup === "Innehåll" ? "Öppna ett avsnitt i taget. Rubrik och text ändras var för sig." : "Fyll i rätt skoluppgifter och adressen till QR-koden."}</p>
-          {activeGroup === "Omslag" && <><div className="image-field"><div className="field-top"><label htmlFor="image-input">Huvudbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild uppladdad"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Byt bild →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>
+          {activeGroup === "Omslag" && <>{visibleFields.filter(field => ["profession", "titleLine", "titlePrefix"].includes(field.key)).map(renderField)}<div className="image-field"><div className="field-top"><label htmlFor="image-input">Omslagsbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild uppladdad"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Byt bild →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>
             <fieldset className="gradient-control"><legend>Gradient över bilden</legend>
               <div className="gradient-colors" role="group" aria-label="Gradientfärg">{([["none", "Ingen"], ["white", "Vit"], ["navy", "Mörkblå"]] as const).map(([value, label]) => <button type="button" key={value} aria-pressed={data.gradientStyle === value} onClick={() => change("gradientStyle", value)}><span className={`gradient-swatch swatch-${value}`} aria-hidden="true" />{label}</button>)}</div>
               <span className="gradient-label">Styrka</span><div className="gradient-levels" role="group" aria-label="Gradientens styrka">{GRADIENT_STRENGTHS.map((level, index) => <button type="button" key={level} disabled={data.gradientStyle === "none"} aria-pressed={data.gradientStrength === level} onClick={() => change("gradientStrength", level)}>{level}<small>{["Lätt", "Mjuk", "Tydlig", "Stark"][index]}</small></button>)}</div>
               <p>Tonas från vänster till höger. Mörkblå gradient ger vit rubrik och ingress.</p>
-            </fieldset>{visibleFields.map(renderField)}</>}
+            </fieldset>{visibleFields.filter(field => !["profession", "titleLine", "titlePrefix"].includes(field.key)).map(renderField)}</>}
           {SECTIONS.filter(section => section.group === activeGroup).map(section => {
             const sectionError = section.keys.some(key => overflow.includes(key)) || (section.id === "qr" && !validQr);
             const bodyKey = section.keys.find(key => !key.endsWith("Title"));
@@ -250,19 +251,19 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
         <div className="editor-actions">
           {(overflow.length > 0 || !validQr) && <div className="overflow-alert"><strong>{overflow.length ? "Text får inte plats på A4" : "QR-adress saknas eller är ogiltig"}</strong><button type="button" onClick={() => openField(overflow[0] ?? "qrUrl")}>Gå till {overflow.length ? shortFieldName(overflow[0]) : "QR-adress"} →{overflow.length > 1 ? ` (+${overflow.length - 1})` : ""}</button></div>}
           {message && <p className="message" role="status">{message}</p>}
-          <div className="action-row"><button type="button" className="save-button" onClick={save} disabled={busy} title="Spara utkast (Ctrl+S eller ⌘S)">Spara utkast</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || overflow.length > 0 || !validQr}>{busy ? "Skapar PDF …" : "Ladda ner PDF ↓"}</button></div>
+
           <p className="save-hint">Sparas i den här webbläsaren · Ctrl+S / ⌘S</p>
         </div>
       </aside>
 
       <main className="preview-panel">
-        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">Klicka på en text för att redigera den.</span></p></div><div className="preview-meta"><span className="meta-pill">A4 · 1 sida</span><span className="meta-pill" title={TEMPLATE_VERSION}>Mall 01</span></div></div>
+        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">A4 · 210 × 297 mm</span></p></div><div className="preview-meta"><span className="meta-pill" title={TEMPLATE_VERSION}>Mall 01</span><button type="button" className="expand-preview" aria-label={expanded ? "Visa redigeraren" : "Förstora förhandsvisningen"} aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "↙" : "⤢"}</button></div></div>
         <div className="preview-zoom" role="group" aria-label="Zoom för förhandsvisningen">
           <button type="button" aria-label="Zooma ut" disabled={scale <= 0.05} onClick={() => setZoom(Math.max(0.05, scale - 0.1))}>−</button>
           <output className="zoom-value" aria-label="Zoomnivå">{Math.round(scale * 100)} %</output>
           <button type="button" aria-label="Zooma in" disabled={scale >= 2} onClick={() => setZoom(Math.min(2, scale + 0.1))}>+</button>
           <button type="button" className="zoom-actual" onClick={() => setZoom(1)}>100 %</button>
-          <button type="button" className="zoom-fit" aria-pressed={zoom === null} onClick={() => { setZoom(null); stageRef.current?.scrollTo({ top: 0, left: 0 }); }}>Visa hela bladet</button>
+          <button type="button" className="zoom-fit" aria-pressed={zoom === null} onClick={() => { setZoom(null); stageRef.current?.scrollTo({ top: 0, left: 0 }); }}>Anpassa</button>
         </div>
         <div className="preview-canvas" ref={stageRef} tabIndex={0} aria-label="Förhandsvisning av produktblad. Zoomade blad kan scrollas här." onClick={event => {
           const target = event.target as HTMLElement;
