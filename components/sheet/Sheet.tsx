@@ -39,7 +39,7 @@ export function Sheet({ data, imageSrc }: Props) {
 
     <div className="sheet-columns">
       <div className="sheet-column sheet-left" data-column="left">
-        <Section title="Varför bli kock?" field="why">{data.why}</Section>
+        <Section title={data.profession.toLocaleLowerCase("sv") === "kock" ? "Varför bli kock?" : "Om utbildningen"} field="why">{data.why}</Section>
         <Section title="Det här lär du dig" field="learn">{data.learn}</Section>
       </div>
       <div className="sheet-column sheet-right" data-column="right">

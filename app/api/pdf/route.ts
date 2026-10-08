@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
     const origin = new URL(request.url).origin;
-    await page.goto(origin, { waitUntil: "networkidle0" });
+    await page.goto(`${origin}/?exempel=1`, { waitUntil: "networkidle0" });
     // The local prototype's own preview is the source of the printable DOM.
     // A large uploaded image is applied separately to avoid localStorage limits.
     const storedData = { ...data, image: "/reference-hero.jpg" };

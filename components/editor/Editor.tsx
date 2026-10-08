@@ -1,23 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Sheet } from "@/components/sheet/Sheet";
 import { exampleSheet, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
+import { draftKey, initialSheet, LEGACY_STORAGE_KEY, type CatalogEntry } from "@/lib/catalog";
 
-const STORAGE_KEY = "produktbladsapp:kock:lokalt-utkast:v1";
 const GROUPS = ["Omslag", "Innehåll", "Nederdel"] as const;
 
 function shortFieldName(key: string) {
   return textFields.find(field => field.key === key)?.label ?? key;
 }
 
-export function Editor() {
-  const [data, setData] = useState<SheetData>(exampleSheet);
+export function Editor({ entry }: { entry?: CatalogEntry }) {
+  const storageKey = entry ? draftKey(entry.id) : LEGACY_STORAGE_KEY;
+  const [data, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
   const [activeGroup, setActiveGroup] = useState<(typeof GROUPS)[number]>("Omslag");
   const [scale, setScale] = useState(0.82);
   const [overflow, setOverflow] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const stageRef = useRef<HTMLDivElement>(null);
@@ -25,13 +28,13 @@ export function Editor() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed: unknown = JSON.parse(stored);
-        if (isSheetData(parsed)) queueMicrotask(() => setData(parsed));
+        if (isSheetData(parsed)) queueMicrotask(() => { setData(parsed); setHasSaved(true); });
       }
     } catch { /* Corrupt local draft does not block the prototype. */ }
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     const node = stageRef.current;
@@ -58,8 +61,9 @@ export function Editor() {
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(storageKey, JSON.stringify(data));
       setDirty(false);
+      setHasSaved(true);
       setMessage("Utkastet är sparat i den här webbläsaren.");
       return true;
     } catch {
@@ -110,26 +114,34 @@ export function Editor() {
   }
 
   function reset() {
-    if (!window.confirm("Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
-    setData(exampleSheet);
-    localStorage.removeItem(STORAGE_KEY);
+    if (!window.confirm(entry ? "Återställ till ett tomt blad? Ditt sparade lokala blad tas bort." : "Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
+    setData(entry ? initialSheet(entry) : exampleSheet);
+    localStorage.removeItem(storageKey);
     setDirty(false);
-    setMessage("Exempeltexten är återställd.");
+    setHasSaved(false);
+    setMessage(entry ? "Bladet är återställt. Ingen sparad version finns kvar." : "Exempeltexten är återställd.");
   }
 
-  const visibleFields = textFields.filter(field => field.group === activeGroup);
+  const visibleFields = textFields.filter(field => field.group === activeGroup).map(field => {
+    if (entry && field.key === "why") return { ...field, label: "Om utbildningen" };
+    if (entry && field.key === "qrUrl") return { ...field, label: "QR-adress" };
+    return field;
+  });
 
   return <div className="workspace">
     <header className="app-header">
-      <div className="brand"><span className="brand-symbol">✳</span><span>ASTAR <b>STUDIO</b></span></div>
-      <div className="header-center"><span className="header-kicker">PRODUKTBLAD</span><span className="header-title">Kock <span>/</span> Mall 01</span></div>
-      <div className="header-right"><span className="status-dot" /> Lokal prototyp <span className="header-divider" /> {dirty ? "Osparade ändringar" : "Sparat lokalt"}</div>
+      <div className="brand">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="brand-logo" src="/logo_liggande.png" alt="Astar Education" width={784} height={219} />
+      </div>
+      <div className="header-center"><span className="header-kicker">{entry?.school ?? "PRODUKTBLAD"}</span><span className="header-title">{entry?.title ?? "Kock"} <span>/</span> Mall 01</span></div>
+      <div className="header-right"><span className="status-dot" /> Lokal prototyp <span className="header-divider" /> {dirty ? "Osparade ändringar" : hasSaved ? "Sparat lokalt" : "Inte sparat än"}</div>
     </header>
 
     <div className="workspace-body">
       <aside className="editor-panel">
-        <div className="panel-heading"><span className="eyebrow-ui">REDAKTÖR / STEG 1</span><h1>Forma ditt blad</h1><p>Ändra innehållet. Mallens typografi och placering är fasta.</p></div>
-        <div className="prototype-note"><span>i</span><div><strong>Prototyp med exempeldata</strong><br />Utbildningsuppgifter och kontaktuppgifter är hämtade från referensen och behöver faktagranskas.</div></div>
+        <div className="panel-heading"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>← Alla produktblad</Link><span className="eyebrow-ui">{entry ? `${entry.school} · ${entry.program}` : "REDAKTÖR / STEG 1"}</span><h1>Forma ditt blad</h1><p>Ändra innehållet. Mallens typografi och placering är fasta.</p></div>
+        <div className="prototype-note"><span>i</span><div><strong>{entry ? "Fyll i utbildningens innehåll" : "Prototyp med exempeldata"}</strong><br />{entry ? "Kontrollera text, kontaktuppgifter och bild för den valda skolan. Bilden är tills vidare ett exempel." : "Utbildningsuppgifter och kontaktuppgifter är hämtade från referensen och behöver faktagranskas."}</div></div>
         <nav className="editor-tabs" aria-label="Redigeringsdelar">
           {GROUPS.map((group, index) => <button key={group} type="button" className={activeGroup === group ? "active" : ""} onClick={() => setActiveGroup(group)}><span>0{index + 1}</span>{group}</button>)}
         </nav>
@@ -139,9 +151,9 @@ export function Editor() {
           {visibleFields.map(field => <div className={`field ${overflow.includes(field.key) ? "field-error" : ""}`} key={field.key}>
             <div className="field-top"><label htmlFor={field.key}>{field.label}</label>{overflow.includes(field.key) && <span className="overflow-label">FÅR INTE PLATS</span>}</div>
             {field.multiline ? <textarea id={field.key} rows={field.key === "learn" || field.key === "why" ? 6 : 3} value={data[field.key]} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} onChange={event => change(field.key, event.target.value)} />}
-            {field.key === "qrUrl" && <small>Prototypens QR-kod pekar på en testadress.</small>}
+            {field.key === "qrUrl" && <small>{entry ? "Ange rätt webbadress för skolan eller utbildningen, med https://." : "Prototypens QR-kod pekar på en testadress."}</small>}
           </div>)}
-          <div className="editor-bottom-actions"><button type="button" className="text-button" onClick={reset}>Återställ exempeldata</button></div>
+          <div className="editor-bottom-actions"><button type="button" className="text-button" onClick={reset}>{entry ? "Återställ till tomt blad" : "Återställ exempeldata"}</button></div>
         </div>
         <div className="editor-actions">
           {overflow.length > 0 && <div className="overflow-alert"><strong>Innehåll ryms inte på A4</strong><span>{overflow.map(shortFieldName).join(", ")}</span></div>}

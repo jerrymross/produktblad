@@ -39,6 +39,8 @@ Skapa inga Vercel-/Supabase-resurser, koppla inte molnkonton och publicera inte 
 
 ## Verifiering och leverans
 
+Efter varje färdig och verifierad uppdatering: committa projektändringarna och pusha till `origin/main`, enligt användarens instruktion den 8 oktober 2026. Detta ger inte tillstånd att skapa molnresurser eller publicera till Vercel/produktion.
+
 Följ acceptanskriterierna i BYGGPLAN.md. Testa verkliga användarflöden och riskerna i ändringen. För visuella steg: granska preview i browser, rendera export-PDF och jämför med referensen; kontrollera sidantal, A4, typsnitt och geometrin. En lyckad build bevisar inte visuell överensstämmelse.
 
 Rapportera separat: statiska kontroller, lokal browser, lokal exporterad PDF, faktisk Vercel-miljö och Supabase/RLS. Säg inte att något fungerar i Vercel efter enbart lokala prov. Dokumentera saknade resurser och kvarvarande avvikelser. Utöka inte uppdraget till nästa steg utan användarens instruktion.

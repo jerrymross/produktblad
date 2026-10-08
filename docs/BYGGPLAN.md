@@ -2,6 +2,8 @@
 
 Status: steg 1 byggt och lokalt verifierat 7 oktober 2026. Se [VERIFIERING.md](VERIFIERING.md) och [REFERENSMATT.md](REFERENSMATT.md). Nästa steg beställs separat; ingen molnkoppling finns ännu.
 
+Lokal utökning beställd 8 oktober 2026: skolbibliotek från användarens lista, val av skola eller alla produktblad och grön markering när ett blad finns sparat för aktuell mall. Detta är en utökning av den lokala prototypen, inte beställning av steg 2. Skolfilter, isolerade lokala utkast, sparmarkering, återöppning, återställning och befintlig PDF-export ska verifieras.
+
 ## Steg 1 – lokal Kock-mall, redigerare och PDF
 
 Skapa ett lokalt Next.js-projekt med TypeScript. App Router och Node.js för den lokala PDF-routen är tekniska rekommendationer. Välj versioner från aktuell officiell dokumentation vid implementation, lås installerade versioner och spara lockfil. Bevara dokumenten när projektet skapas. Ingen Supabase, inloggning eller Vercel-resurs behövs för detta steg.

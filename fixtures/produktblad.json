@@ -1,0 +1,682 @@
+[
+    {
+        "school":  "Astar Nationellt",
+        "program":  "AF",
+        "title":  "Livsmedel,Styck,slakt,Chark"
+    },
+    {
+        "school":  "Astar Nationellt",
+        "program":  "AF RUB",
+        "title":  "Livsmedel"
+    },
+    {
+        "school":  "Borås",
+        "program":  "AF",
+        "title":  "Kock AF"
+    },
+    {
+        "school":  "Borås",
+        "program":  "Komvux",
+        "title":  "Drifttekniker"
+    },
+    {
+        "school":  "Borås",
+        "program":  "Komvux",
+        "title":  "Hotell och turism bas"
+    },
+    {
+        "school":  "Borås",
+        "program":  "Komvux",
+        "title":  "Installationselektriker"
+    },
+    {
+        "school":  "Borås",
+        "program":  "Komvux",
+        "title":  "Konferensvärd"
+    },
+    {
+        "school":  "Borås",
+        "program":  "Komvux",
+        "title":  "Receptionist"
+    },
+    {
+        "school":  "Bromma",
+        "program":  "AF",
+        "title":  "Byggnadsmålare"
+    },
+    {
+        "school":  "Bromma",
+        "program":  "Komvux",
+        "title":  "Byggnadsmålare"
+    },
+    {
+        "school":  "Eskilstuna",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Eskilstuna",
+        "program":  "AF",
+        "title":  "Lokalvård arbetsmarknadsutbildning"
+    },
+    {
+        "school":  "Eskilstuna",
+        "program":  "Komvux",
+        "title":  "Bagare och konditor"
+    },
+    {
+        "school":  "Eskilstuna",
+        "program":  "Komvux",
+        "title":  "Frukostvärd med lokalvårdsinriktning (kombi)"
+    },
+    {
+        "school":  "Eskilstuna",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Eskilstuna",
+        "program":  "Komvux",
+        "title":  "Restaurang och bageri"
+    },
+    {
+        "school":  "Gärdet",
+        "program":  "Komvux",
+        "title":  "Bagare och konditor"
+    },
+    {
+        "school":  "Gärdet",
+        "program":  "Komvux",
+        "title":  "Cafe och Konferenskock"
+    },
+    {
+        "school":  "Gärdet",
+        "program":  "Komvux",
+        "title":  "Hotell och turism - Konferens"
+    },
+    {
+        "school":  "Gärdet",
+        "program":  "Komvux",
+        "title":  "Hotell och turism - Reception"
+    },
+    {
+        "school":  "Gärdet",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Göteborg",
+        "program":  "AF",
+        "title":  "Byggnadsplåtsslagare"
+    },
+    {
+        "school":  "Göteborg",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Helsingborg",
+        "program":  "AF",
+        "title":  "Lokalvård"
+    },
+    {
+        "school":  "Helsingborg",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "AF",
+        "title":  "Service AF"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Administratör Bas"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Bagare och konditori"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Butikssäljare påbyggnad"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Handel Bas"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Hotell och konferens bas"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "HR-administratör påbyggnad"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Konferensvärd"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Lager och logistik påbyggnad"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Lokalvård"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Receptionist"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Servitör"
+    },
+    {
+        "school":  "Jönköping",
+        "program":  "Komvux",
+        "title":  "Starta eget"
+    },
+    {
+        "school":  "Kristianstad",
+        "program":  "AF",
+        "title":  "Köksbiträde/kock"
+    },
+    {
+        "school":  "Kristianstad",
+        "program":  "AF",
+        "title":  "Lokalvård Rekryteringsutbildning"
+    },
+    {
+        "school":  "Kristianstad",
+        "program":  "AF",
+        "title":  "Restaurang och storhushåll AF"
+    },
+    {
+        "school":  "Linköping",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Betongarbetare"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Betongarbetare Lappland"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Byggnadsmålare"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Golvläggare"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Golvläggare Lappland"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Hotell \u0026 Turism Bas"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Kock Femkanten"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Murare"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Service- och installationselektriker"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Träarbetare"
+    },
+    {
+        "school":  "Luleå",
+        "program":  "Komvux",
+        "title":  "Träarbetare Lappland"
+    },
+    {
+        "school":  "Malmö",
+        "program":  "AF",
+        "title":  "Byggnadsmåleri"
+    },
+    {
+        "school":  "Malmö",
+        "program":  "AF",
+        "title":  "Fastighetsskötare"
+    },
+    {
+        "school":  "Malmö",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Malmö",
+        "program":  "Komvux",
+        "title":  "Elektriker"
+    },
+    {
+        "school":  "Malmö",
+        "program":  "Komvux",
+        "title":  "Fastighetsskötare"
+    },
+    {
+        "school":  "Malmö",
+        "program":  "Komvux",
+        "title":  "VVS-montör"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "Komvux",
+        "title":  "Bagare konditor i språkkombination"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "Komvux",
+        "title":  "Bagare och konditor"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "Komvux",
+        "title":  "Barn och fritidsprogrammet"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "Komvux",
+        "title":  "Installationselektriker"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Norrköping",
+        "program":  "Komvux",
+        "title":  "Kock i språkkombination"
+    },
+    {
+        "school":  "Nyköping",
+        "program":  "Komvux",
+        "title":  "Installation/distributionselektriker"
+    },
+    {
+        "school":  "Nässjö",
+        "program":  "Komvux",
+        "title":  "Bagare och konditor"
+    },
+    {
+        "school":  "Nässjö",
+        "program":  "Komvux",
+        "title":  "Bagare och konditori"
+    },
+    {
+        "school":  "Nässjö",
+        "program":  "Komvux",
+        "title":  "Hotell och konferens bas"
+    },
+    {
+        "school":  "Nässjö",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Nässjö",
+        "program":  "Komvux",
+        "title":  "Lokalvård"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "AF",
+        "title":  "Industriteknisk utbildning AF Skellefteå"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Fastighetsskötare"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Florist"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Frisöraspirant"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Handel och försäljning"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Industrielektriker"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Service- och Installationselektriker"
+    },
+    {
+        "school":  "Skellefteå",
+        "program":  "Komvux",
+        "title":  "Träarbetare"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "AF",
+        "title":  "Lokalvård AF"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "AF",
+        "title":  "Vårdbiträde AF"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "AF RUB",
+        "title":  "Serviceassistent"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Barnskötare"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Butikssäljare"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Drifttekniker IT"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Ekonomi- och redovisningsassistent"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Elevassistent"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Fastighetsskötare"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Fastighetstekniker"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Fastighetsvärd"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Frisöraspirant"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Företagssäljare"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "HR-assistent"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Inköpsassistent"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Lagerarbetare"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Larm- och säkerhetstekniker"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Marknadsassistent"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Service- och installationselektriker"
+    },
+    {
+        "school":  "Solna Centrum",
+        "program":  "Komvux",
+        "title":  "Undersköterska"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "AF",
+        "title":  "Kock AF"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "AF",
+        "title":  "Servering AF"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "AF",
+        "title":  "Vårdbiträde AF"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "Komvux",
+        "title":  "Bygg och anläggning"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "Komvux",
+        "title":  "Hotell \u0026 Reception Bas"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "Komvux",
+        "title":  "Plattsättare"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "Komvux",
+        "title":  "Service- och Installationselektriker"
+    },
+    {
+        "school":  "Sundsvall",
+        "program":  "Komvux",
+        "title":  "Träarbetare"
+    },
+    {
+        "school":  "Tyresö",
+        "program":  "AF",
+        "title":  "VVS-montör Stockholm AF"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "AF",
+        "title":  "Industriteknisk utbildning AF Umeå"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Bageri och konditori"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Betongarbetare"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "CNC-operatör"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Elektriker"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Fastighetsskötare"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Frisöraspirant"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Handel och försäljning"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Hotell \u0026 Turism"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Kock"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Murare"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Plattsättare"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Träarbetare"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "VVS-montör"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Yrkessvetsare"
+    },
+    {
+        "school":  "Umeå",
+        "program":  "Komvux",
+        "title":  "Yrkessvetsare påbyggnad"
+    },
+    {
+        "school":  "Uppsala",
+        "program":  "AF",
+        "title":  "Vårdbiträde AF arbetsmarknadsutbildning"
+    },
+    {
+        "school":  "Västerås",
+        "program":  "AF",
+        "title":  "Kock AF"
+    },
+    {
+        "school":  "Västerås",
+        "program":  "Komvux",
+        "title":  "Distributionselektriker"
+    },
+    {
+        "school":  "Västerås",
+        "program":  "Komvux",
+        "title":  "Fastighetsskötare"
+    },
+    {
+        "school":  "Västerås",
+        "program":  "Komvux",
+        "title":  "Frukostvärd med lokalvårdsinriktning (kombi)"
+    },
+    {
+        "school":  "Västerås",
+        "program":  "Komvux",
+        "title":  "Service- och installationselektriker"
+    },
+    {
+        "school":  "Västerås",
+        "program":  "Komvux",
+        "title":  "VVS-montör"
+    },
+    {
+        "school":  "Växjö",
+        "program":  "AF",
+        "title":  "VVS Isolatör"
+    },
+    {
+        "school":  "Örebro",
+        "program":  "AF",
+        "title":  "Vårdbiträde AF"
+    }
+]

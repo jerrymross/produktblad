@@ -37,3 +37,25 @@ Mall `kock-1.0.1-prototyp` använder `public/logo_liggande.png`, utsedd av anvä
 - Kontrollfiler finns lokalt i den Git-ignorerade mappen `work/logo/`.
 
 Ingen Vercel-miljö eller Supabase/RLS har provats i denna ändring.
+
+## Skolbibliotek och konsekvent logga – lokal kontroll 8 oktober 2026
+
+Startsidan och `/produktblad` visar användarens underlag: 136 unika poster, 24 skolor, från 193 källrader. Mallversionen är `kock-1.0.2-prototyp`. Den gemensamma standardloggan används i bibliotekets och redigerarens header, browserikon, förhandsvisning och PDF. Den tidigare ritade Studio-symbolen och SVG-ikonen har tagits bort.
+
+| Kontroll | Resultat |
+|---|---|
+| Typkontroll, lint, produktionsbuild | Godkända. |
+| Skolval och Alla produktblad | Alla 136 poster visas; Umeå-valet visar 16 poster från just Umeå. Sökning på Kock ger rätt post. |
+| Sparmarkering | Initialt ingen grön markering. Spara utkast på Umeå/Kock ger grönt för just den posten och aktuell mall. |
+| Separata utkast | Jönköping/Kock börjar tomt även efter sparning av Umeå/Kock. Olika ingresser sparas och återöppnas utan att blandas. |
+| Omladdning | Sparad ingress finns kvar efter omladdning. Biblioteket visar rätt antal sparade blad. |
+| Återställning | Återställ till tomt blad tar bort den postens lokala sparning och gröna markering; andra skolans sparning finns kvar. |
+| Browser och logga | Granskat i lokal Chrome vid 1600 och 390 px bredd. Biblioteket har ingen horisontell sidscroll på mobil. Samma 784 × 219 px logga laddas i header och produktblad. |
+| PDF-flöde | Exempelbladets exportknapp och direkt API-anrop gav HTTP 200 efter att startsidan ändrats till bibliotek. PDF-routen öppnar nu `/?exempel=1` som utskriftskälla. |
+| Export-PDF | En stående A4, 594,96 × 841,92 pt. Fyra inbäddade fontdelmängder samt standardloggans bild finns. Renderad med Poppler och jämförd med referensen och browserbilden. Tidigare dokumenterade typografiska avvikelser och test-QR kvarstår i exempelbladet. |
+
+Kontrollfiler finns i Git-ignorerade `work/`, bland annat `check-catalog.mjs`, browserbilder och `catalog-example.pdf`. Kontrollen gjordes på port 3001 eftersom port 3000 användes av en annan projektkopia på datorn.
+
+Biblioteksposter är underlag för blad, inte 136 färdiga PDF:er. Nya poster har inga påhittade utbildningsfakta eller kontakter. Grönt betyder ett giltigt sparat lokalt utkast, enligt användarens beslut; ingen godkännandeprocess infördes. Utkastens nyckel innehåller skol-/utbildningsidentitet och mallversion. Kock-exempelutkastets tidigare nyckel behålls separat. Inget automatiskt byte av skola eller kopiering av dess uppgifter sker.
+
+Ingen Vercel-miljö eller Supabase/RLS har provats. Skolfiltret är endast lokal navigation och innebär ingen serverbaserad behörighetskontroll; steg 2 väntar fortsatt.
