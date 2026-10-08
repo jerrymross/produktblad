@@ -78,3 +78,14 @@ På desktop håller redigerarens arbetsyta browserfönstrets höjd. Förhandsvis
 | Visuell PDF-kontroll | Exporten renderades med Poppler. Rasterjämförelse mot föregående export vid samma 1200 px skala gav ingen pixelavvikelse. Tidigare dokumenterade avvikelser mot referensen är oförändrade. |
 
 Browserflödet finns lokalt i `work/check-zoom.mjs`; browserbilder, `zoom-export.pdf` och `zoom-pdf.png` ligger i samma Git-ignorerade mapp. Vercel och Supabase/RLS har inte provats i denna uppdatering.
+
+### Zoomkontroller till höger – 8 oktober 2026
+
+Zoomkontrollerna flyttades till en separat 80 px bred kolumn till höger om previewytan. Den tidigare kontrollraden ovanför bladet är borttagen, vilket frigör 54 px höjd på desktop. Verktygen ligger kvar när ett förstorat blad scrollas.
+
+- Typkontroll, lint och build passerade.
+- Browserflödet kördes mot lokal produktionsbuild på port 3001. Kontrollerna ligger till höger om previewytan. Helsida ryms utan scroll vid 1440 × 900 (cirka 57 %) och 1024 × 768 (cirka 45 %), jämfört med tidigare 52 % respektive 40 %.
+- Mobil 390 × 844 granskades: samma högerspalt, hela bladet inom previewytan och ingen horisontell sidscroll.
+- Zoom, återgång till helsida, separat redigerarscroll och overflowspärr vid 5 % passerade.
+- PDF från 110 % zoom: HTTP 200, en stående A4 om 594,96 × 841,92 pt och fyra inbäddade fontdelmängder. Poppler-renderingen är pixelidentisk med exporten före flytten av zoomkontrollerna.
+- Vercel och Supabase/RLS har inte provats.
