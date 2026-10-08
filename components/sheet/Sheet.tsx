@@ -1,5 +1,5 @@
 import { QRCodeSVG } from "qrcode.react";
-import type { SheetData } from "@/lib/sheet";
+import { TEMPLATE_VERSION, type SheetData } from "@/lib/sheet";
 
 type Props = {
   data: SheetData;
@@ -14,20 +14,16 @@ function Section({ title, field, children }: { title: string; field: keyof Sheet
 }
 
 function AstarMark() {
-  return <div className="astar-mark" aria-label="Astar Education, schematisk prototyplogotyp">
-    <svg className="astar-symbol" viewBox="0 0 44 44" aria-hidden="true">
-      <g fill="none" stroke="#ff4b45" strokeWidth="2.5" strokeLinecap="round">
-        <path d="M22 2v10M22 32v10M2 22h10M32 22h10M7.9 7.9l7.1 7.1M29 29l7.1 7.1M36.1 7.9L29 15M15 29l-7.1 7.1" />
-        <path d="m17 8 3 6M27 30l-3 6M8 17l6 3M30 24l6 3M27 8l-3 6M20 30l-3 6M36 17l-6 3M14 24l-6 3" />
-      </g>
-    </svg>
-    <span className="astar-word">ASTAR<small>EDUCATION</small></span>
+  return <div className="astar-mark">
+    {/* Use the original file directly in both preview and PDF. */}
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img className="astar-logo" src="/logo_liggande.png" alt="Astar Education" />
   </div>;
 }
 
 export function Sheet({ data, imageSrc }: Props) {
   const qrValue = /^https?:\/\//i.test(data.qrUrl) ? data.qrUrl : "https://example.org/produktblad";
-  return <article className="sheet-page" data-template="kock-1.0.0-prototyp" aria-label="Produktblad, en A4-sida">
+  return <article className="sheet-page" data-template={TEMPLATE_VERSION} aria-label="Produktblad, en A4-sida">
     <div className="sheet-hero">
       {/* The local prototype uses an image extracted from the supplied PDF. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}

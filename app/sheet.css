@@ -71,10 +71,8 @@
 .sheet-about strong { font-weight: 700; }
 .sheet-footer { display: grid; grid-template-columns: 154pt 70pt 125pt 125pt; align-items: start; margin-top: 20pt; font: 400 7.8pt/1.1 "Sheet Inter", Arial, sans-serif; }
 .sheet-logo-group { padding-right: 10pt; }
-.astar-mark { height: 31pt; display: flex; align-items: center; color: #2258a2; }
-.astar-symbol { width: 35pt; height: 35pt; flex: 0 0 auto; }
-.astar-word { position: relative; font: 700 29pt/1 "Sheet Inter", Arial, sans-serif; letter-spacing: -2.4pt; }
-.astar-word small { display: block; text-align: right; font: 700 5.3pt/1 "Sheet Inter", Arial, sans-serif; letter-spacing: 0; }
+.astar-mark { height: 31pt; display: flex; align-items: center; justify-content: center; }
+.astar-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
 .sheet-address { margin-top: 3pt; text-align: center; font: 400 7pt/1.1 "Sheet Inter", Arial, sans-serif; white-space: nowrap; }
 .sheet-qr { min-height: 44pt; border-left: .4pt solid #d4deed; border-right: .4pt solid #d4deed; display: flex; justify-content: center; align-items: center; }
 .sheet-contact { padding: 11pt 7pt 0 16.5pt; display: flex; flex-direction: column; overflow-wrap: anywhere; }

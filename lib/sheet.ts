@@ -1,4 +1,4 @@
-export const TEMPLATE_VERSION = "kock-1.0.0-prototyp";
+export const TEMPLATE_VERSION = "kock-1.0.1-prototyp";
 
 export type SheetData = {
   eyebrow: string;

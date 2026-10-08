@@ -38,6 +38,7 @@ npm run build
 - [AGENTS.md](AGENTS.md): instruktioner för fortsatt arbete med Codex.
 - [Kock.pdf](references/Kock.pdf): oförändrad originalreferens. `public/reference-hero.jpg` är dess inbäddade foto utlyft till den lokala prototypen.
 - `public/fonts/`: lokala Inter- och Lora-filer med respektive licenstext. Referens-PDF:ens delmängdsfonter har inte återanvänts som appfont.
+- `public/logo_liggande.png`: standardloggan för produktbladet, enligt användarens val. Den används i både förhandsvisning och PDF-export med bibehållna proportioner. Placering och storlek styrs av mallen i `app/sheet.css`.
 
 ## Fortsättning
 

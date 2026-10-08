@@ -15,10 +15,10 @@ Mätt lokalt den 7 oktober 2026 från `references/Kock.pdf` med PDF-objekt/textk
 | Fler högerrubriker | ”Utbildningsform.” y=414,56; ”Vem” y=475,76; ”Ekonomisk” y=590,96 | flödesplacerade i höger spalt |
 | Nederdelens text | ”Astar” x=57,38, y=714,74 | vänster 57 pt, blocktopp 707,7 pt |
 | Kontakter | ”LenaMaria” x=298,00, y=781,66; ”Amanda” x=422,11, y=781,51 | separata fasta kontaktkolumner |
-| Adress | ”Industrivägen” x=83,99, y=808,96 | under schematisk logotyp |
+| Adress | ”Industrivägen” x=83,99, y=808,96 | under standardloggan, i samma fasta adressyta |
 
 Fontnamn i PDF: Lora Bold, Inter Light/Regular/Bold och en MyriadPro-post. Färg för Lora-rubrikobjekt: blå ungefär RGB (0,141, 0,231, 0,596), korall ungefär (1,0, 0,357, 0,302). Prototypen använder `#243b98` och `#ff5b4d`. Inbäddade fontnamn och koordinater bevisar inte rätt till originalets fullständiga fontfiler. Prototypen använder öppet licensierade Lora/Inter-filer från Fontsource, med licenser i `public/fonts/`.
 
-Fotoextraktionen gjordes direkt från referens-PDF:ens enda bildobjekt, `Im0.jpg`. Den filen används lokalt för att pröva layouten. Rätt att distribuera originalbilden vidare behöver fastställas före publicering. Logotypen i prototypen är en schematisk SVG/textuppbyggnad, inte originalets godkända logofil. QR-koden är funktionell men pekar på en tydligt angiven testadress. Fullständig Astar-färgprofil, originalbildens användningsrätt, logotypfil och eventuell tryckspecifikation saknas fortfarande.
+Fotoextraktionen gjordes direkt från referens-PDF:ens enda bildobjekt, `Im0.jpg`. Den filen används lokalt för att pröva layouten. Rätt att distribuera originalbilden vidare behöver fastställas före publicering. Från `kock-1.0.1-prototyp` används användarens standardlogga `public/logo_liggande.png` i stället för den schematiska SVG/textloggan. Loggan ryms proportionellt i en centrerad yta om 144 × 31 pt. QR-koden är funktionell men pekar på en tydligt angiven testadress. Fullständig Astar-färgprofil, originalbildens användningsrätt och eventuell tryckspecifikation återstår att fastställa.
 
-Måttabellen är versionsbunden till `kock-1.0.0-prototyp`. Vid senare mallversion ska mätning och visuell avvikelse granskas på nytt.
+Ursprungliga måttabellen gäller `kock-1.0.0-prototyp`. `kock-1.0.1-prototyp` byter endast logotyp och dess proportionella inpassning; övriga layoutvärden behålls. Den lokala prototypen har ännu inget versionsarkiv för äldre mallrenderare.
