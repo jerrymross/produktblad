@@ -237,4 +237,4 @@ Lint startades men avslutades utan resultat efter att både full och riktad kör
 
 ## Astar Studio-logga – 9 oktober 2026
 
-Sidomenyn använder användarens astar-studio-logo-staende.png med originalets proportioner 1186 × 1326 och befintligt vitt CSS-filter. Alt-text och bibliotekslänkens namn är Astar Studio. Produktionsbuild inklusive TypeScript godkänd. Bildladdning verifierad lokalt i Chrome vid 1440 och 390 px, desktop visuellt granskad. Riktad lint fastnade utan resultat och avbröts. Produktbladets logga/renderare är oförändrad; ingen ny PDF- eller molnverifiering.
+Sidomenyn använder användarens astar-studio-logo-staende.png med originalets proportioner 1186 × 1326 och befintligt vitt CSS-filter. Alt-text och bibliotekslänkens namn är Astar Studio. Produktionsbuild inklusive TypeScript godkänd. Bildladdning verifierad lokalt i Chrome vid 1440 och 390 px, desktop visuellt granskad. Riktad lint för AppSidebar.tsx avslutades med exitkod 0. Produktbladets logga/renderare är oförändrad; ingen ny PDF- eller molnverifiering.
