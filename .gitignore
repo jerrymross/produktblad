@@ -4,3 +4,8 @@ node_modules/
 !.env.example
 *.tsbuildinfo
 work/
+.vercel/
+.invite-*
+.test-password
+
+.vercel

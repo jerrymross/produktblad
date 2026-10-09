@@ -249,3 +249,13 @@ Sidomenyn använder användarens astar-studio-logo-staende.png med originalets p
 - Lokal PDF-export via editor-knappen gav HTTP 200. Export med bibliotekets bild gav en A4-sida och inbäddade fonter. PDF rasteriserad vid 1200 px och granskad. Pixelidentisk med tidigare två-radiga export för samma bild och innehåll; A4-mall och referens Kock.pdf oförändrade.
 - Biblioteket sparas endast i aktuell webbläsare via IndexedDB; inga bilder delas ännu mellan datorer/användare. Testbilderna användes i isolerad browserprofil, inte förinstallerade biblioteksposter.
 - Ingen Vercel-miljö, Supabase eller RLS ändrad/verifierad.
+
+## Neon och publicerad Vercel-app – 9 oktober 2026
+
+Neon produktblad-db skapad i Frankfurt, Free-plan. Skilda scheman och begränsade roller för produktion (studio) och utveckling/preview (studio_dev). Publicerad på https://produktblad.vercel.app.
+
+Lokalt: lint utan varningar och produktionsbygge godkänt. Browser: text ändrad i Kock Eskilstuna, sparad version 1 och återöppnad med bevarad text. Integrationstest godkänt för inloggning, stängd registrering, anonym avvisning, gemensam sparning, gamla revisioner, konkurrerande lås, versionshistorik, skolbehörigheter, inbjudningar, privat bildåtkomst, PDF och utloggning. Direkt SQL-test bekräftade RLS, skyddad central roll och oföränderlig historik.
+
+Live: samma integrationstest godkänt mot produktblad.vercel.app, inklusive Vercels Chromium-baserade PDF-export. Skol-ID:n transporteras som base64url i API-sökvägar efter ett upptäckt problem med dubbelkodade specialtecken på Vercel. Beständiga katalog- och utkast-ID:n är oförändrade. Testdata skapades i den nya tomma databasen; rensning väntar på godkännande. Ägarens privata engångsinbjudan har inte använts.
+
+PDF lokalt renderad och visuellt granskad som en sida A4 med svensk text. Fasta A4-renderaren och layoutreferensen bevarade. Inga utbildningsfakta eller skolkontakter har hämtats automatiskt. Godkännande- och utskicksflöde har inte införts.

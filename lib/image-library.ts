@@ -1,4 +1,5 @@
 import { catalog } from "@/lib/catalog";
+import {cloud,jsonRequest} from "@/lib/cloud-client";
 
 export const educationKey = (title: string) => title.trim().replace(/\s+/g, " ").toLocaleLowerCase("sv");
 export const educations = [...new Map(catalog.map(entry => [educationKey(entry.title), { id: educationKey(entry.title), title: entry.title.trim() }])).values()].sort((a, b) => a.title.localeCompare(b.title, "sv"));
@@ -14,7 +15,7 @@ async function database() {
   });
 }
 
-export async function readLibrary(): Promise<LibraryImage[]> {
+export async function readLegacyLibrary(): Promise<LibraryImage[]> {
   const db = await database();
   try {
     return await new Promise((resolve, reject) => {
@@ -26,19 +27,13 @@ export async function readLibrary(): Promise<LibraryImage[]> {
 }
 
 async function mutate(image: LibraryImage | string) {
-  const db = await database();
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction("images", "readwrite");
-      const store = tx.objectStore("images");
-      if (typeof image === "string") store.delete(image); else store.put(image);
-      tx.oncomplete = () => resolve();
-      tx.onabort = tx.onerror = () => reject(new Error("Bilden kunde inte sparas. Kontrollera webbläsarens lagringsutrymme."));
-    });
+    await cloud("/api/images",jsonRequest(typeof image==="string"?"DELETE":"POST",typeof image==="string"?{id:image}:image));
     window.dispatchEvent(new Event(eventName));
     try { localStorage.setItem(eventName, crypto.randomUUID()); } catch { /* Same-tab updates still work. */ }
-  } finally { db.close(); }
 }
+
+export async function readLibrary():Promise<LibraryImage[]>{return (await cloud<{images:LibraryImage[]}>("/api/images")).images;}
+export async function importLegacyLibrary(){const local=await readLegacyLibrary();const current=await readLibrary();let count=0;for(const image of local){if(!current.some(item=>item.id===image.id)){await mutate(image);count++;}}return count;}
 
 export function subscribeLibrary(refresh: () => void) {
   const storage = (event: StorageEvent) => { if (event.key === eventName) refresh(); };

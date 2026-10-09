@@ -4,7 +4,7 @@ import "./sheet.css";
 
 export const metadata: Metadata = {
   title: "Astar | Produktblad",
-  description: "Skolornas produktblad med lokala utkast och A4-export.",
+  description: "Skolornas gemensamma produktblad med säker sparning och A4-export.",
   icons: { icon: { url: "/logo_liggande.png", type: "image/png" } },
 };
 

@@ -4,10 +4,16 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { ImageLibrary } from "@/components/images/ImageLibrary";
+import {cloud} from "@/lib/cloud-client";
+import {createAuthClient} from "better-auth/react";
+import {useRouter} from "next/navigation";
 
 export function AppSidebar({ dirty = false, example = false, currentTitle = "Kock" }: { dirty?: boolean; example?: boolean; currentTitle?: string }) {
+  const router=useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
   const [opened, setOpened] = useState(false);
+  const [admin,setAdmin]=useState(false);
+  useEffect(()=>{void cloud<{admin:boolean}>("/api/me").then(profile=>setAdmin(profile.admin)).catch(()=>undefined);},[]);
   function openSettings() { setOpened(true); dialog.current?.showModal(); }
   useEffect(() => {
     const open = () => { setOpened(true); dialog.current?.showModal(); };
@@ -26,12 +32,14 @@ export function AppSidebar({ dirty = false, example = false, currentTitle = "Koc
         <Link href="/?exempel=1" className={example ? "selected" : ""} title="Öppna Mall 01 med exempeldata" onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h10l4 4v16H5zM8 9h8M8 13h3v5H8zM14 13h2M14 17h2" /></svg>Mallar</Link>
         <button type="button" onClick={openSettings}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 1-2h4l1 2 3 2 2 1-1 4 1 4-2 1-3 2-1 3h-4l-1-3-3-2-2-1 1-4-1-4 2-1z" /><circle cx="12" cy="10" r="3" /></svg>Inställningar</button>
       </nav>
-      <span className="sidebar-local" title="Utkast sparas i den här webbläsaren">Lokalt</span>
+      {admin&&<Link className="sidebar-account-link" href="/accounts" onClick={event=>{if(!canLeave())event.preventDefault();}}>Bjud in kollega</Link>}
+      <button type="button" className="sidebar-signout" onClick={()=>{if(canLeave())void createAuthClient().signOut().then(()=>{router.push("/login");router.refresh();});}}>Logga ut</button>
+      <span className="sidebar-local" title="Utkast sparas i det gemensamma biblioteket">Gemensamt bibliotek</span>
     </aside>
     <dialog ref={dialog} className="settings-dialog image-settings-dialog" aria-labelledby="settings-title">
       <div className="image-settings-header"><div><span className="eyebrow-ui">INSTÄLLNINGAR</span><h2 id="settings-title">Bildbibliotek</h2></div><form method="dialog"><button className="dialog-close">Stäng</button></form></div>
       {opened && <ImageLibrary currentTitle={currentTitle} />}
-      <details className="local-settings-info"><summary>Om lokal sparning och återställning</summary><p>Utkast sparas på den här datorn, i den här webbläsaren. Använd Spara utkast eller Ctrl+S / ⌘S. Hela bladet kan återställas under Om mallen & fler alternativ i redigeraren.</p></details>
+      <details className="local-settings-info"><summary>Om sparning och återställning</summary><p>Utkast sparas i det gemensamma biblioteket. Använd Spara utkast eller Ctrl+S / ⌘S. Versionshistoriken behålls när du återställer ett blad.</p></details>
     </dialog>
   </>;
 }

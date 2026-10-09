@@ -21,6 +21,8 @@ references/Kock.pdf är en oföränderlig layoutreferens. Redigera eller ersätt
 
 ## Teknisk riktning
 
+Aktuell beställning 9 oktober 2026: Neon Postgres ersätter Supabase för den färdiga molnkopplingen. Better Auth sköter inloggning, privata medier lagras i Neon och serverns begränsade databasroll använder RLS. Se docs/NEON.md. Äldre Supabase-instruktioner nedan ska tillämpas på motsvarande säkerhetsprinciper, inte som krav att lägga till ännu en databas.
+
 Godkänt: Next.js, TypeScript, Vercel, Supabase Postgres/Auth/Storage. Rekommendation: App Router, återanvändbar mallrenderare, lokala exempeldata i steg 1 och Node.js för framtida PDF-route. Kontrollera aktuella officiella dokument innan versionsberoende implementation. Spara exakta valda beroendeversioner och lockfil. Paketinstallation ingår först när ett implementationssteg beställs.
 
 Bevara dessa dokument vid scaffolding. Projektroten är den öppnade mappen med README och AGENTS.md; skapa inte oavsiktligt ett andra utvecklingsprojekt i en undermapp. Anpassa framtida struktur efter behov utan att blanda redigerardata och exportfiler.

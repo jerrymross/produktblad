@@ -1,3 +1,34 @@
+# Produktblad – gemensamt skolbibliotek
+
+Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder, inloggning, skolmedlemskap, redigeringslås och versionshistorik sparas i databasen. Preview och A4-export använder samma bladkomponent och en sparad, fryst version.
+
+Öppna https://produktblad.vercel.app. Första administratören använder den privata engångsinbjudan och väljer sitt eget lösenord. Därefter kan administratören skapa inbjudningslänkar under **Bjud in kollega**. Ingen e-post skickas automatiskt. Skolredaktörer får endast åtkomst till sina tilldelade skolor. Offentlig registrering är avstängd.
+
+**Spara utkast** sparar gemensamt. **Versionshistorik** låter dig läsa in en äldre version och spara den som en ny. Endast en redigeringssession åt gången kan spara ett blad. Låset förnyas var 30:e sekund och löper ut efter 120 sekunder. Om låset förloras behålls osparade ändringar i det öppna fönstret.
+
+Tidigare lokala utkast och bilder flyttas inte automatiskt från andra datorer. Öppna den gamla webbläsaren på samma adress och använd **Importera mina lokala utkast** i biblioteket respektive bildbibliotekets importknapp. Befintliga molnutkast skrivs inte över av importen. Inga utbildningstexter eller skolkontakter har fyllts i automatiskt.
+
+## Utveckling
+
+```powershell
+npm ci
+npm run dev
+```
+
+Lokal utveckling kräver `.env.local` med `APP_DATABASE_URL`, `BETTER_AUTH_SECRET` och `BETTER_AUTH_URL=http://localhost:3000`. Använd aldrig produktionsdatabasen i lokal utveckling. Se [Neon-installation och drift](docs/NEON.md) för migrationer, konton och miljöer.
+
+```powershell
+npm run lint
+npm run typecheck
+npm run build
+```
+
+På Windows använder PDF-exporten installerad Chrome/Edge eller `PDF_BROWSER_PATH`. På Vercel används paketerad Chromium. Export kräver en giltig QR-adress och att texten ryms inom den fasta A4-mallen.
+
+## Historik: lokal prototyp före Neon-anslutningen
+
+Texten nedan beskriver tidigare steg och deras dåvarande begränsningar. Den aktuella molnfunktionen beskrivs ovan och i NEON.md.
+
 # Produktbladsapp – lokal prototyp av Kock-mallen
 
 En körbar svensk redigerare för ett stående A4-produktblad med ett lokalt skolbibliotek. Grunden är **steg 1** i [byggplanen](docs/BYGGPLAN.md): Kock-mall, separata text- och bildfält, lokal utkastssparning, förhandsvisning, varning vid överfull text och verklig PDF-export. Skolbiblioteket beställdes som en lokal utökning den 8 oktober 2026. Steg 2 med databas och behörigheter är fortfarande pausat.

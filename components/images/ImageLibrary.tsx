@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { deleteLibraryImage, educationKey, educations, uploadLibraryImage } from "@/lib/image-library";
+import { deleteLibraryImage, educationKey, educations, uploadLibraryImage,importLegacyLibrary } from "@/lib/image-library";
 import { useImageLibrary } from "./useImageLibrary";
 
 export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string }) {
@@ -29,7 +29,7 @@ export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string 
   }
   return <section className="image-library" aria-label="Bildbibliotek">
     <p>Två bildvarianter per utbildning. Samma utbildningsnamn delar bilder mellan skolorna.</p>
-    <p className="library-local-note">Bilderna sparas på den här datorn, i den här webbläsaren.</p>
+    <p className="library-local-note">Gemensamma bilder för alla skolor. Central administration kan ladda upp och ersätta bilder.</p><button type="button" className="text-button" disabled={busy} onClick={()=>{setBusy(true);void importLegacyLibrary().then(count=>setMessage(`${count} lokala bilder importerades. Befintliga gemensamma bilder behölls.`)).catch(error=>setMessage(error.message)).finally(()=>setBusy(false));}}>Importera mina tidigare lokala bilder</button>
     {loading ? <p role="status">Läser bildbiblioteket …</p> : error ? <p role="alert">{error}</p> : <>
       <div className="image-library-stats"><strong>{complete} av {educations.length} kompletta</strong><span>{educations.length * 2 - images.length} bilder saknas</span></div>
       <div className="field"><label htmlFor="manage-education">Utbildning att ladda upp till</label><select id="manage-education" disabled={busy} value={selected} onChange={event => { setSelected(event.target.value); setMessage(""); }}>{educations.map(item => <option key={item.id} value={item.id}>{item.title} · {count(item.id)}/2 bilder</option>)}</select></div>

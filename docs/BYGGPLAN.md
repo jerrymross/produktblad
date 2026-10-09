@@ -1,3 +1,5 @@
+Aktuell uppdatering 9 oktober 2026: användaren har beställt full Neon-anslutning. Den är implementerad med Neon Postgres, Better Auth, privata medier, skolbehörigheter, versionshistorik och atomiska redigeringslås. Se [NEON.md](NEON.md). Nedanstående text bevarar den ursprungliga stegplanen och tidigare teknikval.
+
 # Byggplan och acceptanskriterier
 
 Status: steg 1 byggt och lokalt verifierat 7 oktober 2026. Se [VERIFIERING.md](VERIFIERING.md) och [REFERENSMATT.md](REFERENSMATT.md). Nästa steg beställs separat; ingen molnkoppling finns ännu.

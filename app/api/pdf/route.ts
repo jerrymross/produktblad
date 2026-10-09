@@ -1,77 +1,37 @@
-import { existsSync } from "node:fs";
+import {existsSync} from "node:fs";
 import puppeteer from "puppeteer-core";
-import { isSheetData } from "@/lib/sheet";
-import { measureSheetOverflow } from "@/lib/overflow";
-import { EXAMPLE_STORAGE_KEY } from "@/lib/catalog";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-function findBrowser(): string | null {
-  const candidates = [
-    process.env.PDF_BROWSER_PATH,
-    "C:/Program Files/Google/Chrome/Application/chrome.exe",
-    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-    "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
-  ];
-  return candidates.find((candidate): candidate is string => Boolean(candidate && existsSync(candidate))) ?? null;
-}
-
-export async function POST(request: Request) {
-  const body = await request.text();
-  if (body.length > 7_100_000) return new Response("Bilden eller texten är för stor.", { status: 413 });
-  let unknownData: unknown;
-  try { unknownData = JSON.parse(body); } catch { return new Response("Ogiltigt innehåll.", { status: 400 }); }
-  if (!isSheetData(unknownData)) return new Response("Bladets fält är ogiltiga.", { status: 400 });
-  const data = unknownData;
-  if (!(data.image === "/reference-hero.jpg" || /^data:image\/(jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(data.image))) {
-    return new Response("Bildformatet stöds inte.", { status: 400 });
-  }
-  if (!/^https?:\/\//i.test(data.qrUrl)) return new Response("QR-adressen måste börja med http eller https.", { status: 400 });
-  const executablePath = findBrowser();
-  if (!executablePath) return new Response("Lokal webbläsare för PDF saknas. Ange PDF_BROWSER_PATH.", { status: 503 });
-
-  let browser;
-  try {
-    browser = await puppeteer.launch({ executablePath, headless: true, args: ["--no-sandbox", "--disable-gpu"] });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 1 });
-    const origin = new URL(request.url).origin;
-    await page.goto(`${origin}/?exempel=1`, { waitUntil: "networkidle0" });
-    // The local prototype's own preview is the source of the printable DOM.
-    // A large uploaded image is applied separately to avoid localStorage limits.
-    const storedData = { ...data, image: "/reference-hero.jpg" };
-    await page.evaluate(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: EXAMPLE_STORAGE_KEY, value: storedData });
-    await page.reload({ waitUntil: "networkidle0" });
-    await page.waitForSelector(".sheet-page");
-    await page.evaluate((customImage) => {
-      const sheet = document.querySelector<HTMLElement>(".sheet-page");
-      if (!sheet) throw new Error("Bladet saknas i förhandsvisningen.");
-      const hero = sheet.querySelector<HTMLImageElement>(".sheet-hero-image");
-      if (hero && customImage !== "/reference-hero.jpg") hero.src = customImage;
-      document.body.replaceChildren(sheet);
-      document.body.style.margin = "0";
-      document.body.style.background = "white";
-    }, data.image);
+import chromium from "@sparticuz/chromium";
+import {api,identity,sameOrigin,HttpError} from "@/lib/access";
+import {readSheet} from "@/lib/sheets-server";
+import {measureSheetOverflow} from "@/lib/overflow";
+export const runtime="nodejs";
+export const dynamic="force-dynamic";
+export const maxDuration=60;
+export async function POST(request:Request){return api(async()=>{
+  sameOrigin(request);const user=await identity(request);const {id,revision}=await request.json();
+  if(typeof id!=="string"||!Number.isInteger(revision)||revision<1)throw new HttpError(400,"Spara bladet innan du exporterar.");
+  const saved=await readSheet(user.id,id,revision);
+  if(!/^https?:\/\//i.test(saved.content.qrUrl))throw new HttpError(400,"Ange en giltig QR-adress.");
+  const local=[process.env.PDF_BROWSER_PATH,"C:/Program Files/Google/Chrome/Application/chrome.exe","C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"].find((value):value is string=>!!value&&existsSync(value));
+  const browser=await puppeteer.launch({executablePath:local??await chromium.executablePath(),headless:true,args:local?["--no-sandbox","--disable-gpu"]:chromium.args});
+  try{
+    const page=await browser.newPage();await page.setViewport({width:794,height:1123,deviceScaleFactor:1});
+    const origin=new URL(request.url).origin;
+    await page.setRequestInterception(true);
+    page.on("request",incoming=>{
+      const target=new URL(incoming.url());
+      if(target.origin!==origin && target.protocol!=="data:"){void incoming.abort();return;}
+      const forwarded:Record<string,string>={...incoming.headers()};
+      if(target.origin===origin){forwarded.cookie=request.headers.get("cookie")??"";const bypass=request.headers.get("x-vercel-protection-bypass");if(bypass)forwarded["x-vercel-protection-bypass"]=bypass;}
+      void incoming.continue({headers:forwarded});
+    });
+    await page.goto(`${origin}/render?id=${encodeURIComponent(id)}&revision=${revision}`,{waitUntil:"networkidle0",timeout:40_000});
+    await page.waitForSelector(".sheet-page",{timeout:10_000});
     await page.emulateMediaType("print");
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      await Promise.all([...document.images].map(image => image.decode().catch(() => undefined)));
-    });
-    const violations = await page.evaluate(measureSheetOverflow);
-    if (violations.length) return new Response(`Texten får inte plats: ${violations.join(", ")}.`, { status: 422 });
-    const pdf = await page.pdf({ format: "A4", preferCSSPageSize: true, printBackground: true, displayHeaderFooter: false, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
-    return new Response(new Uint8Array(pdf), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": "attachment; filename=produktblad-kock-prototyp.pdf",
-        "Cache-Control": "no-store",
-      },
-    });
-  } catch (error) {
-    console.error("PDF export failed", error);
-    return new Response("PDF-genereringen misslyckades lokalt. Se serverloggen.", { status: 500 });
-  } finally {
-    await browser?.close();
-  }
-}
+    await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(image=>image.decode()));document.body.style.margin="0";document.body.style.background="white";});
+    const violations=await page.evaluate(measureSheetOverflow);
+    if(violations.length)throw new HttpError(422,`Texten får inte plats: ${violations.join(", ")}.`);
+    const pdf=await page.pdf({format:"A4",preferCSSPageSize:true,printBackground:true,displayHeaderFooter:false,margin:{top:0,right:0,bottom:0,left:0}});
+    return new Response(new Uint8Array(pdf),{headers:{"Content-Type":"application/pdf","Content-Disposition":"attachment; filename=produktblad.pdf","Cache-Control":"private, no-store"}});
+  }finally{await browser.close();}
+});}

@@ -1,3 +1,5 @@
+Aktuell uppdatering 9 oktober 2026: användaren har beställt full Neon-anslutning. Den är implementerad med Neon Postgres, Better Auth, privata medier, skolbehörigheter, versionshistorik och atomiska redigeringslås. Se [NEON.md](NEON.md). Nedanstående text bevarar den ursprungliga stegplanen och tidigare teknikval.
+
 # Projektspecifikation
 
 Status: projektunderlag, 7 oktober 2026. Ingen implementation eller extern resurs ingår i denna leverans.

@@ -1,0 +1,6 @@
+.env*
+.invite-*
+.test-password
+node_modules
+.next
+.git

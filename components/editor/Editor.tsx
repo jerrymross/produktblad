@@ -1,4 +1,6 @@
 "use client";
+import { sheetApiPath } from "@/lib/sheet-id";
+
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -8,6 +10,7 @@ import { Sheet } from "@/components/sheet/Sheet";
 import { exampleSheet, EYEBROW_OPTIONS, GRADIENT_STRENGTHS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
 import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, type CatalogEntry } from "@/lib/catalog";
+import { cloud,jsonRequest } from "@/lib/cloud-client";
 
 const GROUPS = ["Omslag", "Innehåll", "Nederdel"] as const;
 const GROUP_LABELS = { Omslag: "Omslag", Innehåll: "Utbildning", Nederdel: "Kontakt" };
@@ -48,18 +51,31 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const [mobilePane, setMobilePane] = useState("editor");
   const stageRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const sheetId=entry?.id??"example";
+  const sheetUrl=sheetApiPath(sheetId);
+  const [revision,setRevision]=useState(0);
+  const [locked,setLocked]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const token=useRef("");
+  const saving=useRef(false);
+  const edits=useRef(0);
+  const [history,setHistory]=useState<{revision:number;createdAt:string;content:SheetData}[]>([]);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const parsed: unknown = JSON.parse(stored);
-        if (isSheetData(parsed)) { queueMicrotask(() => { setData(parsed); setHasSaved(true); }); return; }
-      }
-      const previous = readPreviousDraft(entry);
-      if (previous) queueMicrotask(() => { setData(previous); setDirty(true); setMessage("Ditt tidigare utkast har lästs in i den nya mallen. Spara utkast för att behålla det här; den äldre sparningen finns kvar."); });
-    } catch { /* Corrupt local draft does not block the prototype. */ }
-  }, [storageKey, entry]);
+    let live=true;token.current=crypto.randomUUID();const session=token.current;
+    const lock=async(renew=false)=>{await cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:session,renew}));if(live)setLocked(true);else void fetch(`${sheetUrl}/lock`,{...jsonRequest("DELETE",{token:session}),keepalive:true});};
+    const load=async()=>{try{
+      const sheet=await cloud<{content:SheetData;revision:number}>(sheetUrl);
+      if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
+      if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(previous);setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
+      await lock();
+    }catch(error){if(live)setMessage(error instanceof Error?error.message:"Bladet kunde inte öppnas.");}finally{if(live)setLoading(false);}};
+    void load();
+    const timer=window.setInterval(()=>{if(live)void lock(true).catch(error=>{setLocked(false);setMessage(error instanceof Error?error.message:"Redigeringslåset kunde inte förnyas. Dina ändringar finns kvar här.");});},30_000);
+    const release=()=>{void fetch(`${sheetUrl}/lock`,{...jsonRequest("DELETE",{token:session}),keepalive:true});};
+    window.addEventListener("pagehide",release);
+    return()=>{live=false;window.clearInterval(timer);window.removeEventListener("pagehide",release);release();};
+  }, [storageKey, entry,sheetUrl]);
 
   useEffect(() => {
     const node = stageRef.current;
@@ -86,24 +102,26 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   }, [data, scale, measure]);
 
   function change<K extends keyof SheetData>(key: K, value: SheetData[K]) {
+    edits.current++;
     setData(current => ({ ...current, [key]: value }));
     setDirty(true);
     setMessage("");
   }
 
-  const save = useCallback(() => {
+  const save = useCallback(async () => {
+    if(!locked||loading||saving.current){setMessage("Bladet måste vara öppnat för redigering innan du sparar.");return null;}
+    saving.current=true;setBusy(true);const edit=edits.current;
     try {
-      localStorage.setItem(storageKey, JSON.stringify(data));
-      localStorage.removeItem(`${storageKey}:reset`);
-      setDirty(false);
+      const saved=await cloud<{content:SheetData;revision:number}>(sheetUrl,jsonRequest("PUT",{content:data,revision,token:token.current}));
+      setRevision(saved.revision);
+      if(edits.current===edit){setData(saved.content);setDirty(false);}
       setHasSaved(true);
-      setMessage("Utkastet är sparat i den här webbläsaren.");
-      return true;
-    } catch {
-      setMessage("Det gick inte att spara lokalt. Kontrollera webbläsarens lagringsutrymme.");
-      return false;
-    }
-  }, [data, storageKey]);
+      setMessage(edits.current===edit?"Utkastet är sparat i det gemensamma biblioteket.":"Versionen sparades. Du har nya osparade ändringar.");
+      window.dispatchEvent(new Event("studio-sheets"));
+      return saved;
+    } catch(error) {setMessage(error instanceof Error?error.message:"Bladet kunde inte sparas. Dina ändringar finns kvar här.");return null;}
+    finally{saving.current=false;setBusy(false);}
+  }, [data,revision,sheetUrl,locked,loading,setMessage,setData,setDirty]);
 
   useEffect(() => {
     const keyboard = (event: KeyboardEvent) => {
@@ -159,14 +177,14 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       setMessage(overflow.length ? "Korta texten i de markerade fälten innan PDF kan skapas." : "Ange en QR-adress som börjar med https:// eller http://.");
       return;
     }
-    if (!save()) return;
+    const saved=await save();if(!saved)return;
     setBusy(true);
     setMessage("PDF skapas …");
     try {
       const response = await fetch("/api/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({id:sheetId,revision:saved.revision}),
       });
       if (!response.ok) throw new Error(await response.text());
       const blob = await response.blob();
@@ -176,22 +194,18 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       anchor.download = `produktblad-${entry ? `${entry.school}-${entry.title}` : "kock-exempel"}.pdf`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-");
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
-      setMessage("PDF är klar. Utkastet sparades lokalt före exporten.");
+      setMessage("PDF är klar och bygger på den sparade bladversionen.");
     } catch (error) {
       setMessage(error instanceof Error ? `PDF kunde inte skapas: ${error.message}` : "PDF kunde inte skapas.");
     } finally { setBusy(false); }
   }
 
   function reset() {
-    if (!window.confirm(entry ? "Återställ till standardinnehållet? Sparningen i den aktuella mallen tas bort." : "Återställ till exempeltexten? Ditt lokala utkast ersätts.")) return;
-    try {
-      localStorage.setItem(`${storageKey}:reset`, "1");
-      localStorage.removeItem(storageKey);
-    } catch { setMessage("Det gick inte att återställa den lokala sparningen. Ditt innehåll finns kvar."); return; }
+    if (!window.confirm("Återställ till standardinnehållet? Spara sedan för att skapa en ny version; historiken finns kvar.")) return;
+    edits.current++;
     setData(entry ? initialSheet(entry) : exampleSheet);
-    setDirty(false);
-    setHasSaved(false);
-    setMessage(entry ? "Bladet är återställt till standardinnehållet. Ingen sparad version finns i den aktuella mallen." : "Exempeltexten är återställd.");
+    setDirty(true);
+    setMessage("Standardinnehållet är inläst. Spara för att behålla ändringen.");
   }
 
   const visibleFields = textFields.filter(field => field.group === activeGroup).map(field => {
@@ -220,8 +234,8 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     <AppSidebar dirty={dirty} example={!entry} currentTitle={entry?.title ?? "Kock"} />
     <header className="app-header">
       <div className="header-center"><div className="breadcrumbs"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>Bibliotek</Link><span>/</span><span>{entry?.school ?? "Exempelblad"}</span><span>/</span><span>{entry?.program ?? "Komvux"}</span></div><h1 className="header-title">{entry?.title ?? "Kock"}</h1></div>
-      <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`}><span className="status-dot" />{dirty ? "Osparade ändringar" : hasSaved ? "Sparat lokalt" : "Inte sparat än"}</div>
-          <div className="action-row"><button type="button" className="save-button" onClick={save} disabled={busy} title="Spara utkast (Ctrl+S eller ⌘S)">Spara utkast</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || overflow.length > 0 || !validQr}>{busy ? "Skapar PDF …" : "Ladda ner PDF ↓"}</button></div>
+      <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`}><span className="status-dot" />{loading?"Öppnar …":dirty ? "Osparade ändringar" : hasSaved ? `Sparat · version ${revision}` : "Inte sparat än"}</div>
+          <div className="action-row"><button type="button" className="save-button" onClick={()=>void save()} disabled={busy||loading||!locked} title="Spara utkast (Ctrl+S eller ⌘S)">{busy?"Arbetar …":"Spara utkast"}</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || loading || !locked || overflow.length > 0 || !validQr}>Ladda ner PDF ↓</button></div>
     </header>
 
     <nav className="mobile-pane-switch" aria-label="Arbetsyta"><button type="button" aria-pressed={mobilePane === "editor"} onClick={() => setMobilePane("editor")}>Redigera</button><button type="button" aria-pressed={mobilePane === "preview"} onClick={() => setMobilePane("preview")}>Förhandsvisa</button></nav>
@@ -232,7 +246,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
         <nav className="editor-tabs" aria-label="Redigeringsdelar">
           {GROUPS.map(group => <button key={group} type="button" aria-pressed={activeGroup === group} className={activeGroup === group ? "active" : ""} onClick={() => { setActiveGroup(group); setActiveSection(group === "Innehåll" ? "why" : "school"); }}>{GROUP_LABELS[group]}{overflow.some(key => textFields.find(field => field.key === key)?.group === group) && <span className="tab-error" aria-label="Text får inte plats">!</span>}</button>)}
         </nav>
-        <div className="fields-scroll">
+        <fieldset className="fields-scroll editor-fields" disabled={loading||!locked}>
           <p className="section-help">{activeGroup === "Omslag" ? "Bild, rubrik och ingress är det första läsaren ser." : activeGroup === "Innehåll" ? "Öppna ett avsnitt i taget. Rubrik och text ändras var för sig." : "Fyll i rätt skoluppgifter och adressen till QR-koden."}</p>
           {activeGroup === "Omslag" && <><div className="field"><div className="field-top"><label htmlFor="titleRows">Rubrikens layout</label></div><select id="titleRows" value={data.titleRows} onChange={event => change("titleRows", event.target.value as SheetData["titleRows"])}><option value="2">Två rader – stor rubrik</option><option value="3">Upp till tre rader – långt yrkesnamn</option></select></div><div className="title-fields-pair">{visibleFields.filter(field => ["titleLine", "titlePrefix"].includes(field.key)).map(renderField)}</div>{visibleFields.filter(field => field.key === "profession").map(renderField)}<div className="image-field"><div className="field-top"><label htmlFor="image-input">Omslagsbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild uppladdad"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Ladda upp direkt →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>
             <ImagePicker title={entry?.title ?? "Kock"} onChoose={image => { change("image", image); setMessage("Bilden är vald. Spara utkast för att behålla den på bladet."); }} onManage={() => window.dispatchEvent(new Event("open-image-settings"))} />
@@ -252,12 +266,14 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
             </section>;
           })}
           <details className="editor-options"><summary>Om mallen & fler alternativ</summary><p>{entry ? `${hasKomvuxDefaults ? "Komvuxblad har förinställd text om upplägg, utbildningsform, målgrupp och ekonomi. Övriga innehållsfält är tomma." : "Nya blad har tomma texter."} Alla blad har en förinställd text om Astar längst ner. Exempelbilden behöver bytas till en bild för utbildningen.` : "Detta är exempeldata från referensen. Utbildnings- och kontaktuppgifter behöver faktagranskas."} Layouten är fast. Mallen är en lokal prototyp.</p><button type="button" className="text-button" onClick={reset}>{entry ? "Återställ standardinnehåll" : "Återställ exempeldata"}</button></details>
-        </div>
+        </fieldset>
         <div className="editor-actions">
           {(overflow.length > 0 || !validQr) && <div className="overflow-alert"><strong>{overflow.length ? "Text får inte plats på A4" : "QR-adress saknas eller är ogiltig"}</strong><button type="button" onClick={() => openField(overflow[0] ?? "qrUrl")}>Gå till {overflow.length ? shortFieldName(overflow[0]) : "QR-adress"} →{overflow.length > 1 ? ` (+${overflow.length - 1})` : ""}</button></div>}
           {message && <p className="message" role="status">{message}</p>}
 
-          <p className="save-hint">Sparas i den här webbläsaren · Ctrl+S / ⌘S</p>
+          {!locked&&!loading&&<button type="button" className="text-button" onClick={()=>{void cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:token.current})).then(()=>{setLocked(true);setMessage("Du kan nu redigera bladet.");}).catch(error=>setMessage(error.message));}}>Försök öppna för redigering igen</button>}
+          <details className="sheet-history"><summary onClick={()=>{void cloud<{versions:typeof history}>(`${sheetUrl}/history`).then(result=>setHistory(result.versions)).catch(error=>setMessage(error.message));}}>Versionshistorik</summary>{history.map(version=><button type="button" className="text-button" key={version.revision} disabled={!locked||busy} onClick={()=>{if(dirty&&!window.confirm("Ersätt osparade ändringar med den här versionen?"))return;edits.current++;setData(version.content);setDirty(true);setMessage("Tidigare version är inläst. Spara för att skapa en ny version.");}}>Version {version.revision} · {new Date(version.createdAt).toLocaleString("sv-SE")}</button>)}</details>
+          <p className="save-hint">Gemensamt bibliotek · Ctrl+S / ⌘S</p>
         </div>
       </aside>
 

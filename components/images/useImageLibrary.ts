@@ -11,7 +11,7 @@ export function useImageLibrary() {
     let revision = 0;
     const refresh = () => {
       const current = ++revision;
-      readLibrary().then(result => { if (live && current === revision) { setImages(result); setError(""); } }).catch(() => { if (live && current === revision) setError("Bildbiblioteket kunde inte läsas. Kontrollera att webbläsaren tillåter lokal lagring."); }).finally(() => { if (live && current === revision) setLoading(false); });
+      readLibrary().then(result => { if (live && current === revision) { setImages(result); setError(""); } }).catch(error => { if (live && current === revision) setError(error instanceof Error?error.message:"Bildbiblioteket kunde inte läsas. Kontrollera anslutningen."); }).finally(() => { if (live && current === revision) setLoading(false); });
     };
     refresh();
     const unsubscribe = subscribeLibrary(refresh);
