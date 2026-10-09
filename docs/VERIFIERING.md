@@ -238,3 +238,14 @@ Lint startades men avslutades utan resultat efter att både full och riktad kör
 ## Astar Studio-logga – 9 oktober 2026
 
 Sidomenyn använder användarens astar-studio-logo-staende.png med originalets proportioner 1186 × 1326 och befintligt vitt CSS-filter. Alt-text och bibliotekslänkens namn är Astar Studio. Produktionsbuild inklusive TypeScript godkänd. Bildladdning verifierad lokalt i Chrome vid 1440 och 390 px, desktop visuellt granskad. Riktad lint för AppSidebar.tsx avslutades med exitkod 0. Produktbladets logga/renderare är oförändrad; ingen ny PDF- eller molnverifiering.
+
+
+## Lokalt bildbibliotek per utbildning – 9 oktober 2026
+
+- Två bildplatser för vart och ett av 86 normaliserade utbildningsnamn. Inställningar har uppladdning, ersättning, borttagning, sökning, saknat-filter och status per plats. Bildväljaren följer aktuellt blads katalogutbildning och kan bytas manuellt.
+- Statiskt: produktionsbuild inklusive TypeScript och riktad ESLint för alla ändrade/nya TS-/TSX-filer godkända. React-granskning: prenumerationer rensas, asynkrona läsningar skyddas mot gamla resultat/avmontering, formulär har labels och dialogen använder native fokus/Escape.
+- Lokal Chrome vid 1440 × 1000: tomt läge 0/86 och 172 saknade bilder, uppladdning av två varianter, 2/2-status, saknat-filter, bildval, sparning/omladdning, ersättning utan ändring av bladets tidigare bild, borttagning med uppdaterad status, felmeddelande för korrupt PNG samt byte/återgång mellan utbildningar provade. Inga browserfel.
+- Mobil vid 390 × 844: uppladdningsdialog och kort granskade; ingen horisontell overflow. Desktopdialog med bilder granskad visuellt.
+- Lokal PDF-export via editor-knappen gav HTTP 200. Export med bibliotekets bild gav en A4-sida och inbäddade fonter. PDF rasteriserad vid 1200 px och granskad. Pixelidentisk med tidigare två-radiga export för samma bild och innehåll; A4-mall och referens Kock.pdf oförändrade.
+- Biblioteket sparas endast i aktuell webbläsare via IndexedDB; inga bilder delas ännu mellan datorer/användare. Testbilderna användes i isolerad browserprofil, inte förinstallerade biblioteksposter.
+- Ingen Vercel-miljö, Supabase eller RLS ändrad/verifierad.

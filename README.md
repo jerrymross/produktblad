@@ -66,7 +66,7 @@ Klicka på en text eller bild i preview för att öppna motsvarande redigeringsd
 
 Gränssnittet följer användarens bildreferens: marinblå sidomeny, vit toppbar och redigerare, varm ljusgrå previewyta samt korallfärgade primärknappar. Spara utkast och Ladda ner PDF ligger i toppbaren. Sparade utkast behåller sin gröna markering. Inter används för kontroller och Lora för större gränssnittsrubriker. Sidomenyn använder den stående Astar Studio-loggan `public/astar-studio-logo-staende.png`, vit via CSS-filter och utan box. Produktbladet använder fortsatt `public/logo_liggande.png` i originalfärger.
 
-Bibliotek öppnar skolornas blad. Mallar öppnar den befintliga Mall 01 med exempeldata. Inställningar visar information om lokal sparning och återställning i en tangentbordstillgänglig dialog. Länkar ut från redigeraren varnar vid osparade ändringar. På mobil blir sidomenyn en kompakt toppmeny. Produktbladets fasta layout är oförändrad; denna uppdatering gäller appens arbetsyta.
+Bibliotek öppnar skolornas blad. Mallar öppnar den befintliga Mall 01 med exempeldata. Inställningar öppnar bildbibliotekets uppladdning och översikt i en tangentbordstillgänglig dialog; information om lokal sparning och återställning finns längst ner. Länkar ut från redigeraren varnar vid osparade ändringar. På mobil blir sidomenyn en kompakt toppmeny. Produktbladets fasta layout är oförändrad; denna uppdatering gäller appens arbetsyta.
 
 Temat definieras i `app/globals.css` och är separat från A4-mallens `app/sheet.css`. UI-färgvariablerna styr inte produktbladets form.
 
@@ -105,3 +105,18 @@ Under Omslag väljer du Rubrikens layout: två rader med 53,18 pt eller upp till
 Textfärg väljs separat för första raden, inledande ord och yrkesnamn: Blå, Korall eller Automatisk. Automatisk är blå på vanlig/vit bild och vit med mörkblå gradient. Ett uttryckligt färgval gäller även över mörkblå gradient. Standard är automatisk färg för de två första delarna och korall för yrket.
 
 Mallversion `kock-1.3.0-prototyp` sparar layout och färger med innehållet. Tidigare 1.2-utkast läses in med två rader och tidigare färgbeteende; originalsparningen finns kvar. Spara i den nya versionen för aktuell grön markering. Preview och PDF använder samma rubrikrenderare.
+
+
+## Bildbibliotek per utbildning
+
+Öppna **Inställningar → Bildbibliotek**. Varje utbildning har två platser: **Bild 1** och **Bild 2**. Välj utbildning och ladda upp JPG, PNG eller WebP, högst 2 MB. Bildfilen måste kunna avkodas. Du kan ersätta en bild eller ta bort den med bekräftelse. Uppladdningar sparas direkt.
+
+Översikten visar 0/2, 1/2 eller 2/2 för varje utbildning och exakt vilka bildplatser som saknas. Sök efter utbildning eller välj **Visa bara saknade**. Klicka på en rad för att gå till utbildningens uppladdning. Kompletta bibliotek markeras grönt; detta är skilt från produktbladens gröna utkastmarkering.
+
+Under **Omslag → Välj från bildbiblioteket** är utbildningen automatiskt vald utifrån katalogposten för aktuellt blad (Kock för exempelbladet). Välj Bild 1 eller Bild 2 och klicka **Använd bild … på bladet**. Du kan välja en annan utbildning och återgå med **Visa bilder för aktuellt blad**. Att redigera yrkesrubriken ändrar inte utbildningskopplingen. Bildvalet ändrar endast bladets bild, och sparas med Spara utkast. Direktuppladdning till ett enskilt blad finns kvar och lägger inte automatiskt bilden i biblioteket.
+
+Biblioteket har 86 unika utbildningsnamn från katalogen. Identiska namn delar bibliotek mellan skolor och utbildningsformer; skillnader i stora/små bokstäver och upprepade blanksteg ignoreras. Olika benämningar, exempelvis Kock och Kock AF, hålls separata. Inga bilder har fyllts i automatiskt.
+
+Tekniskt lagras biblioteket i webbläsarens IndexedDB (`astar-studio-images`, store `images`) med nyckel utbildning + bildplats. Bildposten innehåller filnamn, uppdateringstid och bilddata. Detta är lokal lagring på aktuell origin, inte gemensam molnlagring. Rensning av webbplatsdata tar bort biblioteket; behåll originalfilerna. Öppna vyer uppdateras efter lyckad databastransaktion, även mellan flikar när localStorage är tillgängligt. Ingen API-nyckel eller AI-funktion används.
+
+När en bild används kopieras dess bilddata in i bladets befintliga innehållssnapshot. Det innebär att ersättning/borttagning i biblioteket inte ändrar redan valda eller sparade bilder i andra blad. Preview och PDF använder samma frysta bilddata. Bladens befintliga localStorage-gräns och felhantering gäller fortsatt; bildbiblioteket använder separat IndexedDB-utrymme. Mallversion och PDF-schema är oförändrade. Inga backend-, konto- eller molnsteg har införts.
