@@ -268,8 +268,12 @@ button:disabled { cursor: default; }
 .field-top label { font-size: 12px; }
 .field input,.field textarea,.field select { background: #fff; color: #15243b; border-color: #cfd7e3; }
 .field:has(#profession) input { font-family: "App Lora",Georgia,serif; font-size: 20px; padding: 15px 12px; }
-.field:has(#titleLine),.field:has(#titlePrefix) { display: inline-block; width: calc(50% - 5px); vertical-align: top; }
-.field:has(#titleLine) { margin-right: 10px; }
+.title-fields-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); column-gap: 12px; row-gap: 8px; margin-bottom: 20px; }
+.title-fields-pair > .field { display: grid; grid-template-rows: subgrid; grid-row: span 3; min-width: 0; margin: 0; }
+.title-fields-pair .field-top { align-items: flex-start; margin: 0; }
+.title-fields-pair .field-top label { line-height: 1.4; }
+.title-fields-pair .title-color { margin-top: 0; }
+.title-fields-pair input { min-width: 0; }
 .image-picker { display: block; border: 0; background: none; padding: 0; }
 .image-thumb { width: 100%; height: 150px; border: 1px solid #d9dfe7; border-radius: 6px; }
 .image-picker > div:last-child { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 7px; }

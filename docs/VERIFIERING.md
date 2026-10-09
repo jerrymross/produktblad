@@ -229,3 +229,8 @@ Efter användarens ändrade färgval ersattes elfenben/olivgrönt med ett mörkt
 - Tre lokala PDF-prov (tvåradigt exempel, treradigt yrke och treradigt med omvända färger över mörkblå gradient) gav HTTP 200, en A4-sida 594,96 × 841,92 pt och inbäddade fonter. Treradiga exporter rasteriserade och visuellt granskade mot preview: radbrytning, färger och avstånd till ingress stämmer. Kock.pdf är oförändrad; tre rader är en uttryckligt beställd mallvariant.
 - För lång rubrik nekades med HTTP 422. Ogiltig färg nekades med HTTP 400. Ingen automatisk krympning eller klippning infördes.
 - Vercel och Supabase/RLS har inte ändrats eller verifierats.
+
+## Symmetriska rubrikfält – 9 oktober 2026
+
+Rubrikrad och inledande ord ligger i två lika breda gridkolumner med gemensamma rader för etikett, textruta och färgval. Automatisk färg har kortare visningstext; förklaringen finns i väljarnas title. Lokal Chrome vid 1440, 1024 och 390 px: båda textrutorna respektive färgvalen har identiska y-positioner, bredder och höjder. Mobilskärmbild visuellt granskad. Produktionsbuild inklusive TypeScript godkänd. A4-renderare och PDF-kod är oförändrade; ingen ny PDF- eller molnverifiering ingår i denna fältjustering.
+Lint startades men avslutades utan resultat efter att både full och riktad körning fastnat utan utdata. Build/TypeScript och browsergeometrin ovan är verifierade.
