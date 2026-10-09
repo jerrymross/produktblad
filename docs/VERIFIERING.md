@@ -234,3 +234,7 @@ Efter användarens ändrade färgval ersattes elfenben/olivgrönt med ett mörkt
 
 Rubrikrad och inledande ord ligger i två lika breda gridkolumner med gemensamma rader för etikett, textruta och färgval. Automatisk färg har kortare visningstext; förklaringen finns i väljarnas title. Lokal Chrome vid 1440, 1024 och 390 px: båda textrutorna respektive färgvalen har identiska y-positioner, bredder och höjder. Mobilskärmbild visuellt granskad. Produktionsbuild inklusive TypeScript godkänd. A4-renderare och PDF-kod är oförändrade; ingen ny PDF- eller molnverifiering ingår i denna fältjustering.
 Lint startades men avslutades utan resultat efter att både full och riktad körning fastnat utan utdata. Build/TypeScript och browsergeometrin ovan är verifierade.
+
+## Astar Studio-logga – 9 oktober 2026
+
+Sidomenyn använder användarens astar-studio-logo-staende.png med originalets proportioner 1186 × 1326 och befintligt vitt CSS-filter. Alt-text och bibliotekslänkens namn är Astar Studio. Produktionsbuild inklusive TypeScript godkänd. Bildladdning verifierad lokalt i Chrome vid 1440 och 390 px, desktop visuellt granskad. Riktad lint fastnade utan resultat och avbröts. Produktbladets logga/renderare är oförändrad; ingen ny PDF- eller molnverifiering.

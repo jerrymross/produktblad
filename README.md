@@ -64,7 +64,7 @@ Klicka på en text eller bild i preview för att öppna motsvarande redigeringsd
 
 ## Gränssnittets visuella tema
 
-Gränssnittet följer användarens bildreferens: marinblå sidomeny, vit toppbar och redigerare, varm ljusgrå previewyta samt korallfärgade primärknappar. Spara utkast och Ladda ner PDF ligger i toppbaren. Sparade utkast behåller sin gröna markering. Inter används för kontroller och Lora för större gränssnittsrubriker. Sidomenyn använder den befintliga stående loggan `public/logo_stand.png`, vit via CSS-filter och utan box. Produktbladet använder fortsatt `public/logo_liggande.png` i originalfärger.
+Gränssnittet följer användarens bildreferens: marinblå sidomeny, vit toppbar och redigerare, varm ljusgrå previewyta samt korallfärgade primärknappar. Spara utkast och Ladda ner PDF ligger i toppbaren. Sparade utkast behåller sin gröna markering. Inter används för kontroller och Lora för större gränssnittsrubriker. Sidomenyn använder den stående Astar Studio-loggan `public/astar-studio-logo-staende.png`, vit via CSS-filter och utan box. Produktbladet använder fortsatt `public/logo_liggande.png` i originalfärger.
 
 Bibliotek öppnar skolornas blad. Mallar öppnar den befintliga Mall 01 med exempeldata. Inställningar visar information om lokal sparning och återställning i en tangentbordstillgänglig dialog. Länkar ut från redigeraren varnar vid osparade ändringar. På mobil blir sidomenyn en kompakt toppmeny. Produktbladets fasta layout är oförändrad; denna uppdatering gäller appens arbetsyta.
 

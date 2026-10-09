@@ -8,9 +8,9 @@ export function AppSidebar({ dirty = false, example = false }: { dirty?: boolean
   function canLeave() { return !dirty || window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem."); }
   return <>
     <aside className="app-sidebar" aria-label="Huvudmeny">
-      <Link href="/produktblad" className="sidebar-brand" aria-label="Astar – bibliotek" onClick={event => { if (!canLeave()) event.preventDefault(); }}>
+      <Link href="/produktblad" className="sidebar-brand" aria-label="Astar Studio – bibliotek" onClick={event => { if (!canLeave()) event.preventDefault(); }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo_stand.png" alt="Astar Education" width="497" height="555" />
+        <img src="/astar-studio-logo-staende.png" alt="Astar Studio" width="1186" height="1326" />
       </Link>
       <nav>
         <Link href="/produktblad" className={!example ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
