@@ -269,3 +269,5 @@ Servern identifierar JPG, PNG och WebP genom filens byte-signatur, inte enbart b
 Lokalt godkänt: produktionsbygge, lint samt scripts/test-upload.ts. Testet bekräftar multipart-uppladdning, databaslagring/återläsning med identiska bytes, korrekt MIME även för PNG med JPG-filnamn, privat åtkomst, bibliotekets persistens och avvisning av ogiltiga/för stora filer.
 
 Browserkontroll: riktig JPG vald med filväljaren, Bild 2 Finns och Bild 2 sparades i biblioteket visades. Skärmbild sparad separat som bilduppladdning-test.png. Live-publicering kontrolleras separat efter GitHub-push.
+
+Livekontroll godkänd 10 oktober 2026 mot https://produktblad.vercel.app efter deployment dpl_5t7hhKuCLYEjopmuteHrgWiqx68q: multipart-uppladdning både till privat bladmedia och bibliotek, identiska byte vid återläsning, MIME från filinnehåll, anonym avvisning samt ogiltig/för stor fil avvisad. Testet återanvände en befintlig syntetisk testplats i biblioteket; användarnas övriga bilder och blad ändrades inte. Äldre testdata är fortfarande kvar i väntan på tidigare efterfrågat rensningsgodkännande.
