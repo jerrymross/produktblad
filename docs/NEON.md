@@ -31,3 +31,5 @@ Provisioneringsskriptet raderar inte befintlig data. Kör framtida SQL-migration
 Kontroller: inloggning/utloggning, stängd registrering, anonym avvisning, sparning/återöppning, konfliktande lås, gammal revision, historik, skolgränser, inbjudningar, privat bildåtkomst och PDF från sparad version. A4-renderaren och referens-PDF:n är bevarade.
 
 Neons Free-kvoter gäller hela projektet; bilder, blad och historik delar lagring. Backup/återställningspolicy och eventuellt byte av plan behöver beslutas efter faktisk användning. Appen innehåller inget automatiskt godkännande- eller utskicksflöde.
+
+Bilduppladdning 10 oktober 2026: nya filer överförs direkt som multipart och lagras binärt i Neon. Uppladdning direkt på bladet är skolskyddad och sker innan Spara utkast; sparningen kopplar därefter filreferensen till en bladversion. Filformatet identifieras från filinnehållet. scripts/test-upload.ts verifierar lagring, privata bildsvar, MIME och storleksgräns.

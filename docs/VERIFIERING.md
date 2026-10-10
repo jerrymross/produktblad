@@ -259,3 +259,13 @@ Lokalt: lint utan varningar och produktionsbygge godkänt. Browser: text ändrad
 Live: samma integrationstest godkänt mot produktblad.vercel.app, inklusive Vercels Chromium-baserade PDF-export. Skol-ID:n transporteras som base64url i API-sökvägar efter ett upptäckt problem med dubbelkodade specialtecken på Vercel. Beständiga katalog- och utkast-ID:n är oförändrade. Testdata skapades i den nya tomma databasen; rensning väntar på godkännande. Ägarens privata engångsinbjudan har inte använts.
 
 PDF lokalt renderad och visuellt granskad som en sida A4 med svensk text. Fasta A4-renderaren och layoutreferensen bevarade. Inga utbildningsfakta eller skolkontakter har hämtats automatiskt. Godkännande- och utskicksflöde har inte införts.
+
+## Bilduppladdning direkt till Neon – 10 oktober 2026
+
+Nya bildfiler skickas som multipart-filer till servern. Bildbiblioteket skriver filens byte-innehåll direkt till media-tabellen och kopplar den privata referensen till vald utbildning/bildplats. Direkt uppladdning i redigeraren skriver också filen direkt till media-tabellen, med skolbehörighet; Spara utkast sparar därefter själva bildvalet på bladet. JSON/data-URL stöds fortfarande för import av tidigare lokala bilder.
+
+Servern identifierar JPG, PNG och WebP genom filens byte-signatur, inte enbart browserns MIME eller filnamn. Gränsen är fortsatt 2 MB per bild. Fel format och för stora filer avvisas; bilder serveras bara till behöriga inloggade användare. Inga generella dokumentuppladdningar har införts.
+
+Lokalt godkänt: produktionsbygge, lint samt scripts/test-upload.ts. Testet bekräftar multipart-uppladdning, databaslagring/återläsning med identiska bytes, korrekt MIME även för PNG med JPG-filnamn, privat åtkomst, bibliotekets persistens och avvisning av ogiltiga/för stora filer.
+
+Browserkontroll: riktig JPG vald med filväljaren, Bild 2 Finns och Bild 2 sparades i biblioteket visades. Skärmbild sparad separat som bilduppladdning-test.png. Live-publicering kontrolleras separat efter GitHub-push.

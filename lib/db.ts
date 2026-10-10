@@ -7,6 +7,7 @@ export function getPool() {
     if (!process.env.APP_DATABASE_URL && !process.env.DATABASE_URL) throw new Error("Databasanslutning saknas.");
     // Each restricted database role has its own server-side search_path.
     pool = new Pool({ connectionString: process.env.APP_DATABASE_URL ?? process.env.DATABASE_URL, max: 5, idleTimeoutMillis: 5000 });
+    pool.on("error", error => console.error("Idle database connection closed", error.message));
     attachDatabasePool(pool);
   }
   return pool;

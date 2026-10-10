@@ -161,17 +161,20 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
 
   async function uploadImage(file?: File) {
     if (!file) return;
-    if (!(["image/jpeg", "image/png", "image/webp"].includes(file.type)) || file.size > 2_000_000) {
-      setMessage("Välj JPG, PNG eller WebP under 2 MB för det lokala utkastet.");
+    if (file.size > 2_000_000 || !file.size) {
+      setMessage("Välj JPG, PNG eller WebP, högst 2 MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") change("image", reader.result);
-    };
-    reader.readAsDataURL(file);
+    setBusy(true); setMessage("Laddar upp bilden …");
+    try {
+      const form = new FormData(); form.set("file", file); form.set("sheetId", sheetId);
+      const uploaded = await cloud<{dataUrl:string}>("/api/media", {method:"POST",body:form});
+      change("image", uploaded.dataUrl);
+      setMessage("Bilden är uppladdad. Spara utkast för att behålla bildvalet på bladet.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Bilden kunde inte laddas upp.");
+    } finally { setBusy(false); }
   }
-
   async function exportPdf() {
     if (overflow.length || !validQr) {
       setMessage(overflow.length ? "Korta texten i de markerade fälten innan PDF kan skapas." : "Ange en QR-adress som börjar med https:// eller http://.");

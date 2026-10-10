@@ -44,17 +44,11 @@ export function subscribeLibrary(refresh: () => void) {
 
 export async function uploadLibraryImage(education: string, slot: 1 | 2, file: File) {
   if (!educations.some(item => item.id === education)) throw new Error("Välj en utbildning i listan.");
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2_000_000 || !file.size) throw new Error("Välj JPG, PNG eller WebP, högst 2 MB.");
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Filen kunde inte läsas."));
-    reader.readAsDataURL(file);
-  });
-  const decoded = new Image();
-  decoded.src = dataUrl;
-  try { await decoded.decode(); } catch { throw new Error("Filen är inte en läsbar bild. Välj en annan fil."); }
-  await mutate({ id: `${education}:${slot}`, education, slot, name: file.name, dataUrl, updatedAt: new Date().toISOString() });
+  if ((!["image/jpeg", "image/png", "image/webp"].includes(file.type) && !/\.(jpe?g|png|webp)$/i.test(file.name)) || file.size > 2_000_000 || !file.size) throw new Error("Välj JPG, PNG eller WebP, högst 2 MB.");
+  const form = new FormData();
+  form.set("education", education); form.set("slot", String(slot)); form.set("file", file);
+  await cloud("/api/images", { method: "POST", body: form });
+  window.dispatchEvent(new Event(eventName));
+  try { localStorage.setItem(eventName, crypto.randomUUID()); } catch { /* Same-tab refresh still works. */ }
 }
-
 export const deleteLibraryImage = (id: string) => mutate(id);

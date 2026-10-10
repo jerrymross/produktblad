@@ -38,12 +38,17 @@ export async function privateImage(client: PoolClient, image: string, school: st
   }
   const inline = /^data:image\/(jpeg|png|webp);base64,([a-z0-9+/=]+)$/i.exec(image);
   if (!inline) throw new HttpError(400, "Bildformatet stöds inte.");
-  const bytes = Buffer.from(inline[2], "base64");
+  return storeImage(client, Buffer.from(inline[2], "base64"), school);
+}
+export async function storeImage(client: PoolClient, bytes: Buffer, school: string): Promise<string> {
   if (!bytes.length || bytes.length > 2_000_000) throw new HttpError(413, "Bilden får vara högst 2 MB.");
-  const valid = inline[1] === "jpeg" ? bytes[0] === 255 && bytes[1] === 216 : inline[1] === "png" ? bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) : bytes.toString("ascii",0,4) === "RIFF" && bytes.toString("ascii",8,12) === "WEBP";
-  if (!valid) throw new HttpError(400, "Filen är inte en bild i valt format.");
+  // Trust the file's bytes rather than its filename or browser-supplied MIME type.
+  const mime = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255 ? "image/jpeg"
+    : bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? "image/png"
+    : bytes.toString("ascii",0,4) === "RIFF" && bytes.toString("ascii",8,12) === "WEBP" ? "image/webp" : null;
+  if (!mime) throw new HttpError(400, "Filen är inte en JPG-, PNG- eller WebP-bild.");
   const id = randomUUID();
-  await client.query("INSERT INTO media(id,school_id,mime,bytes) VALUES($1,$2,$3,$4)", [id, school === "__library__" ? null : school, `image/${inline[1]}`, bytes]);
+  await client.query("INSERT INTO media(id,school_id,mime,bytes) VALUES($1,$2,$3,$4)", [id, school === "__library__" ? null : school, mime, bytes]);
   return `/api/media/${id}`;
 }
 export function validateContent(content: unknown): asserts content is SheetData {
