@@ -271,3 +271,11 @@ Lokalt godkänt: produktionsbygge, lint samt scripts/test-upload.ts. Testet bekr
 Browserkontroll: riktig JPG vald med filväljaren, Bild 2 Finns och Bild 2 sparades i biblioteket visades. Skärmbild sparad separat som bilduppladdning-test.png. Live-publicering kontrolleras separat efter GitHub-push.
 
 Livekontroll godkänd 10 oktober 2026 mot https://produktblad.vercel.app efter deployment dpl_5t7hhKuCLYEjopmuteHrgWiqx68q: multipart-uppladdning både till privat bladmedia och bibliotek, identiska byte vid återläsning, MIME från filinnehåll, anonym avvisning samt ogiltig/för stor fil avvisad. Testet återanvände en befintlig syntetisk testplats i biblioteket; användarnas övriga bilder och blad ändrades inte. Äldre testdata är fortfarande kvar i väntan på tidigare efterfrågat rensningsgodkännande.
+
+## Automatisk QR-kod per skola – 10 oktober 2026
+
+QR-adressen skapas från skolnamnet: http://astar.se/ följt av gemener, å/ä som a, ö som o och bindestreck mellan ord. Norrköping blir http://astar.se/norrkoping och Solna Centrum blir http://astar.se/solna-centrum. Dessa två skoladresser kontrollerades mot astar.se.
+
+Nya blad får adressen direkt. Vid öppning av aktuella befintliga blad används skolans automatiska QR-adress. Fältet visas skrivskyddat för skolblad. Servern sätter samma adress när en ny bladversion sparas, även vid lokal import eller återställning från tidigare version. Gamla historikversioner/exportunderlag ändras inte i efterhand. Exempelbladet utan skola behåller sin redigerbara testadress.
+
+Lokalt: lint och produktionsbygge godkända. scripts/test-school-qr.ts kontrollerar svenska ortnamn, samtliga katalogposters standardadress samt att servern korrigerar en felaktigt inskickad QR-adress och sparar samma adress i historiken. Adress för Astar Nationellt genereras enligt samma namnbaserade regel (astar-nationellt); någon separat nationell sidadress har inte verifierats.

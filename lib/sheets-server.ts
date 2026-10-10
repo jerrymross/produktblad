@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { type PoolClient } from "pg";
 import { transaction } from "@/lib/db";
 import { HttpError } from "@/lib/access";
-import { catalog, initialSheet } from "@/lib/catalog";
+import { catalog, initialSheet, schoolQrUrl } from "@/lib/catalog";
 import { exampleSheet, isSheetData, TEMPLATE_VERSION, type SheetData } from "@/lib/sheet";
 
 export function sheetEntry(id: string) {
@@ -25,7 +25,9 @@ export async function readSheet(userId: string, id: string, revision?: number) {
       ? await client.query("SELECT content,revision,updated_at AS \"updatedAt\" FROM sheets WHERE id=$1", [id])
       : await client.query("SELECT content,revision,created_at AS \"updatedAt\" FROM sheet_versions WHERE sheet_id=$1 AND revision=$2", [id, revision]);
     if (!result.rowCount) throw new HttpError(404, "Bladversionen finns inte.");
-    return result.rows[0] as { content: SheetData; revision: number; updatedAt: string };
+    const sheet = result.rows[0] as { content: SheetData; revision: number; updatedAt: string };
+    if (revision === undefined && id !== "example") sheet.content = { ...sheet.content, qrUrl: schoolQrUrl(sheetEntry(id).school) };
+    return sheet;
   });
 }
 export async function privateImage(client: PoolClient, image: string, school: string): Promise<string> {

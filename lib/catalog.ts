@@ -14,11 +14,16 @@ export function draftKey(id: string) {
   return `produktbladsapp:blad:${id}:${TEMPLATE_VERSION}`;
 }
 
+export function schoolQrUrl(school: string): string {
+  const slug = school.trim().toLocaleLowerCase("sv").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `http://astar.se/${slug}`;
+}
+
 export function initialSheet(entry: CatalogEntry): SheetData {
   // Catalog rows are assignments, not evidence for education facts or contacts.
   const blank = Object.fromEntries(Object.keys(exampleSheet).map(key => [key, ""])) as SheetData;
   return { ...blank, ...TITLE_DEFAULTS, ...defaultHeadings(entry.title), ...(entry.program === "Komvux" ? KOMVUX_DEFAULT_CONTENT : {}), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
-    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2" };
+    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2", qrUrl: schoolQrUrl(entry.school) };
 }
 
 export function readPreviousDraft(entry?: CatalogEntry): SheetData | null {

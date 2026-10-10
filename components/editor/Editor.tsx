@@ -2,14 +2,14 @@
 import { sheetApiPath } from "@/lib/sheet-id";
 
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ImagePicker } from "@/components/images/ImagePicker";
 import { Sheet } from "@/components/sheet/Sheet";
 import { exampleSheet, EYEBROW_OPTIONS, GRADIENT_STRENGTHS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
-import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, type CatalogEntry } from "@/lib/catalog";
+import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, schoolQrUrl, type CatalogEntry } from "@/lib/catalog";
 import { cloud,jsonRequest } from "@/lib/cloud-client";
 
 const GROUPS = ["Omslag", "Innehåll", "Nederdel"] as const;
@@ -35,7 +35,9 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const storageKey = entry ? draftKey(entry.id) : EXAMPLE_STORAGE_KEY;
   const defaults = entry ? initialSheet(entry) : exampleSheet;
   const hasKomvuxDefaults = entry?.program === "Komvux";
-  const [data, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
+  const [storedData, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
+  const school = entry?.school;
+  const data = useMemo(() => school ? { ...storedData, qrUrl: schoolQrUrl(school) } : storedData, [storedData, school]);
   const [activeGroup, setActiveGroup] = useState<(typeof GROUPS)[number]>("Omslag");
   const [fitScale, setFitScale] = useState(0.5);
   const [zoom, setZoom] = useState<number | null>(null);
@@ -225,11 +227,11 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const label = activeGroup === "Innehåll" ? field.key.endsWith("Title") ? "Rubrik" : "Text" : field.key === "qrUrl" ? "QR-adress" : field.label;
     return <div className={`field ${tooLong || qrError ? "field-error" : ""}`} key={field.key}>
       <div className="field-top"><label htmlFor={field.key}>{label}</label><div className="field-tools">{tooLong && <span className="overflow-label">Får inte plats</span>}{(field.group === "Innehåll" || field.key === "about") && <button type="button" className="reset-field" title={`Återställ standardtext: ${field.label}`} aria-label={`Återställ standardtext: ${field.label}`} disabled={data[field.key] === defaults[field.key]} onClick={() => { change(field.key, defaults[field.key]); setMessage("Fältets standardtext är återställd. Spara för att behålla ändringen."); }}>↺</button>}</div></div>
-      {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "profession" ? 2 : field.key === "learn" || field.key === "why" ? 7 : 4} value={data[field.key]} aria-invalid={tooLong || undefined} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} aria-invalid={tooLong || qrError || undefined} aria-describedby={field.key === "qrUrl" ? "qr-help" : undefined} onChange={event => change(field.key, event.target.value)} />}
+      {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "profession" ? 2 : field.key === "learn" || field.key === "why" ? 7 : 4} value={data[field.key]} aria-invalid={tooLong || undefined} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} readOnly={field.key === "qrUrl" && !!entry} aria-invalid={tooLong || qrError || undefined} aria-describedby={field.key === "qrUrl" ? "qr-help" : undefined} onChange={event => change(field.key, event.target.value)} />}
       {colorKey && <div className="title-color"><label htmlFor={`${field.key}-color`}>Textfärg</label><select id={`${field.key}-color`} title="Automatisk: blå text, eller vit text med mörkblå gradient" value={data[colorKey]} onChange={event => change(colorKey, event.target.value as SheetData[typeof colorKey])}><option value="auto">Automatisk</option><option value="blue">Blå</option><option value="coral">Korall</option></select></div>}
       {field.key === "profession" && <small>Med tre rader bryts yrkesnamnet automatiskt. Enter ger en egen radbrytning. Färgen väljs separat för varje rubrikdel.</small>}
       {field.multiline && <span className="field-count">{data[field.key].length} tecken</span>}
-      {field.key === "qrUrl" && <small id="qr-help">{validQr ? "QR-koden uppdateras direkt. Kontrollera att adressen leder till rätt utbildning." : "Ange skolans eller utbildningens webbadress med https://. Adressen behövs för PDF-export."}</small>}
+      {field.key === "qrUrl" && <small id="qr-help">{entry ? `QR-koden genereras automatiskt för ${entry.school}. Adressen använder a och o i stället för å, ä och ö.` : validQr ? "QR-koden uppdateras direkt. Kontrollera att adressen leder till rätt utbildning." : "Ange skolans eller utbildningens webbadress med https://. Adressen behövs för PDF-export."}</small>}
     </div>;
   }
 
