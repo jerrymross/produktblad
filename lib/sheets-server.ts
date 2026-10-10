@@ -1,3 +1,4 @@
+import { withVisitAddress } from "@/lib/school-addresses";
 import { randomUUID } from "node:crypto";
 import { type PoolClient } from "pg";
 import { transaction } from "@/lib/db";
@@ -26,7 +27,7 @@ export async function readSheet(userId: string, id: string, revision?: number) {
       : await client.query("SELECT content,revision,created_at AS \"updatedAt\" FROM sheet_versions WHERE sheet_id=$1 AND revision=$2", [id, revision]);
     if (!result.rowCount) throw new HttpError(404, "Bladversionen finns inte.");
     const sheet = result.rows[0] as { content: SheetData; revision: number; updatedAt: string };
-    if (revision === undefined && id !== "example") sheet.content = { ...sheet.content, qrUrl: schoolQrUrl(sheetEntry(id).school) };
+    if (revision === undefined && id !== "example") { const entry = catalog.find(item => item.id === id)!; sheet.content = { ...withVisitAddress(sheet.content, entry), qrUrl: schoolQrUrl(entry.school) }; }
     return sheet;
   });
 }

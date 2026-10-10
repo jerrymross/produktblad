@@ -6,7 +6,7 @@ Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder
 
 **Spara utkast** sparar gemensamt. **Versionshistorik** låter dig läsa in en äldre version och spara den som en ny. Endast en redigeringssession åt gången kan spara ett blad. Låset förnyas var 30:e sekund och löper ut efter 120 sekunder. Om låset förloras behålls osparade ändringar i det öppna fönstret.
 
-Tidigare lokala utkast och bilder flyttas inte automatiskt från andra datorer. Öppna den gamla webbläsaren på samma adress och använd **Importera mina lokala utkast** i biblioteket respektive bildbibliotekets importknapp. Befintliga molnutkast skrivs inte över av importen. Inga utbildningstexter eller skolkontakter har fyllts i automatiskt.
+Tidigare lokala utkast och bilder flyttas inte automatiskt från andra datorer. Öppna den gamla webbläsaren på samma adress och använd **Importera mina lokala utkast** i biblioteket respektive bildbibliotekets importknapp. Befintliga molnutkast skrivs inte över av importen. Besöksadresser fylls i från användarens kontrollerade lista den 10 oktober 2026. Manuella bladadresser bevaras. Se docs/BESOKSADRESSER.md. Övriga skolkontakter fylls inte i automatiskt.
 
 ## Utveckling
 

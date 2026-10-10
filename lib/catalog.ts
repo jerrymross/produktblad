@@ -1,3 +1,4 @@
+import { schoolVisitAddress } from "@/lib/school-addresses";
 import rows from "@/fixtures/produktblad.json";
 import { TITLE_DEFAULTS, DEFAULT_ABOUT, defaultHeadings, exampleSheet, isSheetData, KOMVUX_DEFAULT_CONTENT, TEMPLATE_VERSION, upgradePreviousDraft, type SheetData } from "@/lib/sheet";
 
@@ -23,7 +24,7 @@ export function initialSheet(entry: CatalogEntry): SheetData {
   // Catalog rows are assignments, not evidence for education facts or contacts.
   const blank = Object.fromEntries(Object.keys(exampleSheet).map(key => [key, ""])) as SheetData;
   return { ...blank, ...TITLE_DEFAULTS, ...defaultHeadings(entry.title), ...(entry.program === "Komvux" ? KOMVUX_DEFAULT_CONTENT : {}), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
-    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2", qrUrl: schoolQrUrl(entry.school) };
+    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2", qrUrl: schoolQrUrl(entry.school), address: schoolVisitAddress(entry) };
 }
 
 export function readPreviousDraft(entry?: CatalogEntry): SheetData | null {

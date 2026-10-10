@@ -1,4 +1,5 @@
 "use client";
+import { schoolVisitAddress, withVisitAddress } from "@/lib/school-addresses";
 import { sheetApiPath } from "@/lib/sheet-id";
 
 
@@ -69,7 +70,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const load=async()=>{try{
       const sheet=await cloud<{content:SheetData;revision:number}>(sheetUrl);
       if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
-      if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(previous);setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
+      if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(entry ? withVisitAddress(previous, entry) : previous);setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
       await lock();
     }catch(error){if(live)setMessage(error instanceof Error?error.message:"Bladet kunde inte öppnas.");}finally{if(live)setLoading(false);}};
     void load();
@@ -229,6 +230,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       <div className="field-top"><label htmlFor={field.key}>{label}</label><div className="field-tools">{tooLong && <span className="overflow-label">Får inte plats</span>}{(field.group === "Innehåll" || field.key === "about") && <button type="button" className="reset-field" title={`Återställ standardtext: ${field.label}`} aria-label={`Återställ standardtext: ${field.label}`} disabled={data[field.key] === defaults[field.key]} onClick={() => { change(field.key, defaults[field.key]); setMessage("Fältets standardtext är återställd. Spara för att behålla ändringen."); }}>↺</button>}</div></div>
       {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "profession" ? 2 : field.key === "learn" || field.key === "why" ? 7 : 4} value={data[field.key]} aria-invalid={tooLong || undefined} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} readOnly={field.key === "qrUrl" && !!entry} aria-invalid={tooLong || qrError || undefined} aria-describedby={field.key === "qrUrl" ? "qr-help" : undefined} onChange={event => change(field.key, event.target.value)} />}
       {colorKey && <div className="title-color"><label htmlFor={`${field.key}-color`}>Textfärg</label><select id={`${field.key}-color`} title="Automatisk: blå text, eller vit text med mörkblå gradient" value={data[colorKey]} onChange={event => change(colorKey, event.target.value as SheetData[typeof colorKey])}><option value="auto">Automatisk</option><option value="blue">Blå</option><option value="coral">Korall</option></select></div>}
+      {field.key === "address" && entry && <small>{schoolVisitAddress(entry) ? `Standard för denna utbildning: ${schoolVisitAddress(entry)}. Du kan ändra adressen för bladet. Ett tomt fält använder standardadressen när du sparar.` : "Besöksadress för denna utbildning behöver bekräftas. Fyll i rätt utbildningsplats."}</small>}
       {field.key === "profession" && <small>Med tre rader bryts yrkesnamnet automatiskt. Enter ger en egen radbrytning. Färgen väljs separat för varje rubrikdel.</small>}
       {field.multiline && <span className="field-count">{data[field.key].length} tecken</span>}
       {field.key === "qrUrl" && <small id="qr-help">{entry ? `QR-koden genereras automatiskt för ${entry.school}. Adressen använder a och o i stället för å, ä och ö.` : validQr ? "QR-koden uppdateras direkt. Kontrollera att adressen leder till rätt utbildning." : "Ange skolans eller utbildningens webbadress med https://. Adressen behövs för PDF-export."}</small>}
@@ -277,7 +279,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
           {message && <p className="message" role="status">{message}</p>}
 
           {!locked&&!loading&&<button type="button" className="text-button" onClick={()=>{void cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:token.current})).then(()=>{setLocked(true);setMessage("Du kan nu redigera bladet.");}).catch(error=>setMessage(error.message));}}>Försök öppna för redigering igen</button>}
-          <details className="sheet-history"><summary onClick={()=>{void cloud<{versions:typeof history}>(`${sheetUrl}/history`).then(result=>setHistory(result.versions)).catch(error=>setMessage(error.message));}}>Versionshistorik</summary>{history.map(version=><button type="button" className="text-button" key={version.revision} disabled={!locked||busy} onClick={()=>{if(dirty&&!window.confirm("Ersätt osparade ändringar med den här versionen?"))return;edits.current++;setData(version.content);setDirty(true);setMessage("Tidigare version är inläst. Spara för att skapa en ny version.");}}>Version {version.revision} · {new Date(version.createdAt).toLocaleString("sv-SE")}</button>)}</details>
+          <details className="sheet-history"><summary onClick={()=>{void cloud<{versions:typeof history}>(`${sheetUrl}/history`).then(result=>setHistory(result.versions)).catch(error=>setMessage(error.message));}}>Versionshistorik</summary>{history.map(version=><button type="button" className="text-button" key={version.revision} disabled={!locked||busy} onClick={()=>{if(dirty&&!window.confirm("Ersätt osparade ändringar med den här versionen?"))return;edits.current++;setData(entry ? withVisitAddress(version.content, entry) : version.content);setDirty(true);setMessage("Tidigare version är inläst. Spara för att skapa en ny version.");}}>Version {version.revision} · {new Date(version.createdAt).toLocaleString("sv-SE")}</button>)}</details>
           <p className="save-hint">Gemensamt bibliotek · Ctrl+S / ⌘S</p>
         </div>
       </aside>
