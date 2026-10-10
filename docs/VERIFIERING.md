@@ -285,3 +285,5 @@ Livekontroll godkänd på produktblad.vercel.app efter deployment dpl_G933k9Jd86
 ## Besöksadresser 10 oktober 2026
 
 Användarens adresslista kopplas per skola och utbildning enligt docs/BESOKSADRESSER.md. Build, lint och typkontroll i build passerade. scripts/test-school-addresses.ts verifierar utbildningsgrenar, okända adresser, manuella avvikelser, sparning i lokal utvecklingsdatabas, bevarad historik och verklig PDF-export. Lokal webbläsare visar Norrköping Kock med Sprängstensgatan 1 A. PDF i lokal färdigbyggd app blev 1 A4 och granskades renderad med adressen under logotypen. Utvecklingsserverns PDF laddade om under export; PDF-kontrollen gjordes därför mot next start. Testbladets långa yrkesrubrik kortades till Kock i testinnehållet för att pröva adressen inom befintlig A4-gräns.
+
+Publicerat på https://produktblad.vercel.app: dpl_68CMpNkSPqEEX4UDWLR9RiBVSZqm, status READY. Samma adresskontroll passerade mot produktion med inloggning och läsning av Norrköping Kock i språkkombination. Inga befintliga produktionsblad skrevs över i testet. PDF och visuell webbläsarkontroll ovan är lokala kontroller.
