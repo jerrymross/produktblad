@@ -279,3 +279,5 @@ QR-adressen skapas från skolnamnet: http://astar.se/ följt av gemener, å/ä s
 Nya blad får adressen direkt. Vid öppning av aktuella befintliga blad används skolans automatiska QR-adress. Fältet visas skrivskyddat för skolblad. Servern sätter samma adress när en ny bladversion sparas, även vid lokal import eller återställning från tidigare version. Gamla historikversioner/exportunderlag ändras inte i efterhand. Exempelbladet utan skola behåller sin redigerbara testadress.
 
 Lokalt: lint och produktionsbygge godkända. scripts/test-school-qr.ts kontrollerar svenska ortnamn, samtliga katalogposters standardadress samt att servern korrigerar en felaktigt inskickad QR-adress och sparar samma adress i historiken. Adress för Astar Nationellt genereras enligt samma namnbaserade regel (astar-nationellt); någon separat nationell sidadress har inte verifierats.
+
+Livekontroll godkänd på produktblad.vercel.app efter deployment dpl_G933k9Jd86D94Y2RQaQzuYHoE3j1: Norrköpings aktuella blad returnerar automatiskt http://astar.se/norrkoping. Inga befintliga produktionsblad skrevs om i verifieringen; sparning och historik verifierades i utvecklingsmiljön.
