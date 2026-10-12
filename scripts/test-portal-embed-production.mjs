@@ -9,6 +9,9 @@ try{
  for(let i=0;i<60;i++){frame=page.frames().find(f=>f.url().startsWith(product+'/produktblad'));if(frame)break;await new Promise(r=>setTimeout(r,500));}
  if(!frame){await page.screenshot({path:'work/embed-failure.png',fullPage:true});console.log('Iframe-vägar:',page.frames().map(f=>{try{return new URL(f.url()).pathname}catch{return 'blank'}}));console.log('Appfel:',await page.$eval('#app-error',e=>e.textContent));}assert.ok(frame,'Produktblad måste laddas inne i iframe.');await frame.waitForSelector('.catalog-page',{timeout:30000}).catch(()=>frame.waitForSelector('main',{timeout:10000}));
  assert.equal((await ctx.pages()).length,1);assert.equal(new URL(page.url()).origin,portal);
+ await page.waitForFunction(()=>document.querySelector('#app-frame')?.dataset.ready==='1',{timeout:30000});
+ assert.equal(await page.$eval('#app-error',el=>el.hidden),true);assert.match((await fetch(portal)).headers.get('cache-control'),/no-store/);
+ pass('Aktuell portal-HTML cachas inte och den verkliga appen bekräftar att iframe laddats; ingen blockeringsvarning visas.');
  const me=await frame.evaluate(async()=>({status:(await fetch('/api/me')).status,body:await fetch('/api/me').then(r=>r.json())}));assert.equal(me.status,200);assert.equal(me.body.admin,false);assert.deepEqual(me.body.schools,[saved.school_id]);
  const cookies=await ctx.cookies(product);const embedded=cookies.find(c=>c.name==='__Host-produktblad-embedded');assert.ok(embedded&&embedded.httpOnly&&embedded.secure&&embedded.sameSite==='None');assert.ok(embedded.partitionKey,'Cookie måste vara partitionerad.');
  pass('Riktig produktionsbrowser med tredjepartscookie-blockering: Produktblad öppnas inuti portalen, med partitionerad HttpOnly-session och rätt skolåtkomst; ingen ny flik.');

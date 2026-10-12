@@ -1,5 +1,7 @@
 # Appar inne i portalen och infällbar meny
 
+Produktblad skickar även ett innehållslöst produktblad-frame-ready till den exakta portal-origin när klientkoden laddats, och svarar på produktblad-frame-check från sin verifierade parent. Portalen använder detta för att visa återhämtning vid blockerad appvy. Meddelandet ger ingen behörighet och innehåller inga användardata. Portalens HTML cachas inte och dess skript är versionsbundna; en redan öppen gammal portalversion behöver laddas om.
+
 Beställt 12 oktober 2026. Portalens sidomeny kan fällas in/visas med en knapp i toppraden. Valet lagras som lokal gränssnittspreferens; växling ändrar bara layoutklassen och laddar inte om den öppna appen.
 
 Appkort öppnar en sandboxad iframe i portalens arbetsyta, utan nytt fönster. Produktblad har en särskild autentiserad inbäddningsbrygga. Andra externa appar visas via sina konfigurerade HTTPS-adresser; deras egna frame-/inloggningsregler kan fortfarande neka inbäddning och kringgås inte.

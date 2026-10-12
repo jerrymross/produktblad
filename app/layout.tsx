@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PortalFrameStatus } from "@/components/PortalFrameStatus";
 import "./globals.css";
 import "./sheet.css";
 
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="sv"><body>{children}</body></html>;
+  return <html lang="sv"><body><PortalFrameStatus />{children}</body></html>;
 }
