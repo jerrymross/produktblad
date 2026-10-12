@@ -1,4 +1,5 @@
 import { schoolVisitAddress } from "@/lib/school-addresses";
+import { defaultImagePath } from "@/lib/education-images";
 import rows from "@/fixtures/produktblad.json";
 import { AF_DEFAULT_CONTENT } from "@/lib/af-default-content";
 import { KOMVUX_REFERENCE_CONTENT } from "@/lib/komvux-default-content";
@@ -26,7 +27,7 @@ export function initialSheet(entry: CatalogEntry): SheetData {
   // Catalog rows are assignments, not evidence for education facts or contacts.
   const blank = Object.fromEntries(Object.keys(exampleSheet).map(key => [key, ""])) as SheetData;
   return withProgramLayout({ ...blank, ...TITLE_DEFAULTS, ...defaultHeadings(entry.title), titleLine: "Utbilda dig", titlePrefix: "till", profession: entry.title,
-    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: "/reference-hero.jpg", gradientStyle: "none", gradientStrength: "2", qrUrl: schoolQrUrl(entry.school), address: schoolVisitAddress(entry), ...(isAfProgram(entry.program) ? AF_DEFAULT_CONTENT : entry.program === "Komvux" ? KOMVUX_REFERENCE_CONTENT : {}) }, entry.program, entry.school);
+    eyebrow: entry.program === "Komvux" ? "KOMVUX" : "ARBETSMARKNADSUTBILDNING", about: DEFAULT_ABOUT, image: defaultImagePath(entry.title), gradientStyle: "none", gradientStrength: "2", qrUrl: schoolQrUrl(entry.school), address: schoolVisitAddress(entry), ...(isAfProgram(entry.program) ? AF_DEFAULT_CONTENT : entry.program === "Komvux" ? KOMVUX_REFERENCE_CONTENT : {}) }, entry.program, entry.school);
 }
 
 export function readPreviousDraft(entry?: CatalogEntry): SheetData | null {

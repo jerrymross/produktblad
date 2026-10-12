@@ -1,4 +1,7 @@
 import { withVisitAddress } from "@/lib/school-addresses";
+import { defaultImagePath, educationKey, isBundledImage, withDefaultImage } from "@/lib/education-images";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { withUnsavedProgramDefaults } from "@/lib/default-content";
 import { randomUUID } from "node:crypto";
 import { type PoolClient } from "pg";
@@ -29,11 +32,20 @@ export async function readSheet(userId: string, id: string, revision?: number) {
     if (!result.rowCount) throw new HttpError(404, "Bladversionen finns inte.");
     const sheet = result.rows[0] as { content: SheetData; revision: number; updatedAt: string };
     if (revision === undefined && id !== "example") { const entry = catalog.find(item => item.id === id)!; sheet.content = { ...withVisitAddress(withUnsavedProgramDefaults(sheet.content, entry.program, sheet.revision), entry), qrUrl: schoolQrUrl(entry.school) }; }
+    if (revision === undefined && sheet.revision === 0) {
+      const title = id === "example" ? "Kock" : catalog.find(item => item.id === id)!.title;
+      sheet.content = withDefaultImage(sheet.content, title, 0);
+      if (sheet.content.image === defaultImagePath(title)) {
+        const chosen = await client.query("SELECT '/api/media/' || media_id AS image FROM library_images WHERE education=$1 AND slot=1", [educationKey(title)]);
+        if (chosen.rows[0]) sheet.content = { ...sheet.content, image: chosen.rows[0].image };
+      }
+    }
     return sheet;
   });
 }
 export async function privateImage(client: PoolClient, image: string, school: string): Promise<string> {
   if (image === "/reference-hero.jpg") return image;
+  if (isBundledImage(image)) return storeImage(client, await readFile(resolve(process.cwd(), "public", image.slice(1))), school);
   const reference = /^\/api\/media\/([a-f0-9-]{36})$/.exec(image);
   if (reference) {
     const found = await client.query("SELECT id FROM media WHERE id=$1 AND (school_id=$2 OR school_id IS NULL)", [reference[1], school]);

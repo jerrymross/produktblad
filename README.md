@@ -59,7 +59,7 @@ Startsidan och `/produktblad` visar 136 poster för 24 skolor från användarens
 
 Filtrera även på utbildningsform och **Alla**, **Sparade**, **Ej påbörjade** eller **Tidigare mall**. Siffrorna i snabbfiltren gäller den aktuella sökningen och skol-/utbildningsformsvalet. Filtervalen behålls i `sessionStorage` under samma browserflik när du återvänder från redigeraren. **Rensa filter** och tomlägets **Visa alla produktblad** återgår till hela biblioteket. Hela produktkortet är klickbart och har en namngiven länk för tangentbordsnavigation. Översikten över skolor, blad och sparade utkast gäller hela biblioteket.
 
-**Skapa produktblad** öppnar rätt skola och utbildning i dess A4-mall. **Fortsätt redigera** öppnar ett sparat eller tidigare utkast. Komvux har referenstext med `***` för yrkesspecifika uppgifter; AF och AF RUB har sin referenstext med `****`. Alla blad har standardtexten om Astar längst ner. Huvudbilden är tills vidare prototypens exempelbild och kan väljas ur bildbiblioteket. Inga utbildningsspecifika fakta eller personkontakter har hämtats automatiskt.
+**Skapa produktblad** öppnar rätt skola och utbildning i dess A4-mall. **Fortsätt redigera** öppnar ett sparat eller tidigare utkast. Komvux har referenstext med `***` för yrkesspecifika uppgifter; AF och AF RUB har sin referenstext med `****`. Alla blad har standardtexten om Astar längst ner. Utbildningens Bild 1 används automatiskt när bladet saknar ett eget sparat bildval. Inga utbildningsspecifika fakta eller personkontakter har hämtats automatiskt.
 
 Efter **Spara utkast** visas en grön markering med **Sparat utkast** i biblioteket. Den gäller enbart kombinationen skola, utbildningsform, utbildning och aktuell mallversion. Den visar att något sparats, inte att bladet är komplett eller godkänt. Sparning i en skola markerar inte motsvarande utbildning i en annan skola. **Återställ standardinnehåll**, under **Om mallen & fler alternativ**, tar bort den sparade versionen och dess gröna markering.
 
@@ -149,6 +149,14 @@ Under **Omslag → Välj från bildbiblioteket** är bladets utbildning automati
 Vid val av en förinställd bild kopieras JPEG-data till bladet. Den befintliga serversparningen skapar sedan privat media och fryser mediereferensen med bladversionen. Befintliga privata biblioteksbilder använder fortsatt `/api/media/…` och befintliga åtkomstkontroller. Preview och PDF använder samma frysta innehåll. Import av tidigare lokala bilder bevarar befintliga gemensamma uppladdningar, men kan ersätta en förinställd bild.
 
 Ingen databasmigration eller ny molnresurs behövs för dessa förinställda bilder. Denna ändring har inte manuellt publicerats till Vercel och har inte verifierats med en inloggad session i den faktiska molnmiljön.
+
+### Automatiskt bildval, 12 oktober 2026
+
+Alla 136 nya blad får utbildningens **Bild 1** från det gemensamma biblioteket. Även tidigare öppnade, osparade blad med tom bild eller den gamla exempelbilden får Bild 1. Om admin har ersatt plats 1 i biblioteket används den uppladdade privata bilden. Ett befintligt eget bildval, exempelvis Bild 2 eller en direktuppladdning, bevaras även i ett äldre lokalt utkast. Sparade blad och frysta historiska versioner ändras inte. Kock-exempelbladet får Kock Bild 1 när det saknar en sparad version.
+
+Vid sparning kopieras originalbildens bytes till privat media och bildreferensen fryses med versionen. Servern accepterar bara exakta bildvägar i projektets bildmanifest; godtyckliga filvägar får inte läsas. Privata bilder använder samma befintliga skol- och biblioteksåtkomstkontroller. `next.config.ts` inkluderar original-JPEG-filerna i blad-API:ets serverpaket med outputFileTracingIncludes.
+
+Verifiering: `npx tsx scripts/test-default-image.ts` kontrollerar Bild 1 och filer för alla 136 blad samt bevarade bildval. Lokal Postgres/RLS verifierar bibliotekets privata ersättare, exakt JPEG-kopia vid sparning och bevarad historisk bild. Browserprovet verifierar automatiskt bildval även efter lokal utkastimport/återöppning, sparpayload, mobil och A4-export. Lint, TypeScript och build kontrolleras lokalt. Faktisk Vercel/Neon är inte verifierat; ingen manuell publicering eller live-datamigration utförs.
 ## Adminläge
 
 Logga in på `/login` med användarnamn **admin** och samma lösenord som kontot **jerrymross@gmail.com**. E-postinloggningen finns kvar. `admin` är ett serverstyrt alias till det befintliga kontot; det skapar inget nytt konto och ger ingen ny roll.
