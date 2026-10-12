@@ -372,3 +372,10 @@ Visningsnamnet Mall 01 ersatt med KOMVUX i preview, bibliotekets mallmärkning o
 Användarens 14 PDF-underlag matchade till Umeå-Komvuxblad. Användaren valde att behålla texten exakt och anpassa mallen. Separat fast version komvux-umea-1.0.0 infördes utan ändring av standard/AF eller tidigare frysta versioner. Alla 14 lokala previews har tom overflowlista och exporter är en stående A4 med verifierad text. Käll- och exportspalters text jämförd efter normalisering av mjuka radbrytningar. Typecheck/lint/build och Umeå-/Komvux-/AF-tester passerade. Neon-provimport rullad tillbaka i båda miljöer. Se UMEA-INNEHALL.md för matchning och slutlig importstatus. Inloggad Vercel-export har inte provats.
 
 Slutlig Umeå-import: 14 blad sparade och återlästa med exakt innehåll, rätt mall-ID, historik och tillgängliga privata bilder i både Neon DEV/produktion. Upprepad provimport lämnar oförändrade blad utan versionsökning. Automatisk Vercel-deployment dpl_HFjJqVMH2FNoytuQ2X1GMvrtTMXA för f65391b verifierad READY och Umeå-CSS på produktionsadressen före slutlig sparning. Ingen ny inloggad Vercel-export verifierad. Se UMEA-INNEHALL.md.
+
+## Gemensam ingressbredd 12 oktober 2026
+
+- .sheet-intro har bredd 260 pt och högerkant 285,5 pt, cirka 4,3 mm före A4-mittpunkten. Samma CSS används av samtliga mallar, preview och framtida export. Ingen text kortad eller automatisk krympning införd.
+- Lokal browser: alla 14 Umeåblad, standard-Komvux och AF renderade med riktiga Sheet-komponenten och resurser. Ingressen håller sig före mitten och inom heron. Samtliga befintliga provtexter ger tom overflowlista; längre ingress fortsätter kontrolleras av befintlig overflowspärr.
+- Lokal PDF: Umeå, standard och AF exporterade som en stående A4 vardera. PDF-textens ingressgeometri verifierad före mittpunkten, renderad med Poppler och visuellt granskad. QA: work/qa-intro.mjs, intro-qa.json, intro-1/14/15.pdf samt intro-export-1/14/15.png.
+- Statiskt: git diff --check passerade. Endast CSS och dokumentation ändrade. Vercel och Neon är inte återtestade; inga databasoperationer eller manuella deployments.

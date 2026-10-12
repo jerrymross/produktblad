@@ -86,3 +86,7 @@ AF och AF RUB har en separat fast mall enligt `references/AF.pdf` (användarens 
 Efter uttryckligt val att behålla texterna exakt används komvux-umea-1.0.0 för 14 angivna Umeå-Komvuxblad. Textspalter 372 pt, brödtext 9,4/11,3 pt, i övrigt samma fasta Komvux-form. Inga användarstyrda storlekar eller automatisk krympning. Tidigare frysta versioner och andra skolors mallar behåller sin form. Se UMEA-INNEHALL.md.
 
 För nya blad i Umeåvarianten används appens befintliga vita gradient, styrka 4, så att den blå omslagstexten syns över de befintliga yrkesbilderna. Tidigare sparade bild-/gradientval bevaras vid import. Bildfilerna byts inte ut.
+
+## Ingress före sidans mitt 12 oktober 2026
+
+Användaren beställde radbrytning strax före sidans mitt på samtliga mallar. Gemensam ingressbredd ändrad från 390 till 260 pt, med oförändrad vänsterposition 25,5 pt. Högerkanten ligger vid 285,5 pt, cirka 4,3 mm före A4-sidans mitt. Detta är en uttryckligen beställd gemensam layoutjustering för standard-Komvux, Umeå-Komvux och AF. Innehåll och fontstorlek är oförändrade; redan exporterade PDF-filer ändras inte.

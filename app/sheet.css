@@ -70,7 +70,7 @@
 .sheet-title[data-rows="3"] { font-size: 42pt; line-height: 1.16; }
 .sheet-title[data-rows="3"] > div { white-space: pre-wrap; }
 .sheet-intro {
-  position: absolute; left: 25.5pt; top: 237.2pt; width: 390pt;
+  position: absolute; left: 25.5pt; top: 237.2pt; width: 260pt;
   color: var(--sheet-blue); font: 700 9pt/1.18 "Sheet Lora", Georgia, serif;
   white-space: pre-line;
 }
