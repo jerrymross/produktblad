@@ -36,6 +36,32 @@ Ingen ny miljövariabel krävs för SSO. Befintlig `APP_DATABASE_URL` ska använ
 - Lokalt: `scripts/test-portal-protocol.ts` verifierar RFC-PKCE-vektor, slumpformat, returadresser, signatur, fel issuer/audience/typ/claims, exp/iat och fail-closed introspection.
 - Databas DEV/produktion: verkliga runtime-roller i återställda transaktioner; ny identitet saknar admin/skolor och kan inte se blad eller skriva kontolänkar/central roll. Befintliga 28 blad, tre skolmedlemskap och två centralroller räknades före ändringen.
 - Lint, typecheck och build körs före push. En befintlig lintvarning i ignorerade `work/verify-neon-copies.mjs` är utanför ändringen.
-- Produktionsresultat dokumenteras efter faktisk deployment och end-to-end-test; en lokal build räknas inte som produktionsbevis.
+- Produktion: `dpl_82YU9Fk1ZXGEpCZrd9unhMF5medT`, publicerad från commit `e652ae7` på `https://produktblad.vercel.app`. Vercel nådde READY. Separata syntetiska testidentiteter användes; deras egna konton, inbjudningar, medlemskap och lås återställdes efter provet. Ingen befintlig bladversion skrevs om.
+
+### Faktiska produktionsprov 12 oktober 2026
+
+`scripts/test-portal-production.mjs` passerade hela flödet i Chrome och via de publicerade serveroperationerna:
+
+- Direktbesök → portalens riktiga inloggningsformulär → authorize/callback → HttpOnly/Secure/SameSite=Lax-session. Token fanns endast i serverlagring och sessionsutgången matchade JWT-exp.
+- Ny identitet fick neutral vy utan skolor. Vanlig användare nekades admin. Tillfällig portal-adminroll gav ingen lokal adminroll.
+- Riktad skol-inbjudan accepterades via verifierad portalidentitet; återanvänd inbjudan avvisades.
+- Befintlig sparad bladversion lästes och öppnades i redigeraren. Annan skolas blad och PDF avvisades med 403.
+- PDF-export passerade i faktisk Vercel-runtime. Nedladdad fil hade PDF-signatur, en stående A4 (594,96 × 841,92 pt) och fyra inbäddade fontresurser. Export och browser-preview granskades visuellt; referensen Kock.pdf renderades separat. SSO ändrar ingen mallgeometri; befintliga motiv, innehåll och prototypavvikelser består.
+- Lokal POST-utloggning ogiltigförklarade den gamla server-sessionen. Ny top-level SSO behövde inget nytt lösenord när portalsessionen fanns; retur till blad-ID med svenska procentkodade tecken fungerade.
+- Indragen appåtkomst stoppade redan aktiv Produktblad-session, API-skrivning och PDF med 401. Inaktiverat portalkonto och portalutloggning gav också 401.
+- Fel klient och callback (inklusive extra slash), återanvänd kod/callback, fel PKCE-verifier, utgången kod, utgången lokal transaktion, fel state och förbrukad transaktion avvisades. JWT-exp/signatur/issuer/audience/typ och nätverksfel verifierades dessutom i de lokala negativa protokollproven.
+- GET-utloggning gav 405, cross-origin POST gav 403, lokal lösenordsinloggning gav 403. Inga browser-JavaScriptfel rapporterades.
+
+Efter återställning fanns fortfarande 28 befintliga blad, tre ursprungliga skolmedlemskap och två centralroller. Den uttryckligt skapade administratörslänken finns kvar.
+
+Lokala browser-SSO-prov kördes inte: localhost/preview saknar registrerad portalcallback. Lokala protokollprov, typecheck, lint (inga fel; en äldre work-varning) och build passerade. PDF-provet ovan är en exporterad produktionsfil, inte en lokal export. Databasskyddet är Neon/Postgres RLS; Supabase används inte.
+
+Kör det skrivande produktionsprovet endast uttryckligen för avsedd miljö:
+
+```powershell
+node scripts/test-portal-production.mjs C:/CodeX/Astarstudioportal /katalog/med/produktblads/privata/miljofiler
+```
+
+Testet skapar egna syntetiska portal-/Produktblad-konton, accepterar en egen testinbjudan, läser ett befintligt blad och exporterar det. Det provar tillfälligt endast testidentitetens appgrant, kontoaktivitet och portalroll. Privata nycklar kopieras inte till Produktblad. Browserbilder, token/sessionstillstånd och exporterade testfiler ska stanna i ignorerade `work/`.
 
 Officiell JWT-källa: [jose jwtVerify](https://github.com/panva/jose/blob/main/docs/jwt/verify/functions/jwtVerify.md). Next.js cookies och route handlers lästes från den installerade 16.4.0-versionens `node_modules/next/dist/docs/`.

@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {randomBytes,randomUUID,createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
@@ -16,23 +16,26 @@ const ownerEnv=parse(readFileSync(resolve(productEnvDir,'.env.owner')));
 const product=new Pool({connectionString:ownerEnv.DATABASE_URL_UNPOOLED??ownerEnv.POSTGRES_URL_NON_POOLING,max:1});
 const base='https://produktblad.vercel.app',portal='https://astar-studio-portal.vercel.app';
 const email=`produktblad-sso-${randomUUID()}@example.org`,password=randomBytes(32).toString('hex');
-let user,localId,browser;
+let user,localId,browser,invitationId;
 const results=[];
 function pass(message){results.push(message);console.log('PASS:',message);}
 const cookieHeader=async(page,origin)=> (await page.browserContext().cookies(origin)).map(c=>`${c.name}=${c.value}`).join('; ');
-async function req(page,path,method='GET',body){return fetch(base+path,{method,redirect:'manual',headers:{Cookie:await cookieHeader(page,base),...(method==='POST'?{Origin:base,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});}
+async function req(page,path,method='GET',body){return fetch(base+path,{method,redirect:'manual',headers:{Cookie:await cookieHeader(page,base),...(method!=='GET'?{Origin:base,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});}
 try{
  user=(await runtime.auth.api.createUser({body:{name:'Tillfällig Produktblad SSO-verifiering',email,password,role:'user'}})).user;
  await runtime.db.run('INSERT INTO portal_members VALUES (?,1,NULL)',user.id);
  await runtime.db.run('INSERT INTO portal_grants VALUES (?,?)',user.id,'produktblad');
- browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-sandbox']});
+ browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-sandbox','--disable-gpu'],protocolTimeout:60000});
  const context=await browser.createBrowserContext();const page=await context.newPage();await page.setViewport({width:1440,height:1000});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base,{waitUntil:'networkidle0',timeout:60000});
  await page.waitForSelector('#login-form');
  assert.equal(new URL(page.url()).origin,portal);
  await page.type('input[name=email]',email);await page.type('input[name=password]',password);
- await Promise.all([page.waitForNavigation({waitUntil:'networkidle0',timeout:60000}),page.click('#login-form button[type=submit]')]);
+ console.log('Browser: portalens inloggningsformulär laddat.');
+ await page.click('#login-form button[type=submit]');
+ await page.waitForFunction(()=>location.origin==='https://produktblad.vercel.app',{timeout:60000});
+ await page.waitForFunction(()=>document.body.innerText.includes('skola'),{timeout:30000});
  assert.equal(new URL(page.url()).origin,base);
  assert.match(await page.$eval('body',e=>e.innerText),/tilldela.*skola/i);
  await page.screenshot({path:'work/sso-no-school.png',fullPage:true});
@@ -50,13 +53,17 @@ try{
  const all=(await product.query(`SELECT id,school_id,revision,title,content FROM studio.sheets WHERE revision>0 ORDER BY updated_at DESC`)).rows;
  const sheet=all.find(s=>s.content.qrUrl?.startsWith('http'));
  assert.ok(sheet,'Befintligt sparat blad med QR krävs');
- await product.query('INSERT INTO studio.school_memberships(user_id,school_id) VALUES($1,$2)',[localId,sheet.school_id]);
+ const inviteToken=randomBytes(32).toString('hex');invitationId=randomUUID();
+ await product.query('INSERT INTO studio.invitations(id,token_hash,email,school_ids) VALUES($1,$2,$3,$4)',[invitationId,createHash('sha256').update(inviteToken).digest('hex'),email,[sheet.school_id]]);
+ assert.equal((await req(page,'/api/invitations/accept','POST',{token:inviteToken})).status,200);
+ assert.equal((await req(page,'/api/invitations/accept','POST',{token:inviteToken})).status,400);
+ pass('Riktad inbjudan accepteras med verifierad portalidentitet och kan inte återanvändas.');
  await page.goto(base+'/produktblad',{waitUntil:'networkidle0',timeout:60000});
  assert.ok((await req(page,'/api/me').then(r=>r.json())).schools.includes(sheet.school_id));
- const path='/api/sheets/'+encodeURIComponent(sheet.id);
+ const path='/api/sheets/b_'+Buffer.from(sheet.id).toString('base64url');
  const read=await req(page,path);assert.equal(read.status,200);assert.equal((await read.json()).revision,sheet.revision);
- const other=all.find(s=>s.school_id!==sheet.school_id);assert.ok(other);assert.equal((await req(page,'/api/sheets/'+encodeURIComponent(other.id))).status,404);
- const crossPdf=await req(page,'/api/pdf','POST',{id:other.id,revision:other.revision});assert.equal(crossPdf.status,404);
+ const other=all.find(s=>s.school_id!==sheet.school_id);assert.ok(other);assert.equal((await req(page,'/api/sheets/b_'+Buffer.from(other.id).toString('base64url'))).status,403);
+ const crossPdf=await req(page,'/api/pdf','POST',{id:other.id,revision:other.revision});assert.equal(crossPdf.status,403);
  pass('Befintliga produktblad läses med skolåtkomst; annan skolas blad och PDF nekas.');
  const pdf=await req(page,'/api/pdf','POST',{id:sheet.id,revision:sheet.revision});
  assert.equal(pdf.status,200,`PDF-status ${pdf.status}: ${pdf.headers.get('content-type')}`);
@@ -67,11 +74,11 @@ try{
  const beforeCookie=await cookieHeader(page,base);assert.equal((await req(page,'/api/portal/logout','POST',{})).status,200);
  assert.equal((await fetch(base+'/api/me',{headers:{Cookie:beforeCookie}})).status,401);
  await page.goto(base+'/logged-out',{waitUntil:'networkidle0'});assert.match(await page.$eval('body',e=>e.innerText),/utloggad/);
- await page.goto(base+'/api/portal/login?returnTo='+encodeURIComponent('/?blad='+sheet.id),{waitUntil:'networkidle0',timeout:60000});assert.equal(new URL(page.url()).origin,base);assert.equal(new URL(page.url()).searchParams.get('blad'),sheet.id);
+ await page.goto(base+'/api/portal/login?returnTo='+encodeURIComponent('/?blad='+encodeURIComponent(sheet.id)),{waitUntil:'networkidle0',timeout:60000});assert.equal(new URL(page.url()).origin,base);assert.equal(new URL(page.url()).searchParams.get('blad'),sheet.id);
  pass('Lokal POST-utloggning ogiltigförklarar server-session; ny SSO använder portalsession utan extra lösenord och bevarar returnTo.');
  await runtime.db.run('DELETE FROM portal_grants WHERE user_id=? AND app_id=?',user.id,'produktblad');
  assert.equal((await req(page,'/api/me')).status,401);assert.equal((await req(page,'/api/pdf','POST',{id:sheet.id,revision:sheet.revision})).status,401);
- assert.equal((await req(page,path,'POST',{})).status,401);
+ assert.equal((await req(page,path,'PUT',{})).status,401);
  pass('Indragen appåtkomst stoppar aktiv Produktblad-session, API-skrivning och PDF omedelbart.');
  await runtime.db.run('INSERT INTO portal_grants VALUES (?,?)',user.id,'produktblad');
  await page.goto(base+'/api/portal/login',{waitUntil:'networkidle0',timeout:60000});
@@ -83,6 +90,34 @@ try{
  const out=await fetch(portal+'/api/auth/sign-out',{method:'POST',headers:{Origin:portal,'Content-Type':'application/json',Cookie:portalCookie},body:'{}'});assert.equal(out.status,200);
  assert.equal((await req(page,'/api/me')).status,401);
  pass('Inaktiverat portalkonto och portalutloggning stoppar Produktblad.');
+ const freshLogin=await fetch(portal+'/api/auth/sign-in/email',{method:'POST',headers:{Origin:portal,'Content-Type':'application/json'},body:JSON.stringify({email,password,rememberMe:false})});assert.equal(freshLogin.status,200);
+ const freshPortalCookie=freshLogin.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');
+ async function authorizeTransaction(){
+   const start=await fetch(base+'/api/portal/login',{redirect:'manual'});assert.equal(start.status,307);
+   const cookie=start.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');
+   const secret=cookie.match(/produktblad-portal-login=([^;]+)/)[1];
+   const tx=(await product.query('SELECT verifier FROM studio.portal_transactions WHERE cookie_hash=$1',[createHash('sha256').update(secret).digest('hex')])).rows[0];
+   const issued=await fetch(start.headers.get('location'),{headers:{Cookie:freshPortalCookie},redirect:'manual'});assert.equal(issued.status,302);
+   return {cookie,secret,verifier:tx.verifier,url:issued.headers.get('location')};
+ }
+ const validTx=await authorizeTransaction();
+ const reusedBody={grant_type:'authorization_code',client_id:'produktblad',redirect_uri:base+'/api/portal/callback',code:new URL(validTx.url).searchParams.get('code'),code_verifier:validTx.verifier};
+ const tokenExchange=body=>fetch(portal+'/api/sso/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ assert.equal((await tokenExchange({...reusedBody,redirect_uri:base+'/api/portal/callback/'})).status,400);
+ assert.equal((await tokenExchange({...reusedBody,client_id:'wrong'})).status,400);
+ const validCallback=await fetch(validTx.url,{headers:{Cookie:validTx.cookie},redirect:'manual'});assert.equal(validCallback.headers.get('location'),base+'/produktblad');
+ assert.equal((await tokenExchange(reusedBody)).status,400);
+ assert.match((await fetch(validTx.url,{headers:{Cookie:validTx.cookie},redirect:'manual'})).headers.get('location'),/error=portal/);
+ const wrongPkce=await authorizeTransaction();
+ await product.query('UPDATE studio.portal_transactions SET verifier=$1 WHERE cookie_hash=$2',[randomBytes(32).toString('base64url'),createHash('sha256').update(wrongPkce.secret).digest('hex')]);
+ assert.match((await fetch(wrongPkce.url,{headers:{Cookie:wrongPkce.cookie},redirect:'manual'})).headers.get('location'),/error=portal/);
+ const expiredCode=await authorizeTransaction();
+ await runtime.db.run('UPDATE portal_sso_codes SET expires_at=? WHERE user_id=?',Date.now()-1000,user.id);
+ assert.match((await fetch(expiredCode.url,{headers:{Cookie:expiredCode.cookie},redirect:'manual'})).headers.get('location'),/error=portal/);
+ const expiredTx=await authorizeTransaction();
+ await product.query('UPDATE studio.portal_transactions SET expires_at=now()-interval \'1 second\' WHERE cookie_hash=$1',[createHash('sha256').update(expiredTx.secret).digest('hex')]);
+ assert.match((await fetch(expiredTx.url,{headers:{Cookie:expiredTx.cookie},redirect:'manual'})).headers.get('location'),/error=portal/);
+ pass('Verkligt kodutbyte: exakt callback/klient, återanvänd kod/callback, fel PKCE, utgången kod och utgången transaktion verifierade.');
  // Atomic transaction/state rejection and replay protection at the real callback.
  const start=await fetch(base+'/api/portal/login',{redirect:'manual'});assert.equal(start.status,307);
  const txCookie=start.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');
@@ -94,10 +129,10 @@ try{
  assert.deepEqual(errors,[]);
  pass('Fel state/förbrukad transaktion nekas; GET-/cross-origin-utloggning och lokal lösenordsgenväg blockeras; inga browserfel.');
  writeFileSync('work/sso-production-results.json',JSON.stringify({time:new Date().toISOString(),results},null,2));
-}finally{
+}catch(error){console.error('Testgräns som behöver åtgärdas:',error.message);throw error;}finally{
  if(browser)await browser.close();
- if(localId){await product.query('DELETE FROM studio.editing_locks WHERE user_id=',[localId]);await product.query('DELETE FROM studio.portal_sessions WHERE portal_sub=$1',[user.id]);await product.query('DELETE FROM studio.portal_identities WHERE portal_sub=$1',[user.id]);await product.query('DELETE FROM studio."user" WHERE id=$1',[localId]);}
+ if(localId){await product.query('DELETE FROM studio.editing_locks WHERE user_id=$1',[localId]);await product.query('DELETE FROM studio.portal_sessions WHERE portal_sub=$1',[user.id]);await product.query('DELETE FROM studio.portal_identities WHERE portal_sub=$1',[user.id]);await product.query('DELETE FROM studio."user" WHERE id=$1',[localId]);}
+ if(invitationId)await product.query('DELETE FROM studio.invitations WHERE id=$1',[invitationId]);
  if(user){await runtime.db.run('DELETE FROM portal_audit WHERE actor=?',user.id);await runtime.db.run('DELETE FROM '+String.fromCharCode(34)+'user'+String.fromCharCode(34)+' WHERE id=? AND email=?',user.id,email);}
  await product.end();await runtime.close();
 }
-
