@@ -324,3 +324,11 @@ npx.cmd tsx scripts/test-admin-register.mts
 ```
 
 PGlite är enbart ett temporärt verifieringsverktyg, inte ett nytt beroende i appen. Provet skapar endast syntetiska data i minnet och skriver en lokal fixture under work/.
+## Centrerad footer 12 oktober 2026
+
+- Beställning: centrera gruppen med logotyp/adress, QR-kod och kontaktuppgifter i standardmallen.
+- Gemensam Sheet-renderare visar bara kontaktblock med namn, roll eller e-post. CSS använder två fasta kolumner (154/70 pt), en extra 125 pt-kolumn per synlig kontakt och centrerar hela gruppen. Kontakttexten behåller vänsterjustering. AF-mallens befintliga centrerade footer behåller sina mått.
+- Statiskt: lint, typecheck och git diff --check passerade. Inga beroenden eller databasoperationer ändrade.
+- Lokal browser: faktiska Sheet-komponenten körd i isolerat browserharness med samma CSS och resurser. Noll, en och två kontakter samt AF kontrollerade; gruppens mittpunkt sammanfaller med footerytans mittpunkt (0 px avvikelse). Browserbild med användarens kontakt/adress visuellt granskad. Tomma kontaktblock tar ingen plats.
+- Lokal PDF: samma komponent och innehåll exporterade med Chrome. pypdf verifierade en stående A4 (594,96 × 841,92 pt) och fontresurser för Lora Bold samt Inter Bold/Light/Regular. Exporten renderades med Poppler och granskades visuellt. QA-filer: work/check-footer.mjs, footer-0/1/2/af.png, footer-centered.pdf och footer-centered-render.png. Detta är ett rendererprov, inte ett autentiserat API-exportprov. Referensens övriga layoutmått behålls; footerns nya centrering är den beställda avvikelsen.
+- Vercel/Neon/RLS: inte återtestade. Ingen manuell deployment, molnresurs, migration eller live-databasändring.

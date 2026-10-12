@@ -79,7 +79,7 @@ export function Sheet({ data, imageSrc }: Props) {
           <div className="sheet-address" data-field="address">{data.address}</div>
         </div>
         <div className="sheet-qr" data-field="qrUrl"><QRCodeSVG value={qrValue} size={43} marginSize={0} fgColor="#174f9e" bgColor="#fff" /></div>
-        {!af && <>{contact()}{contact(true)}</>}
+        {!af && <>{hasContactOne && contact()}{hasContactTwo && contact(true)}</>}
       </div>
     </div>
   </article>;
