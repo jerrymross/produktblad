@@ -64,7 +64,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const scale = zoom ?? fitScale;
   const [overflow, setOverflow] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
-  useEffect(()=>{if(window.parent!==window)window.parent.postMessage({type:'produktblad-dirty',dirty},'https://astar-studio-portal.vercel.app');},[dirty]);
+  useEffect(()=>{if(window.parent!==window)window.parent.postMessage({type:'produktblad-dirty',dirty},'https://astar-studio-portal.vercel.app');return()=>{if(window.parent!==window)window.parent.postMessage({type:'produktblad-dirty',dirty:false},'https://astar-studio-portal.vercel.app');};},[dirty]);
   const [hasSaved, setHasSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
