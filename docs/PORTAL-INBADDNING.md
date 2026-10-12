@@ -13,3 +13,19 @@ API-, skol-/admin- och PDF-kontroller använder samma verifierade identitet, int
 En aktuell webbläsare med CHIPS-stöd behövs; äldre webbläsare får en kontrollerad förnyelse-/cookievy, ingen osäker fallback. Se [MDN partitionerade cookies](https://developer.mozilla.org/en-US/docs/Web/Privacy/Guides/Third-party_cookies/Partitioned_cookies) och [frame-ancestors](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors).
 
 Statisk och faktisk browser-/produktionsverifiering redovisas separat efter proverna. Inga privata portalnycklar kopieras och inga nya miljövariabler krävs.
+
+## Verifierat 12 oktober 2026
+
+- Produktblad: commit 579f01f, deployment dpl_4z669cADoYedTLGkKpNY9v5ZKfuo, READY på produktblad.vercel.app.
+- Portal: commit 34bf88d, deployment dpl_44Gaq43vT8h9GYyVUQgH8qYUB5zC, READY på astar-studio-portal.vercel.app.
+- Migration 006 aktiverad. Befintliga blad/roller/medlemskap ändras inte av migrationen.
+- Lokalt: lint utan fel (en äldre work-varning), typecheck och build passerade. Portalens syntax-/konfigurationsprov och isolerade SQLite-browser-/SSO-prov, nu även menyväxling, passerade.
+- Produktion: scripts/test-portal-embed-production.mjs kördes med en separat syntetisk portalidentitet och skolkoppling. Chrome startades med test-third-party-cookie-phaseout. Appkort öppnade Produktblad i iframe, exakt en browserflik fanns, toppadressen låg kvar på portalen och /api/me gav rätt skola utan adminroll. Den faktiska sessionens cookie hade Secure/HttpOnly/SameSite=None och partitionKey.
+- Menyn fälldes in och visades igen. Iframe blev bredare och dess session/frame bevarades. Den faktiska appvyn granskades visuellt.
+- Befintligt blad öppnades från iframe och verklig Vercel-PDF-export gav HTTP 200 och PDF-signatur. Bladversionen skrevs inte om. PDF-layouten ändras inte av detta steg.
+- En text ändrades faktiskt i redigeraren utan sparning. Testidentitetens lokala session sattes till utgången, API gav 401, och hjälpramen förnyade sessionen. Originalredigeraren, den osparade texten och en-fliksläget bevarades; API gav därefter 200.
+- Fel parent-origin gav 403. Återanvänd engångsbiljett gav 401. Indragen portalappåtkomst gav 401 även i redan öppen iframe. Inga browser-JavaScriptfel noterades. Bara egna testkonton, deras sessioner och redigeringslås återställdes.
+
+Vid det första browserprovet gjorde portalens no-referrer-policy Origin null vid formulär-POST och anropet nekades korrekt. Portalen använder nu strict-origin-when-cross-origin för att behålla verifierbart ursprung utan att skicka cross-origin URL-sökväg. Origin-kontrollen har inte tagits bort eller öppnats för andra sajter. Produktblads svar använder fortsatt no-referrer. Se [MDN Origin](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Origin).
+
+Aktuella Chrome-prov etablerar inte Safari-/Firefox-/äldre-browserverifiering. Lokala browserprov omfattar portalens UI/SSO; själva inbäddningskopplingen provades i produktion. Neon/Postgres används, inte Supabase. Inga e-postmeddelanden skickades.

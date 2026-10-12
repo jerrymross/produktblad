@@ -16,8 +16,12 @@ try{
  await page.click('.sidebar-toggle');assert.equal(await page.$eval('.sidebar-toggle',el=>el.getAttribute('aria-expanded')),'true');pass('Sidomenyn kan fällas in och visas igen; appens session och iframe bevaras och arbetsytan blir bredare.');
  await frame.goto(product+'/?blad='+encodeURIComponent(saved.id),{waitUntil:'networkidle0',timeout:60000});await frame.waitForSelector('.sheet-page');
  const pdf=await frame.evaluate(async data=>{const r=await fetch('/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const b=await r.arrayBuffer();return {status:r.status,header:new TextDecoder().decode(b.slice(0,5))};},{id:saved.id,revision:saved.revision});assert.equal(pdf.status,200);assert.equal(pdf.header,'%PDF-');pass('Befintligt blad och faktisk Vercel-PDF fungerar från den inbäddade sessionen.');
- const oldValue=await frame.evaluate(()=>document.querySelector('input')?.value);await frame.evaluate(()=>window.parent.postMessage({type:'produktblad-reauth'},'https://astar-studio-portal.vercel.app'));
- await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('Appinloggningen är förnyad'),{timeout:40000});assert.equal(await frame.evaluate(()=>document.querySelector('input')?.value),oldValue);assert.equal((await ctx.pages()).length,1);pass('Session förnyas med hjälpram utan ny flik eller omladdning av den öppna redigeraren.');
+ await frame.waitForSelector('textarea:not(:disabled)',{timeout:30000});await frame.type('textarea:not(:disabled)',' Lokal osparad verifiering');
+ const oldValue=await frame.$eval('textarea:not(:disabled)',el=>el.value);
+ await pb.query('UPDATE studio.portal_sessions SET expires_at=now()-interval \'1 second\' WHERE portal_sub=$1',[user.id]);
+ assert.equal(await frame.evaluate(()=>fetch('/api/me').then(r=>r.status)),401);
+ await frame.evaluate(()=>window.parent.postMessage({type:'produktblad-reauth'},'https://astar-studio-portal.vercel.app'));
+ await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('Appinloggningen är förnyad'),{timeout:40000});assert.equal(await frame.$eval('textarea',el=>el.value),oldValue);assert.equal((await ctx.pages()).length,1);assert.equal(await frame.evaluate(()=>fetch('/api/me').then(r=>r.status)),200);pass('Utgången session förnyas med hjälpram utan ny flik eller omladdning; faktiskt osparad redigering bevaras.');
  const fresh=await page.evaluate(()=>fetch('/api/apps/produktblad/embed',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>r.json()));
  const headers={Origin:portal,'Sec-Fetch-Dest':'iframe','Content-Type':'application/x-www-form-urlencoded'};
  assert.equal((await fetch(product+'/api/portal/embed',{method:'POST',headers:{...headers,Origin:'https://evil.example'},body:new URLSearchParams({ticket:fresh.ticket}),redirect:'manual'})).status,403);

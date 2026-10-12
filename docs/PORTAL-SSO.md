@@ -1,5 +1,7 @@
 # Portalinloggning för Produktblad
 
+Senare beställning 12 oktober 2026: Produktblad kan också öppnas inuti portalen via en separat verifierad inbäddningsbrygga. Vanlig top-level SSO fungerar fortfarande. Se [PORTAL-INBADDNING.md](PORTAL-INBADDNING.md); nedanstående iframe-gräns beskriver det ursprungliga SSO-steget.
+
 Implementerad 12 oktober 2026 enligt portalens `docs/PROMPT-PRODUKTBLAD-SSO.md`. Detta är portalens specificerade SSO-brygga, inte generell OIDC. Top-level navigering används; iframe är inte aktiverad.
 
 ## Protokoll och skydd
