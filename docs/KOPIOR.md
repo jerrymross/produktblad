@@ -40,3 +40,5 @@ Det isolerade databasprovet använder samma temporära PGlite-installation som t
 npm.cmd install --prefix "$env:TEMP/produktblad-admin-qa" --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
 node scripts/test-copies.mjs
 ```
+
+Placering uppdaterad 12 oktober 2026: Skapa kopia och kopieräknare finns i toppbaren bredvid Låst av admin. Befintliga kopior öppnas från menyn Kopior i toppbaren eller från bibliotekets originalkort.

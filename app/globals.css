@@ -348,6 +348,19 @@ button:disabled { cursor: default; }
 .create-copy-button { padding: 9px 12px; margin-top: 8px; border: 1px solid #b1c3b8; border-radius: 7px; background: #fff; color: #172943; font-size: 12px; font-weight: 600; }
 .catalog-copies { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 10px 0; position: relative; z-index: 2; }
 .catalog-copies a { font-size: 12px; font-weight: 600; }
+.header-status-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.header-status-actions .header-right { white-space: nowrap; }
+.header-copy-actions { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; border: 0; }
+.header-copy-actions .create-copy-button { margin: 0; }
+.header-status-actions .finalization-button,.header-copy-actions .create-copy-button { min-height: 36px; white-space: nowrap; }
+.header-copies-menu { position: relative; font-size: 12px; }
+.header-copies-menu summary { cursor: pointer; white-space: nowrap; padding: 9px 10px; border: 1px solid #d6dfeb; border-radius: 7px; }
+.header-copies-dropdown { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; min-width: 200px; padding: 12px 16px; border: 1px solid #d6dfeb; border-radius: 10px; background: #fff; box-shadow: 0 8px 24px #15243b20; }
+.header-copies-dropdown a { margin: 8px 0; font-size: 12px; }
+.header-copies-dropdown p { font-size: 11px; line-height: 1.5; color: #61728e; }
+@media (max-width: 1200px) { .editor-workspace .app-header { gap: 12px; padding: 0 20px; }.header-status-actions { max-width: 330px; }.header-status-actions .header-right { font-size: 10px; } }
+@media (max-width: 900px) { .editor-workspace .app-header { height: auto; min-height: 94px; padding: 12px 18px; grid-template-columns: minmax(0,1fr) auto; }.header-status-actions { grid-column: 1 / -1; grid-row: 2; max-width: none; justify-content: flex-start; }.editor-workspace .action-row { grid-column: 2; grid-row: 1; } }
+@media (max-width: 600px) { .editor-workspace .app-header { grid-template-columns: minmax(0,1fr); gap: 10px; }.editor-workspace .action-row { grid-column: 1; grid-row: 3; }.header-status-actions { gap: 7px; }.header-status-actions .header-right { font-size: 10px; }.header-status-actions .finalization-button,.header-copy-actions .create-copy-button { font-size: 11px; padding: 8px 10px; }.header-copies-menu { font-size: 11px; }.header-copies-menu summary { padding: 8px; } }
 
 .title-color { margin-top: 8px; }
 .title-color label { display: block; font-size: 10px; color: var(--ui-muted); margin-bottom: 4px; }

@@ -354,3 +354,11 @@ Se [ADMINLAS.md](ADMINLAS.md) för beställt beteende, migreringsgräns och veri
 ## Två kopior av låsta blad 12 oktober 2026
 
 Användaren förtydligade att alla skolredaktörer får skapa kopior. Implementerat med egen sparning/historik/PDF, originalreferens och gemensam maxgräns två per låst katalogoriginal. Typkontroll, lint, build, isolerad SQL/RLS/API och lokal browser med simulerade API-svar passerade. Migration 003 aktiverad och verifierad i faktisk Neon DEV/produktion med riktiga runtime-roller, icke-admin skolmedlem, tvåkopiegräns, direkt INSERT-spärr och oförändrat låst original. Testtransaktioner rullades tillbaka utan bestående testdata. Se KOPIOR.md. Ingen ny autentiserad Vercel-browser/PDF-kontroll eller ändring av A4-renderaren.
+
+## Lås och kopior flyttade till toppbaren 12 oktober 2026
+
+- Beställning: flytta lås och kopia bredvid Låst av admin. Knapparna finns nu i gemensam status-/åtgärdsgrupp i toppbaren. Befintliga kopior visas i en kompakt meny. Den stora låsrutan är borttagen från redigeraren. Kopians ursprungsmarkering behålls.
+- Statiskt: typkontroll och lint passerade. Ingen databas, behörighet, A4-renderare eller PDF-route ändrad.
+- Lokal browser: riktiga Editor/Catalog med simulerade API-svar. Lås/upplåsning med Avbryt/Escape/bekräftelse, rollstyrda knappar, tvåkopiegräns, kopienavigation, sparning, exportrequest och bevarat osparat innehåll vid externt lås passerade. Skolredaktör och admin med både lås-/kopieknappar provade. Desktop och 390 px mobil visuellt granskade. QA: work/test-copies-browser.mjs, work/test-finalization-browser.mjs, work/test-header-admin.mjs och header-admin-*.png.
+- Lokal PDF: inget nytt layoutprov; A4-renderaren är oförändrad. Exportrequest omfattas av browserprovet med PDF-fixture.
+- Vercel/Neon: inga live-databasändringar, migrationer eller manuella deployments. Inloggat Vercel-browserflöde är inte återtestat.

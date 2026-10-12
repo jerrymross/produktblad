@@ -336,7 +336,14 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     <AppSidebar dirty={dirty} example={!entry} currentTitle={displayTitle} />
     <header className="app-header">
       <div className="header-center"><div className="breadcrumbs"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>Bibliotek</Link><span>/</span><span>{entry?.school ?? "Exempelblad"}</span><span>/</span><span>{entry?.program ?? "Komvux"}</span></div><h1 className="header-title">{displayTitle}</h1></div>
-      <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`}><span className="status-dot" />{loading?"Öppnar …":finalization.finalized ? "Låst av admin" : dirty ? "Osparade ändringar" : hasSaved ? `Sparat · version ${revision}` : "Inte sparat än"}</div>
+      <div className="header-status-actions">
+        <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`} title={finalization.finalized?`Låst av ${finalization.changedBy??"admin"}${finalization.changedAt?` · ${new Date(finalization.changedAt).toLocaleString("sv-SE")}`:""}`:undefined}><span className="status-dot" />{loading?"Öppnar …":finalization.finalized ? "Låst av admin" : dirty ? "Osparade ändringar" : hasSaved ? `Sparat · version ${revision}` : "Inte sparat än"}</div>
+        {finalization.available && admin && <button type="button" className="finalization-button" disabled={busy||loading||(!finalization.finalized&&(dirty||!locked||revision<1))} title={finalization.finalized?"Öppna bekräftelsen för upplåsning":"Spara bladet och lås sedan det färdiga innehållet"} onClick={()=>finalization.finalized?confirmation.current?.showModal():void setFinished(true)}>{finalization.finalized?"Lås upp …":"Lås blad"}</button>}
+        {entry && !entry.sourceId && copyStatus.available && <div className="sheet-copies header-copy-actions">
+          {finalization.finalized && <button type="button" className="create-copy-button" title={copyStatus.copies.length>=2?"Två kopior finns redan. Öppna en befintlig kopia.":"Skapa en redigerbar kopia. Originalet förblir låst."} disabled={busy||loading||dirty||copyStatus.copies.length>=2} onClick={()=>void createCopy()}>Skapa kopia ({copyStatus.copies.length}/2)</button>}
+          {copyStatus.copies.length>0 && <details className="header-copies-menu"><summary>Kopior ({copyStatus.copies.length}/2)</summary><div className="header-copies-dropdown">{copyStatus.copies.map(copy=><Link key={copy.id} href={`/?blad=${encodeURIComponent(copy.id)}`} onClick={event=>{if(dirty&&!window.confirm("Lämna bladet med osparade ändringar?"))event.preventDefault();}}>Öppna kopia {copy.copyNumber} →</Link>)}{copyStatus.copies.length>=2 && <p>Gränsen på två kopior är nådd.</p>}</div></details>}
+        </div>}
+      </div>
           <div className="action-row"><button type="button" className="save-button" onClick={()=>void save()} disabled={busy||loading||!locked||finalization.finalized} title="Spara utkast (Ctrl+S eller ⌘S)">{busy?"Arbetar …":"Spara utkast"}</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || loading || (!locked && !finalization.finalized) || (finalization.finalized && dirty) || overflow.length > 0 || !validQr}>Ladda ner PDF ↓</button></div>
     </header>
 
@@ -346,15 +353,6 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       <aside className="editor-panel">
         <div className="panel-heading"><span className="eyebrow-ui">REDIGERA PRODUKTBLAD</span><h2>Innehåll</h2><p>Dina ändringar syns direkt på bladet.</p></div>
         {entry?.sourceId && <div className="copy-origin"><strong>Kopia {entry.copyNumber} av 2</strong><p>Du ändrar en separat kopia. Originalbladet påverkas inte.</p><Link href={`/?blad=${encodeURIComponent(entry.sourceId)}`} onClick={event=>{if(dirty&&!window.confirm("Lämna kopian med osparade ändringar?"))event.preventDefault();}}>Visa originalbladet →</Link></div>}
-        {finalization.available && <div className={`finalization-panel ${finalization.finalized?"is-finalized":""}`}>
-          {finalization.finalized ? <><strong>🔒 Låst av admin</strong><p>{finalization.changedBy}{finalization.changedAt && ` · ${new Date(finalization.changedAt).toLocaleString("sv-SE")}`}<br />Bladet kan visas och exporteras. {dirty && "Dina osparade ändringar finns kvar här."}</p></> : admin && <><strong>Lås när bladet är färdigt</strong><p>{dirty||revision<1?"Spara bladet först. Låsningen skyddar sedan innehållet mot ändringar.":"Lås innehållet när du är klar. Upplåsning kräver en bekräftelse."}</p></>}
-          {admin && <button type="button" className="finalization-button" disabled={busy||loading||(!finalization.finalized&&(dirty||!locked||revision<1))} onClick={()=>finalization.finalized?confirmation.current?.showModal():void setFinished(true)}>{finalization.finalized?"Lås upp …":"Lås färdigt produktblad"}</button>}
-          {entry && !entry.sourceId && copyStatus.available && <div className="sheet-copies">
-            <p><strong>{copyStatus.copies.length} av 2 kopior skapade</strong></p>
-            {copyStatus.copies.map(copy=><Link key={copy.id} href={`/?blad=${encodeURIComponent(copy.id)}`}>Öppna kopia {copy.copyNumber} →</Link>)}
-            {finalization.finalized && <><button type="button" className="create-copy-button" disabled={busy||loading||dirty||copyStatus.copies.length>=2} onClick={()=>void createCopy()}>Skapa redigerbar kopia</button><p>{copyStatus.copies.length>=2?"Gränsen på två kopior är nådd. Öppna en befintlig kopia för att göra ändringar.":"Originalet förblir låst. Kopian får egen historik och PDF-export."}</p></>}
-          </div>}
-        </div>}
         <nav className="editor-tabs" aria-label="Redigeringsdelar">
           {GROUPS.map(group => <button key={group} type="button" aria-pressed={activeGroup === group} className={activeGroup === group ? "active" : ""} onClick={() => { setActiveGroup(group); setActiveSection(group === "Innehåll" ? "why" : "school"); }}>{GROUP_LABELS[group]}{overflow.some(key => textFields.find(field => field.key === key)?.group === group) && <span className="tab-error" aria-label="Text får inte plats">!</span>}</button>)}
         </nav>
@@ -381,6 +379,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
         </fieldset>
         <div className="editor-actions">
           {(overflow.length > 0 || !validQr) && <div className="overflow-alert"><strong>{overflow.length ? "Text får inte plats på A4" : "QR-adress saknas eller är ogiltig"}</strong><button type="button" onClick={() => openField(overflow[0] ?? "qrUrl")}>Gå till {overflow.length ? shortFieldName(overflow[0]) : "QR-adress"} →{overflow.length > 1 ? ` (+${overflow.length - 1})` : ""}</button></div>}
+          {finalization.finalized && dirty && <p className="message" role="status">Bladet är låst. Dina osparade ändringar finns kvar här.</p>}
           {message && <p className="message" role="status">{message}</p>}
 
           {!locked&&!loading&&!finalization.finalized&&<button type="button" className="text-button" disabled={busy} onClick={()=>{void cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:token.current})).then(()=>{ownsSession.current=true;setLocked(true);setMessage("Du kan nu redigera bladet.");}).catch(error=>setMessage(error.message));}}>Försök öppna för redigering igen</button>}

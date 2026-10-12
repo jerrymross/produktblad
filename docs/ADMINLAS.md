@@ -54,3 +54,6 @@ QA-databasen finns bara i minnet. Inga riktiga användare, blad eller Neon-data 
 - Befintliga blad- och versionsantal var oförändrade efter provet. Ingen användare, roll eller skolmedlemskap ändrades. Inga befintliga blad låstes automatiskt.
 - Lokal QA: work/preflight-finalization.mjs och work/verify-neon-finalization.mjs. Dessa läser befintliga ignorerade anslutningsfiler utan att skriva eller visa hemligheter.
 - Vercel: denna aktivering är verifierad direkt i faktisk Neon-databas. Ett inloggat browserflöde genom Vercel och en verklig Vercel-PDF-export har inte återtestats i aktiveringsturen. Tidigare lokala browser- och API-prov beskrivs ovan.
+## Lås och kopior i toppbaren 12 oktober 2026
+
+Lås-/upplåsningsknappen och Skapa kopia finns nu bredvid bladets spar-/låsstatus i toppbaren. Knappen visar kopieräknaren (0/2–2/2); befintliga kopior nås genom menyn Kopior. Den stora statusrutan i vänstra redigeraren är borttagen. Uppgift om vem som låste och när finns i statusens tooltip och i historiken. Mobila skärmar delar toppbaren i rader för rubrik, status/lås/kopior och sparning/export. Behörigheter, bekräftelsedialog, databasregler och max två kopior är oförändrade.
