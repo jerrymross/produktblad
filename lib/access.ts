@@ -1,16 +1,17 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getAuth } from "@/lib/auth";
+import { portalIdentity } from "@/lib/portal-session";
+import { safeReturnTo } from "@/lib/portal-protocol";
 import { transaction } from "@/lib/db";
 
 export class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
 export async function identity(request?: Request) {
-  const session = await getAuth().api.getSession({ headers: request?.headers ?? await headers() });
-  if (!session) throw new HttpError(401, "Logga in för att fortsätta.");
-  return session.user;
+  const user = await portalIdentity(request?.headers ?? await headers());
+  if (!user) throw new HttpError(401, "Logga in via Astar Studio igen. Dina osparade ändringar finns kvar här.");
+  return user;
 }
-export async function pageIdentity() {
-  try { return await identity(); } catch (error) { if (error instanceof HttpError && error.status === 401) redirect("/login"); throw error; }
+export async function pageIdentity(returnTo = "/produktblad") {
+  try { return await identity(); } catch (error) { if (error instanceof HttpError && error.status === 401) redirect(`/api/portal/login?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`); throw error; }
 }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -29,7 +30,7 @@ export async function requireAdmin(userId: string) {
 export async function api(operation: () => Promise<Response>) {
   try { return await operation(); }
   catch (error) {
-    if (error instanceof HttpError) return Response.json({ error: error.message }, { status: error.status });
+    if (error instanceof HttpError) return Response.json({ error: error.message }, { status: error.status, headers: { "Cache-Control": "no-store" } });
     if(error instanceof SyntaxError)return Response.json({error:"Ogiltigt innehåll."},{status:400});
     console.error("Server operation failed", error instanceof Error ? error.message : "Unknown error");
     return Response.json({ error: "Åtgärden misslyckades. Försök igen; osparade ändringar finns kvar." }, { status: 500 });

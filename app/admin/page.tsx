@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { AdminOverview } from "@/components/AdminOverview";
 
 export default async function AdminPage() {
-  const user = await pageIdentity();
+  const user = await pageIdentity("/admin");
   try { await requireAdmin(user.id); }
   catch (error) {
     if (error instanceof HttpError && error.status === 403) redirect("/produktblad");

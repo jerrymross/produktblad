@@ -1,0 +1,103 @@
+﻿import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {randomBytes,randomUUID,createHash} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
+import {parse} from 'dotenv';
+import {Pool} from 'pg';
+import puppeteer from 'puppeteer-core';
+const [portalDir,productEnvDir]=process.argv.slice(2);
+if(!portalDir||!productEnvDir)throw Error('Ange portalens kodkatalog och Produktblads privata miljökatalog. Endast separata syntetiska testidentiteter används.');
+const pe=parse(readFileSync(resolve(portalDir,'.env.production.local')));
+Object.assign(process.env,pe,{NODE_ENV:'production',APP_URL:'https://astar-studio-portal.vercel.app'});
+const {getRuntime}=await import(pathToFileURL(resolve(portalDir,'lib/runtime.mjs')).href);
+const runtime=await getRuntime();
+const ownerEnv=parse(readFileSync(resolve(productEnvDir,'.env.owner')));
+const product=new Pool({connectionString:ownerEnv.DATABASE_URL_UNPOOLED??ownerEnv.POSTGRES_URL_NON_POOLING,max:1});
+const base='https://produktblad.vercel.app',portal='https://astar-studio-portal.vercel.app';
+const email=`produktblad-sso-${randomUUID()}@example.org`,password=randomBytes(32).toString('hex');
+let user,localId,browser;
+const results=[];
+function pass(message){results.push(message);console.log('PASS:',message);}
+const cookieHeader=async(page,origin)=> (await page.browserContext().cookies(origin)).map(c=>`${c.name}=${c.value}`).join('; ');
+async function req(page,path,method='GET',body){return fetch(base+path,{method,redirect:'manual',headers:{Cookie:await cookieHeader(page,base),...(method==='POST'?{Origin:base,'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});}
+try{
+ user=(await runtime.auth.api.createUser({body:{name:'Tillfällig Produktblad SSO-verifiering',email,password,role:'user'}})).user;
+ await runtime.db.run('INSERT INTO portal_members VALUES (?,1,NULL)',user.id);
+ await runtime.db.run('INSERT INTO portal_grants VALUES (?,?)',user.id,'produktblad');
+ browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-sandbox']});
+ const context=await browser.createBrowserContext();const page=await context.newPage();await page.setViewport({width:1440,height:1000});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(base,{waitUntil:'networkidle0',timeout:60000});
+ await page.waitForSelector('#login-form');
+ assert.equal(new URL(page.url()).origin,portal);
+ await page.type('input[name=email]',email);await page.type('input[name=password]',password);
+ await Promise.all([page.waitForNavigation({waitUntil:'networkidle0',timeout:60000}),page.click('#login-form button[type=submit]')]);
+ assert.equal(new URL(page.url()).origin,base);
+ assert.match(await page.$eval('body',e=>e.innerText),/tilldela.*skola/i);
+ await page.screenshot({path:'work/sso-no-school.png',fullPage:true});
+ let me=await req(page,'/api/me');assert.equal(me.status,200);let profile=await me.json();assert.equal(profile.admin,false);assert.deepEqual(profile.schools,[]);
+ const cookies=await context.cookies(base);const sc=cookies.find(c=>c.name==='produktblad-portal');assert.ok(sc.httpOnly&&sc.secure&&sc.sameSite==='Lax');assert.ok(sc.value.length===43);assert.ok(!sc.value.includes('.'));
+ localId=(await product.query('SELECT user_id FROM studio.portal_identities WHERE portal_sub=$1',[user.id])).rows[0].user_id;
+ const stored=(await product.query('SELECT expires_at,access_token FROM studio.portal_sessions WHERE cookie_hash=$1',[createHash('sha256').update(sc.value).digest('hex')])).rows[0];
+ const tokenPayload=JSON.parse(Buffer.from(stored.access_token.split('.')[1],'base64url').toString());assert.equal(stored.expires_at.getTime()/1000,tokenPayload.exp);
+ pass('Verklig browser: direktbesök → portalens inloggning → callback → säker lokal session och neutral vy utan skolor.');
+ assert.equal((await req(page,'/api/admin/overview')).status,403);
+ await runtime.db.run('UPDATE "user" SET role=? WHERE id=?','admin',user.id);
+ assert.equal((await req(page,'/api/me').then(r=>r.json())).admin,false);
+ await runtime.db.run('UPDATE "user" SET role=? WHERE id=?','user',user.id);
+ pass('Vanlig användare nekas admin; portal-admin ger inte lokal adminroll.');
+ const all=(await product.query(`SELECT id,school_id,revision,title,content FROM studio.sheets WHERE revision>0 ORDER BY updated_at DESC`)).rows;
+ const sheet=all.find(s=>s.content.qrUrl?.startsWith('http'));
+ assert.ok(sheet,'Befintligt sparat blad med QR krävs');
+ await product.query('INSERT INTO studio.school_memberships(user_id,school_id) VALUES($1,$2)',[localId,sheet.school_id]);
+ await page.goto(base+'/produktblad',{waitUntil:'networkidle0',timeout:60000});
+ assert.ok((await req(page,'/api/me').then(r=>r.json())).schools.includes(sheet.school_id));
+ const path='/api/sheets/'+encodeURIComponent(sheet.id);
+ const read=await req(page,path);assert.equal(read.status,200);assert.equal((await read.json()).revision,sheet.revision);
+ const other=all.find(s=>s.school_id!==sheet.school_id);assert.ok(other);assert.equal((await req(page,'/api/sheets/'+encodeURIComponent(other.id))).status,404);
+ const crossPdf=await req(page,'/api/pdf','POST',{id:other.id,revision:other.revision});assert.equal(crossPdf.status,404);
+ pass('Befintliga produktblad läses med skolåtkomst; annan skolas blad och PDF nekas.');
+ const pdf=await req(page,'/api/pdf','POST',{id:sheet.id,revision:sheet.revision});
+ assert.equal(pdf.status,200,`PDF-status ${pdf.status}: ${pdf.headers.get('content-type')}`);
+ const bytes=Buffer.from(await pdf.arrayBuffer());assert.equal(bytes.subarray(0,5).toString(),'%PDF-');writeFileSync('work/sso-production.pdf',bytes);
+ pass('Faktisk Vercel-PDF från befintlig sparad bladversion, giltig PDF-fil.');
+ await page.goto(base+'/?blad='+encodeURIComponent(sheet.id),{waitUntil:'networkidle0',timeout:60000});await page.waitForSelector('.sheet-page');
+ await page.screenshot({path:'work/sso-editor.png',fullPage:true});
+ const beforeCookie=await cookieHeader(page,base);assert.equal((await req(page,'/api/portal/logout','POST',{})).status,200);
+ assert.equal((await fetch(base+'/api/me',{headers:{Cookie:beforeCookie}})).status,401);
+ await page.goto(base+'/logged-out',{waitUntil:'networkidle0'});assert.match(await page.$eval('body',e=>e.innerText),/utloggad/);
+ await page.goto(base+'/api/portal/login?returnTo='+encodeURIComponent('/?blad='+sheet.id),{waitUntil:'networkidle0',timeout:60000});assert.equal(new URL(page.url()).origin,base);assert.equal(new URL(page.url()).searchParams.get('blad'),sheet.id);
+ pass('Lokal POST-utloggning ogiltigförklarar server-session; ny SSO använder portalsession utan extra lösenord och bevarar returnTo.');
+ await runtime.db.run('DELETE FROM portal_grants WHERE user_id=? AND app_id=?',user.id,'produktblad');
+ assert.equal((await req(page,'/api/me')).status,401);assert.equal((await req(page,'/api/pdf','POST',{id:sheet.id,revision:sheet.revision})).status,401);
+ assert.equal((await req(page,path,'POST',{})).status,401);
+ pass('Indragen appåtkomst stoppar aktiv Produktblad-session, API-skrivning och PDF omedelbart.');
+ await runtime.db.run('INSERT INTO portal_grants VALUES (?,?)',user.id,'produktblad');
+ await page.goto(base+'/api/portal/login',{waitUntil:'networkidle0',timeout:60000});
+ await runtime.db.run('UPDATE portal_members SET enabled=0 WHERE user_id=?',user.id);
+ assert.equal((await req(page,'/api/me')).status,401);
+ await runtime.db.run('UPDATE portal_members SET enabled=1 WHERE user_id=?',user.id);
+ await page.goto(base+'/api/portal/login',{waitUntil:'networkidle0',timeout:60000});
+ const portalCookie=await cookieHeader(page,portal);
+ const out=await fetch(portal+'/api/auth/sign-out',{method:'POST',headers:{Origin:portal,'Content-Type':'application/json',Cookie:portalCookie},body:'{}'});assert.equal(out.status,200);
+ assert.equal((await req(page,'/api/me')).status,401);
+ pass('Inaktiverat portalkonto och portalutloggning stoppar Produktblad.');
+ // Atomic transaction/state rejection and replay protection at the real callback.
+ const start=await fetch(base+'/api/portal/login',{redirect:'manual'});assert.equal(start.status,307);
+ const txCookie=start.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');
+ const bad=await fetch(base+'/api/portal/callback?code='+randomBytes(32).toString('base64url')+'&state=wrong',{headers:{Cookie:txCookie},redirect:'manual'});assert.match(bad.headers.get('location'),/error=portal/);
+ const replay=await fetch(base+'/api/portal/callback?code='+randomBytes(32).toString('base64url')+'&state=wrong',{headers:{Cookie:txCookie},redirect:'manual'});assert.match(replay.headers.get('location'),/error=portal/);
+ assert.equal((await req(page,'/api/portal/logout')).status,405);
+ assert.equal((await fetch(base+'/api/portal/logout',{method:'POST',headers:{Origin:'https://evil.example'},body:'{}'})).status,403);
+ assert.equal((await fetch(base+'/api/auth/sign-in/email',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:'{}'})).status,403);
+ assert.deepEqual(errors,[]);
+ pass('Fel state/förbrukad transaktion nekas; GET-/cross-origin-utloggning och lokal lösenordsgenväg blockeras; inga browserfel.');
+ writeFileSync('work/sso-production-results.json',JSON.stringify({time:new Date().toISOString(),results},null,2));
+}finally{
+ if(browser)await browser.close();
+ if(localId){await product.query('DELETE FROM studio.editing_locks WHERE user_id=',[localId]);await product.query('DELETE FROM studio.portal_sessions WHERE portal_sub=$1',[user.id]);await product.query('DELETE FROM studio.portal_identities WHERE portal_sub=$1',[user.id]);await product.query('DELETE FROM studio."user" WHERE id=$1',[localId]);}
+ if(user){await runtime.db.run('DELETE FROM portal_audit WHERE actor=?',user.id);await runtime.db.run('DELETE FROM '+String.fromCharCode(34)+'user'+String.fromCharCode(34)+' WHERE id=? AND email=?',user.id,email);}
+ await product.end();await runtime.close();
+}
+

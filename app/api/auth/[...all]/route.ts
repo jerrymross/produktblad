@@ -1,6 +1,6 @@
 import { getAuth } from "@/lib/auth";
 
-const allowed = new Set(["sign-in/email", "sign-out", "get-session", "change-password"]);
+const allowed = new Set(["sign-out"]);
 async function handler(request: Request) {
   const path = new URL(request.url).pathname.replace("/api/auth/", "");
   // Accounts are created only through server-validated invitations.

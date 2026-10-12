@@ -2,7 +2,7 @@
 
 Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder, inloggning, skolmedlemskap, redigeringslås och versionshistorik sparas i databasen. Preview och A4-export använder samma bladkomponent och en sparad, fryst version.
 
-Öppna https://produktblad.vercel.app. Första administratören använder den privata engångsinbjudan och väljer sitt eget lösenord. Därefter kan administratören skapa inbjudningslänkar under **Bjud in kollega**. Ingen e-post skickas automatiskt. Skolredaktörer får endast åtkomst till sina tilldelade skolor. Offentlig registrering är avstängd.
+Öppna https://produktblad.vercel.app och logga in via Astar Studio. En befintlig portalsession används utan extra lösenord i Produktblad. Appåtkomst från portalen ger inga skolor eller Produktblad-adminrättigheter automatiskt. Befintliga konton behöver en kontrollerad identitetskoppling; skolor och roller bevaras. Administratören skapar riktade inbjudningslänkar under **Bjud in kollega** som accepteras med verifierad portalidentitet. Ingen e-post skickas automatiskt. Se [PORTAL-SSO.md](docs/PORTAL-SSO.md).
 
 **Spara utkast** sparar gemensamt. **Versionshistorik** låter dig läsa in en äldre version och spara den som en ny. Endast en redigeringssession åt gången kan spara ett blad. Låset förnyas var 30:e sekund och löper ut efter 120 sekunder. Om låset förloras behålls osparade ändringar i det öppna fönstret.
 

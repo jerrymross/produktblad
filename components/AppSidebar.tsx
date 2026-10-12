@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { ImageLibrary } from "@/components/images/ImageLibrary";
 import {cloud} from "@/lib/cloud-client";
-import {createAuthClient} from "better-auth/react";
 import {useRouter} from "next/navigation";
 
 export function AppSidebar({ dirty = false, example = false, currentTitle = "Kock" }: { dirty?: boolean; example?: boolean; currentTitle?: string }) {
@@ -33,7 +32,7 @@ export function AppSidebar({ dirty = false, example = false, currentTitle = "Koc
         <button type="button" onClick={openSettings}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 1-2h4l1 2 3 2 2 1-1 4 1 4-2 1-3 2-1 3h-4l-1-3-3-2-2-1 1-4-1-4 2-1z" /><circle cx="12" cy="10" r="3" /></svg>Inställningar</button>
       </nav>
       {admin&&<><Link className="sidebar-account-link" href="/admin" onClick={event=>{if(!canLeave())event.preventDefault();}}>Adminläge</Link><Link className="sidebar-account-link" href="/accounts" onClick={event=>{if(!canLeave())event.preventDefault();}}>Bjud in kollega</Link></>}
-      <button type="button" className="sidebar-signout" onClick={()=>{if(canLeave())void createAuthClient().signOut().then(()=>{router.push("/login");router.refresh();});}}>Logga ut</button>
+      <button type="button" className="sidebar-signout" onClick={()=>{if(canLeave())void cloud("/api/portal/logout",{method:"POST"}).then(()=>{router.push("/logged-out");router.refresh();});}}>Logga ut</button>
       <span className="sidebar-local" title="Utkast sparas i det gemensamma biblioteket">Gemensamt bibliotek</span>
     </aside>
     <dialog ref={dialog} className="settings-dialog image-settings-dialog" aria-labelledby="settings-title">
