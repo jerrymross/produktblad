@@ -389,7 +389,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       </aside>
 
       <main className="preview-panel">
-        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">A4 · 210 × 297 mm</span></p></div><div className="preview-meta"><span className="meta-pill" title={templateVersion(data)}>{af ? "AF" : "Mall 01"}</span><button type="button" className="expand-preview" aria-label={expanded ? "Visa redigeraren" : "Förstora förhandsvisningen"} aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "↙" : "⤢"}</button></div></div>
+        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">A4 · 210 × 297 mm</span></p></div><div className="preview-meta"><span className="meta-pill" title={templateVersion(data)}>{af ? "AF" : "KOMVUX"}</span><button type="button" className="expand-preview" aria-label={expanded ? "Visa redigeraren" : "Förstora förhandsvisningen"} aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "↙" : "⤢"}</button></div></div>
         <div className="preview-zoom" role="group" aria-label="Zoom för förhandsvisningen">
           <button type="button" aria-label="Zooma ut" disabled={scale <= 0.05} onClick={() => setZoom(Math.max(0.05, scale - 0.1))}>−</button>
           <output className="zoom-value" aria-label="Zoomnivå">{Math.round(scale * 100)} %</output>

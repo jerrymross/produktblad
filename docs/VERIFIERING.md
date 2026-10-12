@@ -362,3 +362,7 @@ Användaren förtydligade att alla skolredaktörer får skapa kopior. Implemente
 - Lokal browser: riktiga Editor/Catalog med simulerade API-svar. Lås/upplåsning med Avbryt/Escape/bekräftelse, rollstyrda knappar, tvåkopiegräns, kopienavigation, sparning, exportrequest och bevarat osparat innehåll vid externt lås passerade. Skolredaktör och admin med både lås-/kopieknappar provade. Desktop och 390 px mobil visuellt granskade. QA: work/test-copies-browser.mjs, work/test-finalization-browser.mjs, work/test-header-admin.mjs och header-admin-*.png.
 - Lokal PDF: inget nytt layoutprov; A4-renderaren är oförändrad. Exportrequest omfattas av browserprovet med PDF-fixture.
 - Vercel/Neon: inga live-databasändringar, migrationer eller manuella deployments. Inloggat Vercel-browserflöde är inte återtestat.
+
+## Mallnamn KOMVUX 12 oktober 2026
+
+Visningsnamnet Mall 01 ersatt med KOMVUX i preview, bibliotekets mallmärkning och sidomenyns tooltip. AF behåller sitt visningsnamn. Endast gränssnittstext ändrad; mall-ID, version, innehåll, layout och export är oförändrade. Kontrollerat samtliga berörda strängar och git diff --check. Inget nytt browser-, PDF- eller Vercel-prov för denna textändring.
