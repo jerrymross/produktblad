@@ -1,0 +1,2 @@
+# Keep supplied PDF references byte-for-byte unchanged, including on Windows.
+*.pdf binary
