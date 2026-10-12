@@ -13,7 +13,7 @@ export function safeReturnTo(value: unknown) {
   if (url.origin !== new URL(callback).origin || /^\/(api|login|logged-out)(\/|\?|$)/.test(value)) return "/produktblad";
   return url.pathname + url.search + url.hash;
 }
-const keys = createRemoteJWKSet(new URL(`${issuer}/api/sso/jwks`), { timeoutDuration: 5000 });
+export const keys = createRemoteJWKSet(new URL(`${issuer}/api/sso/jwks`), { timeoutDuration: 5000 });
 export async function verifyPortalToken(token: string, key: JWTVerifyGetKey = keys) {
   const { payload, protectedHeader } = await jwtVerify(token, key, {
     algorithms: ["RS256"], issuer, audience: clientId, typ: "at+jwt",
