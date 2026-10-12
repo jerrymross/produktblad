@@ -1,17 +1,18 @@
 export const TEMPLATE_VERSION = "kock-1.3.0-prototyp";
 export const AF_TEMPLATE_VERSION = "af-1.0.0-prototyp";
+export const UMEA_TEMPLATE_VERSION = "komvux-umea-1.0.0";
 
 export function isAfProgram(program?: string) {
   return program === "AF" || program === "AF RUB";
 }
 
 export function templateVersion(data: SheetData) {
-  return data.layout === "af" ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION;
+  return data.layout === "af" ? AF_TEMPLATE_VERSION : data.layout === "umea" ? UMEA_TEMPLATE_VERSION : TEMPLATE_VERSION;
 }
 
 // The assignment controls the layout. Old frozen revisions are never upgraded here.
 export function withProgramLayout(data: SheetData, program?: string, school?: string): SheetData {
-  if (!isAfProgram(program)) return { ...data, layout: "standard" };
+  if (!isAfProgram(program)) return { ...data, layout: school === "Umeå" && data.layout === "umea" ? "umea" : "standard" };
   const previous = defaultHeadings(data.profession);
   const firstAfLayout = data.layout !== "af";
   return { ...data, layout: "af", schoolName: school ?? data.schoolName ?? "",
@@ -23,7 +24,7 @@ export function withProgramLayout(data: SheetData, program?: string, school?: st
   };
 }
 export const TITLE_DEFAULTS = { titleRows: "2", titleLineColor: "auto", titlePrefixColor: "auto", professionColor: "coral" } as const;
-export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING", "PRAKTISK UTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB"] as const;
+export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING", "PRAKTISK UTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB", "LÄRLINGSUTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB"] as const;
 export const GRADIENT_STRENGTHS = ["1", "2", "3", "4"] as const;
 export const DEFAULT_ABOUT = "är ett av Sveriges största utbildningsföretag. Vår ambition är att bidra till en stark och livskraftig arbetsmarknad. Vi erbjuder en bred variation av utbildningar och kurser inom olika områden och samarbetar tätt med de branscher som vi utbildar för.";
 
@@ -39,7 +40,7 @@ export function defaultHeadings(profession: string) {
 }
 
 export type SheetData = {
-  layout?: "standard" | "af";
+  layout?: "standard" | "af" | "umea";
   schoolName?: string;
   startTitle?: string;
   start?: string;
@@ -147,7 +148,7 @@ export function isSheetData(value: unknown): value is SheetData {
   if (!value || typeof value !== "object") return false;
   const object = value as Record<string, unknown>;
   return ["2", "3"].includes(object.titleRows as string)
-    && (object.layout === undefined || ["standard", "af"].includes(object.layout as string))
+    && (object.layout === undefined || ["standard", "af", "umea"].includes(object.layout as string))
     && ["startTitle", "start", "schoolName"].every(key => object[key] === undefined || (typeof object[key] === "string" && object[key].length <= 15_000))
     && ["titleLineColor", "titlePrefixColor", "professionColor"].every(key => ["auto", "blue", "coral"].includes(object[key] as string))
     && EYEBROW_OPTIONS.some(option => object.eyebrow === option)

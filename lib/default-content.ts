@@ -3,6 +3,7 @@ import { withUnsavedAfDefaults } from "@/lib/af-default-content";
 import { KOMVUX_REFERENCE_CONTENT } from "@/lib/komvux-default-content";
 
 export function withUnsavedProgramDefaults(content: SheetData, program: string, revision: number): SheetData {
+  if(content.layout==="umea")return content;
   if (program !== "Komvux") return withUnsavedAfDefaults(content, program, revision);
   if (revision !== 0) return content;
   const result = { ...content };

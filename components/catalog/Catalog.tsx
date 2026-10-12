@@ -5,8 +5,8 @@ import { sheetApiPath } from "@/lib/sheet-id";
 import Link from "next/link";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useEffect, useState } from "react";
-import { catalog,readDraft, readPreviousDraft, schools } from "@/lib/catalog";
-import { TEMPLATE_VERSION, AF_TEMPLATE_VERSION, isAfProgram } from "@/lib/sheet";
+import { catalog,readDraft, readPreviousDraft, schools,catalogTemplateVersion } from "@/lib/catalog";
+import { isAfProgram } from "@/lib/sheet";
 import { cloud,jsonRequest } from "@/lib/cloud-client";
 import type {SheetCopy} from "@/lib/copies";
 
@@ -90,7 +90,7 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
           <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{finalized.has(entry.id) ? "🔒 Låst av admin" : saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
           <p className="catalog-school">{entry.school}</p><h2>{entry.title}</h2>
           {copies.some(copy=>copy.sourceId===entry.id) && <div className="catalog-copies">{copies.filter(copy=>copy.sourceId===entry.id).sort((a,b)=>a.copyNumber-b.copyNumber).map(copy=><Link key={copy.id} href={`/?blad=${encodeURIComponent(copy.id)}`}>Kopia {copy.copyNumber}{finalized.has(copy.id)?" · Låst":" · Redigera"} →</Link>)}</div>}
-          <div className="catalog-card-bottom"><span title={isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}>{isAfProgram(entry.program) ? "AF" : "KOMVUX"} · A4</span><Link aria-label={`${finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
+          <div className="catalog-card-bottom"><span title={catalogTemplateVersion(entry)}>{isAfProgram(entry.program) ? "AF" : "KOMVUX"} · A4</span><Link aria-label={`${finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
         </article>)}
       </div>
       {!filtered.length && <div className="catalog-empty"><h2>Inga blad matchar ditt val</h2><p>{filters.status === "saved" ? "Här visas bara gemensamt sparade blad. Prova Alla för att skapa ett nytt blad." : "Prova ett annat sökord eller ta bort ett filter."}</p><button type="button" className="save-button" onClick={() => setFilters(emptyFilters)}>Visa alla produktblad</button></div>}

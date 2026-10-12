@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { catalog, initialSheet, draftKey, readPreviousDraft } from "../lib/catalog";
-import { AF_TEMPLATE_VERSION, TEMPLATE_VERSION, exampleSheet, isAfProgram, isSheetData, templateVersion, withProgramLayout } from "../lib/sheet";
+import { AF_TEMPLATE_VERSION, TEMPLATE_VERSION, UMEA_TEMPLATE_VERSION, exampleSheet, isAfProgram, isSheetData, templateVersion, withProgramLayout } from "../lib/sheet";
 import { AF_DEFAULT_CONTENT, withUnsavedAfDefaults } from "../lib/af-default-content";
 
 const old = { ...exampleSheet, profession: "VVS-isolerare", whyTitle: "Om utbildningen", why: "Befintlig text", form: "Befintliga fakta", address: "Manuellt vald adress" };
@@ -39,8 +39,8 @@ assert.equal(withProgramLayout(custom, "Komvux").layout, "standard");
 for (const entry of catalog) {
   const initial = initialSheet(entry);
   assert.ok(isSheetData(initial));
-  assert.equal(initial.layout, isAfProgram(entry.program) ? "af" : "standard");
-  assert.equal(templateVersion(initial), isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION);
+  assert.equal(initial.layout, isAfProgram(entry.program) ? "af" : initial.layout === "umea" ? "umea" : "standard");
+  assert.equal(templateVersion(initial), isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : initial.layout === "umea" ? UMEA_TEMPLATE_VERSION : TEMPLATE_VERSION);
   assert.ok(draftKey(entry.id).endsWith(templateVersion(initial)));
   if (isAfProgram(entry.program)) {
     assert.equal(initial.start, AF_DEFAULT_CONTENT.start);

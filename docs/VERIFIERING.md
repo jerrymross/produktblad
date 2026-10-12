@@ -366,3 +366,7 @@ Användaren förtydligade att alla skolredaktörer får skapa kopior. Implemente
 ## Mallnamn KOMVUX 12 oktober 2026
 
 Visningsnamnet Mall 01 ersatt med KOMVUX i preview, bibliotekets mallmärkning och sidomenyns tooltip. AF behåller sitt visningsnamn. Endast gränssnittstext ändrad; mall-ID, version, innehåll, layout och export är oförändrade. Kontrollerat samtliga berörda strängar och git diff --check. Inget nytt browser-, PDF- eller Vercel-prov för denna textändring.
+
+## Umeåtexter 12 oktober 2026
+
+Användarens 14 PDF-underlag matchade till Umeå-Komvuxblad. Användaren valde att behålla texten exakt och anpassa mallen. Separat fast version komvux-umea-1.0.0 infördes utan ändring av standard/AF eller tidigare frysta versioner. Alla 14 lokala previews har tom overflowlista och exporter är en stående A4 med verifierad text. Käll- och exportspalters text jämförd efter normalisering av mjuka radbrytningar. Typecheck/lint/build och Umeå-/Komvux-/AF-tester passerade. Neon-provimport rullad tillbaka i båda miljöer. Se UMEA-INNEHALL.md för matchning och slutlig importstatus. Inloggad Vercel-export har inte provats.

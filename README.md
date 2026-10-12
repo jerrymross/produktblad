@@ -195,3 +195,7 @@ Adminlås utan PIN är implementerat. Admin sparar bladet, väljer **Lås färdi
 ## Kopior av låsta blad
 
 Alla skolredaktörer kan skapa högst två redigerbara kopior per låst skolblad. Originalet behåller sitt lås. Kopior har egen historik och PDF-export och nås från originalet och biblioteket. Migration 003 är aktiverad i Neon DEV och produktion. Se [Kopior och verifiering](docs/KOPIOR.md).
+
+## Umeås produktblad
+
+De 14 Umeå-utbildningar som har PDF-underlag i användarens produktblad umeå.zip får egna texter och den fasta mallen komvux-umea-1.0.0. Användaren valde att behålla texten exakt och anpassa mallen. AF-bladet och Yrkessvetsare påbyggnad saknar underlag och behåller tidigare innehåll. Se [Matchning, mall och verifiering](docs/UMEA-INNEHALL.md).

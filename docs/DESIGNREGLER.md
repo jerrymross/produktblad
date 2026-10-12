@@ -80,3 +80,9 @@ Detta definierar en vanlig produktblads-PDF. Särskilda tryckkrav som PDF/X, CMY
 ## AF-textupplägg, beställt 12 oktober 2026
 
 AF och AF RUB har en separat fast mall enligt `references/AF.pdf` (användarens Rityta 1.pdf). Avsnittsordning, huvudmått, versionshantering, fontavvikelser och verifiering beskrivs i [AF-MALL.md](AF-MALL.md). Skolredaktören ändrar innehållsfält, inklusive utbildningsstart och fakta, men inte spalter, kontaktplacering eller sidfot. Referensens sakuppgifter blir inte nya standardtexter. Äldre frysta versioner behåller sitt ursprungliga upplägg.
+
+## Umeåvariant 12 oktober 2026
+
+Efter uttryckligt val att behålla texterna exakt används komvux-umea-1.0.0 för 14 angivna Umeå-Komvuxblad. Textspalter 372 pt, brödtext 9,4/11,3 pt, i övrigt samma fasta Komvux-form. Inga användarstyrda storlekar eller automatisk krympning. Tidigare frysta versioner och andra skolors mallar behåller sin form. Se UMEA-INNEHALL.md.
+
+För nya blad i Umeåvarianten används appens befintliga vita gradient, styrka 4, så att den blå omslagstexten syns över de befintliga yrkesbilderna. Tidigare sparade bild-/gradientval bevaras vid import. Bildfilerna byts inte ut.

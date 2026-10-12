@@ -20,7 +20,7 @@ assert.deepEqual(withUnsavedProgramDefaults(opened, "Komvux", 0), opened);
 assert.strictEqual(withUnsavedProgramDefaults(existing, "Komvux", 1), existing);
 assert.equal(withUnsavedProgramDefaults({ ...existing, form: "Min utbildningsform", process: "Mitt upplägg" }, "Komvux", 0).form, "Min utbildningsform");
 assert.strictEqual(withUnsavedProgramDefaults(existing, "Annat program", 0), existing);
-for (const entry of catalog.filter(item => item.program === "Komvux")) {
+for (const entry of catalog.filter(item => item.program === "Komvux" && initialSheet(item).layout !== "umea")) {
   const content = initialSheet(entry);
   assert.ok(isSheetData(content));
   assert.equal(content.layout, "standard");

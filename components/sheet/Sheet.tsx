@@ -34,7 +34,7 @@ export function Sheet({ data, imageSrc }: Props) {
   </div>;
   const hasContactOne = Boolean(data.contactOneName || data.contactOneRole || data.contactOneEmail);
   const hasContactTwo = Boolean(data.contactTwoName || data.contactTwoRole || data.contactTwoEmail);
-  return <article className="sheet-page" data-layout={af ? "af" : "standard"} data-template={templateVersion(data)} aria-label="Produktblad, en A4-sida">
+  return <article className="sheet-page" data-layout={af ? "af" : data.layout === "umea" ? "umea" : "standard"} data-template={templateVersion(data)} aria-label="Produktblad, en A4-sida">
     <div className="sheet-hero" data-overlay={data.gradientStyle}>
       {/* The local prototype uses an image extracted from the supplied PDF. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
