@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { educationKey, educations } from "@/lib/image-library";
+import { educationKey, educations, snapshotLibraryImage } from "@/lib/image-library";
 import { useImageLibrary } from "./useImageLibrary";
 
 export function ImagePicker({ title, onChoose, onManage }: { title: string; onChoose: (image: string) => void; onManage: () => void }) {
@@ -8,7 +8,16 @@ export function ImagePicker({ title, onChoose, onManage }: { title: string; onCh
   const current = educationKey(title);
   const [education, setEducation] = useState(current);
   const [slot, setSlot] = useState("1");
+  const [choosing, setChoosing] = useState(false);
+  const [choiceError, setChoiceError] = useState("");
   const selected = images.find(image => image.education === education && String(image.slot) === slot);
+  async function choose() {
+    if (!selected || choosing) return;
+    setChoosing(true); setChoiceError("");
+    try { onChoose(await snapshotLibraryImage(selected)); }
+    catch (cause) { setChoiceError(cause instanceof Error ? cause.message : "Bilden kunde inte väljas."); }
+    finally { setChoosing(false); }
+  }
   return <div className="sheet-image-picker">
     <h3>Välj från bildbiblioteket</h3>
     <div className="field"><label htmlFor="image-education">Utbildning</label><select id="image-education" value={education} onChange={event => { setEducation(event.target.value); setSlot("1"); }}>{educations.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select></div>
@@ -17,7 +26,8 @@ export function ImagePicker({ title, onChoose, onManage }: { title: string; onCh
       <div className="field"><label htmlFor="image-variant">Bildvariant</label><select id="image-variant" value={slot} onChange={event => setSlot(event.target.value)}>{[1, 2].map(value => <option key={value} value={value}>Bild {value}{images.some(image => image.education === education && image.slot === value) ? "" : " – saknas"}</option>)}</select></div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {selected ? <img className="library-choice-preview" src={selected.dataUrl} alt={`Bild ${slot} för ${education}`} /> : <p className="library-choice-empty">Bild {slot} saknas för den här utbildningen. Lägg till den i Inställningar.</p>}
-      <button type="button" className="use-library-image" disabled={!selected} onClick={() => { if (selected) onChoose(selected.dataUrl); }}>Använd bild {slot} på bladet</button>
+      <button type="button" className="use-library-image" disabled={!selected || choosing} onClick={() => void choose()}>{choosing ? "Hämtar bild …" : `Använd bild ${slot} på bladet`}</button>
+      {choiceError && <p role="alert">{choiceError}</p>}
     </>}
     <button type="button" className="text-button" onClick={onManage}>Hantera bildbibliotek →</button>
   </div>;

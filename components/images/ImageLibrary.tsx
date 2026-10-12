@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { deleteLibraryImage, educationKey, educations, uploadLibraryImage,importLegacyLibrary } from "@/lib/image-library";
+import { deleteLibraryImage, educationKey, educations, uploadLibraryImage,importLegacyLibrary, hasDefaultImage } from "@/lib/image-library";
 import { useImageLibrary } from "./useImageLibrary";
 
 export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string }) {
@@ -21,9 +21,10 @@ export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string 
     finally { setBusy(false); }
   }
   async function remove(id: string) {
-    if (!window.confirm("Ta bort bilden från biblioteket? Bilder som redan valts på blad finns kvar på de bladen.")) return;
+    const restore = hasDefaultImage(id);
+    if (!window.confirm(restore ? "Återställ den förinställda bilden? Bilder som redan valts på blad finns kvar på de bladen." : "Ta bort bilden från biblioteket? Bilder som redan valts på blad finns kvar på de bladen.")) return;
     setBusy(true);
-    try { await deleteLibraryImage(id); setMessage("Bilden är borttagen från biblioteket."); }
+    try { await deleteLibraryImage(id); setMessage(restore ? "Den förinställda bilden är återställd." : "Bilden är borttagen från biblioteket."); }
     catch (cause) { setMessage(cause instanceof Error ? cause.message : "Bilden kunde inte tas bort."); }
     finally { setBusy(false); }
   }
@@ -40,7 +41,7 @@ export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string 
           {image ? <img src={image.dataUrl} alt={`Bild ${slot} för ${selected}`} /> : <div className="image-slot-empty">Ingen bild uppladdad</div>}
           {image && <p className="image-filename" title={image.name}>{image.name}</p>}
           <label className={`image-upload-button ${busy ? "is-busy" : ""}`}>{image ? "Ersätt bild" : "Ladda upp bild"}<input aria-label={`${image ? "Ersätt" : "Ladda upp"} bild ${slot}`} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={event => { void upload(slot, event.target.files?.[0]); event.target.value = ""; }} /></label>
-          {image && <button type="button" className="text-button" disabled={busy} onClick={() => void remove(image.id)}>Ta bort bild {slot}</button>}
+          {image && !image.dataUrl.startsWith("/education-heroes/") && <button type="button" className="text-button" disabled={busy} onClick={() => void remove(image.id)}>{hasDefaultImage(image.id) ? `Återställ förinställd bild ${slot}` : `Ta bort bild ${slot}`}</button>}
         </article>;
       })}</div>
       <p className="library-help">JPG, PNG eller WebP · högst 2 MB per bild. Använd gärna liggande bilder med lugn yta till vänster för rubriken. Uppladdningar sparas direkt. Redan valda bilder på blad påverkas inte när en biblioteksbild ersätts.</p>

@@ -1,9 +1,12 @@
 import { catalog } from "@/lib/catalog";
+import bundledImages from "@/fixtures/education-images.json";
 import {cloud,jsonRequest} from "@/lib/cloud-client";
 
 export const educationKey = (title: string) => title.trim().replace(/\s+/g, " ").toLocaleLowerCase("sv");
 export const educations = [...new Map(catalog.map(entry => [educationKey(entry.title), { id: educationKey(entry.title), title: entry.title.trim() }])).values()].sort((a, b) => a.title.localeCompare(b.title, "sv"));
 export type LibraryImage = { id: string; education: string; slot: 1 | 2; name: string; dataUrl: string; updatedAt: string };
+const defaults: LibraryImage[] = bundledImages.map(image => ({ ...image, slot: image.slot as 1 | 2, id: `${image.education}:${image.slot}`, dataUrl: image.path, updatedAt: "2026-10-12T00:00:00Z" }));
+export const hasDefaultImage = (id: string) => defaults.some(image => image.id === id);
 const eventName = "astar-image-library";
 
 async function database() {
@@ -32,8 +35,13 @@ async function mutate(image: LibraryImage | string) {
     try { localStorage.setItem(eventName, crypto.randomUUID()); } catch { /* Same-tab updates still work. */ }
 }
 
-export async function readLibrary():Promise<LibraryImage[]>{return (await cloud<{images:LibraryImage[]}>("/api/images")).images;}
-export async function importLegacyLibrary(){const local=await readLegacyLibrary();const current=await readLibrary();let count=0;for(const image of local){if(!current.some(item=>item.id===image.id)){await mutate(image);count++;}}return count;}
+export async function readLibrary(): Promise<LibraryImage[]> {
+  const stored = (await cloud<{images: LibraryImage[]}>("/api/images")).images;
+  const merged = new Map(defaults.map(image => [image.id, image]));
+  for (const image of stored) merged.set(image.id, image);
+  return [...merged.values()];
+}
+export async function importLegacyLibrary(){const local=await readLegacyLibrary();const current=(await cloud<{images:LibraryImage[]}>("/api/images")).images;let count=0;for(const image of local){if(!current.some(item=>item.id===image.id)){await mutate(image);count++;}}return count;}
 
 export function subscribeLibrary(refresh: () => void) {
   const storage = (event: StorageEvent) => { if (event.key === eventName) refresh(); };
@@ -52,3 +60,17 @@ export async function uploadLibraryImage(education: string, slot: 1 | 2, file: F
   try { localStorage.setItem(eventName, crypto.randomUUID()); } catch { /* Same-tab refresh still works. */ }
 }
 export const deleteLibraryImage = (id: string) => mutate(id);
+
+export async function snapshotLibraryImage(image: LibraryImage): Promise<string> {
+  // Private media keep their authorized, immutable reference.
+  if (!image.dataUrl.startsWith("/education-heroes/")) return image.dataUrl;
+  const response = await fetch(image.dataUrl);
+  if (!response.ok) throw new Error("Bilden kunde inte hämtas. Försök igen.");
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Bilden kunde inte läsas."));
+    reader.readAsDataURL(blob);
+  });
+}
