@@ -1,4 +1,4 @@
-﻿# Adminlås för färdiga produktblad
+# Adminlås för färdiga produktblad
 
 Beställt 12 oktober 2026: admin kan låsa ett färdigt produktblad och låsa upp med ett separat bekräftelsesteg utan PIN. Låset gäller det enskilda bladets innehåll, inte den gemensamma A4-mallen eller andra skolors blad. Ingen publicering, faktagranskning eller automatisk sändning ingår.
 
@@ -18,16 +18,16 @@ Om någon låser ett blad medan en annan flik har osparade ändringar stoppar se
 
 Låsändring, händelsehistorik och sparning serialiseras på samma bladrad. Triggers stoppar även direkta UPDATE på låsta blad, nya innehållsversioner och ny/förnyad redigeringssession. Bladkopplad bilduppladdning kontrollerar samma lås innan media skapas. Originalets skolbehörigheter och centrala roller används; klienten kan inte ge sig själv admin.
 
-Migrationen kräver uttryckligen beställd ändring av respektive Neon-miljö. Den har inte körts i Neon som del av denna lokala implementation. Befintliga miljöer fungerar före migrationen: funktionens gränssnitt döljs när tabellerna saknas och ordinarie redigering/export fortsätter. Lås-API svarar 503 fram till aktivering.
+Migration 002 aktiverades efter användarens uttryckliga tillstånd den 12 oktober 2026, först i Neon DEV (studio_dev) och sedan produktion (studio). Båda miljöerna verifierades med sina begränsade runtime-roller. I andra miljöer utan migrationen döljs gränssnittet och ordinarie redigering/export fortsätter; lås-API svarar då 503.
 
-Efter tillstånd, från projektroten med befintlig ignorerad `.env.owner`:
+Vid framtida installation, efter tillstånd, från projektroten med befintlig ignorerad `.env.owner`:
 
 ```powershell
 npx.cmd tsx scripts/migrate-finalization.ts dev
 npx.cmd tsx scripts/migrate-finalization.ts prod
 ```
 
-Kör bara den uttryckligen valda miljön. Skriptet verifierar mål-schema, använder transaktion och migrationslås, journalför version 002 och ger den befintliga runtime-rollen SELECT samt EXECUTE på låsfunktionen. Det skapar inga molnresurser och skriver inga hemligheter. Återkörning är säker. `scripts/provision.ts` inkluderar även 002 vid framtida installationer.
+En befintlig ägarfil på annan plats kan anges som ett tredje argument efter dev/prod; den behöver inte kopieras till projektmappen. Kör bara den uttryckligen valda miljön. Skriptet verifierar mål-schema, använder transaktion och migrationslås, journalför version 002 och ger den befintliga runtime-rollen SELECT samt EXECUTE på låsfunktionen. Det skapar inga molnresurser och skriver inga hemligheter. Återkörning är säker. `scripts/provision.ts` inkluderar även 002 vid framtida installationer.
 
 ## Verifiering 12 oktober 2026
 
@@ -45,3 +45,12 @@ node scripts/test-finalization.mjs
 ```
 
 QA-databasen finns bara i minnet. Inga riktiga användare, blad eller Neon-data ändras av testet.
+
+## Faktisk Neon-aktivering 12 oktober 2026
+
+- Användaren gav uttryckligen tillstånd att aktivera i Neon efter den lokala leveransen. Migration 002 kördes i studio_dev, verifierades, och kördes därefter i studio. Ingen ny molnresurs eller manuell Vercel-deployment skapades.
+- Både studio_dev_app och studio_app verifierade: rätt schema, NOBYPASSRLS, RLS på båda låstabeller, SELECT utan skrivprivilegier, EXECUTE på låsfunktionen, tre aktiva triggers, migrationspost 002 och fixerad search_path.
+- Ett tillfälligt blad skapades i en transaktion per miljö med en befintlig adminidentitet. Verklig SQL verifierade låsning, nekad ändring av låst blad, nekad upplåsning utan bekräftelse, nekad direkt statusändring, nekad upplåsning från icke-admin samt skolisolering av status. Bekräftad upplåsning gav två korrekta historikhändelser och tillät innehållsändring igen. Hela transaktionen rullades tillbaka, inklusive testblad, session och händelser. Inga bestående testdata skapades.
+- Befintliga blad- och versionsantal var oförändrade efter provet. Ingen användare, roll eller skolmedlemskap ändrades. Inga befintliga blad låstes automatiskt.
+- Lokal QA: work/preflight-finalization.mjs och work/verify-neon-finalization.mjs. Dessa läser befintliga ignorerade anslutningsfiler utan att skriva eller visa hemligheter.
+- Vercel: denna aktivering är verifierad direkt i faktisk Neon-databas. Ett inloggat browserflöde genom Vercel och en verklig Vercel-PDF-export har inte återtestats i aktiveringsturen. Tidigare lokala browser- och API-prov beskrivs ovan.

@@ -7,7 +7,7 @@ async function main() {
   if (mode !== "dev" && mode !== "prod") throw new Error("Ange dev eller prod uttryckligen.");
   const schema = mode === "dev" ? "studio_dev" : "studio";
   const role = `${schema}_app`;
-  const env = parse(readFileSync(".env.owner"));
+  const env = parse(readFileSync(process.argv[3] ?? ".env.owner"));
   const connection = env.DATABASE_URL_UNPOOLED ?? env.POSTGRES_URL_NON_POOLING;
   if (!connection) throw new Error("Ägaranslutning saknas i .env.owner.");
   const pool = new Pool({ connectionString: connection, max: 1 });

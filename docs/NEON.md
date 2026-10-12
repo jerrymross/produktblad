@@ -39,3 +39,7 @@ Adminalias 12 oktober 2026: användarnamnet admin kopplas serverledes till jerry
 Adminöversikt 12 oktober 2026: medlemsregister och ändringslogg hämtar befintliga tabeller via /api/admin/overview, med is_central-kontroll inom samma transaktion. Inbjudningar använder uttrycklig boolesk adminroll och deduplicerade skolor; rollen kontrolleras även före INSERT i transaktionen. Ingen migration eller privilegieutökning. Registret är en läsvy för befintliga konton.
 
 Adminlås 12 oktober 2026: implementation och isolerade SQL/RLS/API-/browserprov finns i [ADMINLAS.md](ADMINLAS.md). Ny migration 002 krävs; den är inte tillämpad i Neon ännu. Funktionen döljs i en miljö innan migrationen är aktiverad. Inga befintliga blad låses automatiskt.
+
+### Adminlås aktiverat i Neon 12 oktober 2026
+
+Efter användarens uttryckliga tillstånd kördes migration 002 först i studio_dev och sedan i studio. Databasroller, RLS, privilegier och triggers verifierade i båda miljöerna. Låsning/upplåsning och dess behörighets-/bekräftelsekrav provades i återställda transaktioner utan kvarvarande testdata. Se ADMINLAS.md. Inloggat Vercel-browserflöde är inte återtestat i denna aktivering.

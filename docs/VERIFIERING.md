@@ -343,3 +343,10 @@ PGlite är enbart ett temporärt verifieringsverktyg, inte ett nytt beroende i a
 ## Adminlås 12 oktober 2026
 
 Se [ADMINLAS.md](ADMINLAS.md) för beställt beteende, migreringsgräns och verifieringsresultat. Admin kan låsa ett sparat produktblad och låsa upp via separat bekräftelse utan PIN. Låsningens status/logg är separata från innehållsversioner. Isolerade SQL/RLS- och verkliga routehandlerprov samt lokal browser med simulerade API-svar har passerat. Vercel/Neon-aktivering återstår; ingen live-migration är gjord. A4-renderaren och PDF-routen är oförändrade.
+
+### Faktisk aktivering av adminlås 12 oktober 2026
+
+- Uttryckligt tillstånd: ”ja du får aktivera i neon”. Migration 002 körd i DEV och därefter produktion, med separata schema-/rollkontroller.
+- Faktisk Neon/RLS: runtime-roller studio_dev_app/studio_app har NOBYPASSRLS, endast SELECT på låstabeller och EXECUTE på låsfunktionen. RLS, tre triggers, journalförd migration och säker search_path verifierade. Verklig låsning/bekräftad upplåsning, nekade direkta ändringar, adminrestriktion, nekad upplåsning utan bekräftelse, skolisolering och händelsehistorik provade. Testtransaktionerna rullades tillbaka; inga bestående blad eller loggrader skapade.
+- Skriptet stöder nu valfri tredje parameter för ägarfilens sökväg, så befintlig ignorerad fil kan användas utan extra kopia av hemligheterna. Dokumenterat i ADMINLAS.md.
+- Lokal browser/PDF: inte upprepade för denna schemaaktivering; tidigare implementationstester beskrivs i ADMINLAS.md. Vercel: ingen manuell deployment och inget nytt autentiserat browser-/PDF-prov i denna tur.
