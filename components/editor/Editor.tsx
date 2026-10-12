@@ -1,5 +1,6 @@
 "use client";
 import { schoolVisitAddress, withVisitAddress } from "@/lib/school-addresses";
+import { withUnsavedAfDefaults } from "@/lib/af-default-content";
 import { sheetApiPath } from "@/lib/sheet-id";
 
 
@@ -79,7 +80,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       const sheet=await cloud<{content:SheetData;revision:number}>(sheetUrl);
       if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
       if(isAfProgram(entry?.program) && sheet.content.layout !== "af") { setDirty(true); setMessage("Bladet visas med det nya AF-upplägget. Spara för att skapa en version med den nya mallen. Äldre versioner behåller sitt upplägg."); }
-      if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(entry ? withVisitAddress(previous, entry) : previous);setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
+      if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(entry ? withVisitAddress(withUnsavedAfDefaults(previous, entry.program, 0), entry) : previous);setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
       await lock();
     }catch(error){if(live)setMessage(error instanceof Error?error.message:"Bladet kunde inte öppnas.");}finally{if(live)setLoading(false);}};
     void load();

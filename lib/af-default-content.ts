@@ -1,4 +1,4 @@
-import type { SheetData } from "@/lib/sheet";
+import { isAfProgram, type SheetData } from "@/lib/sheet";
 
 // User-requested reference text. Education-specific details must be filled in.
 export const AF_DEFAULT_CONTENT: Partial<SheetData> = {
@@ -16,3 +16,15 @@ export const AF_DEFAULT_CONTENT: Partial<SheetData> = {
   contactOneRole: "Kontaktperson: ****",
   contactOneEmail: "****",
 };
+
+// Opening a sheet creates revision 0. Seed its empty fields on every read,
+// without replacing existing text or modifying any saved/frozen version.
+export function withUnsavedAfDefaults(content: SheetData, program: string, revision: number): SheetData {
+  if (revision !== 0 || !isAfProgram(program)) return content;
+  const result = { ...content };
+  for (const [key, value] of Object.entries(AF_DEFAULT_CONTENT)) {
+    const field = key as keyof SheetData;
+    if (typeof value === "string" && !content[field]?.trim()) Object.assign(result, { [field]: value });
+  }
+  return result;
+}

@@ -174,7 +174,7 @@ Alla 32 katalogblad med program **AF** eller **AF RUB** använder en särskild A
 
 Utbildningsstart har egna rubrik- och textfält. Befintligt innehåll i Utbildningsform bevaras i Utbildningsfakta. Skriv en faktauppgift per rad; Ort:, Studieform:, Omfattning:, Längd:, APL: och Mål: visas i fet stil. Inga utbildningsfakta från referensen fylls automatiskt i andra blad. Rubriker som redaktören själv ändrat bevaras.
 
-Följdbeställning 12 oktober: ännu oöppnade AF/AF RUB-blad får PDF-texten som utgångspunkt, med `****` för yrke, arbetsuppgifter och utbildningsspecifika fakta, inklusive poäng. Texten läggs bara in när en databaspost först skapas. Redan öppnade blad (även utan sparad version), sparade blad och gamla lokala utkast behåller sitt innehåll. Återställ standardinnehåll hämtar den nya standardtexten när redaktören själv väljer det.
+Följdbeställning 12 oktober: oöppnade och osparade AF/AF RUB-blad får PDF-texten som utgångspunkt, med `****` för yrke, arbetsuppgifter och utbildningsspecifika fakta, inklusive poäng. Nya databasposter får texten från början. Tidigare öppnade, osparade blad (revision 0) får standardtext i sina tomma fält vid varje öppning. Även gamla lokala utkast utan sparad version får tomma fält kompletterade. Befintlig text, sparade blad och historik behålls. Återställ standardinnehåll hämtar hela standardtexten när redaktören själv väljer det.
 
 Ett äldre AF-blad visas med det nya upplägget när det öppnas i redigeraren. Spara skapar en ny version med `af-1.0.0-prototyp`. Äldre sparade versioner/exporter behåller standardmallen. Programmet i katalogen styr mallvalet på servern. Komvux och andra program behåller `kock-1.3.0-prototyp`. Ingen datamigration krävs.
 

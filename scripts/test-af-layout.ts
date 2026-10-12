@@ -1,10 +1,20 @@
 import assert from "node:assert/strict";
 import { catalog, initialSheet, draftKey, readPreviousDraft } from "../lib/catalog";
 import { AF_TEMPLATE_VERSION, TEMPLATE_VERSION, exampleSheet, isAfProgram, isSheetData, templateVersion, withProgramLayout } from "../lib/sheet";
-import { AF_DEFAULT_CONTENT } from "../lib/af-default-content";
+import { AF_DEFAULT_CONTENT, withUnsavedAfDefaults } from "../lib/af-default-content";
 
 const old = { ...exampleSheet, profession: "VVS-isolerare", whyTitle: "Om utbildningen", why: "Befintlig text", form: "Befintliga fakta", address: "Manuellt vald adress" };
 const frozen = JSON.stringify(old);
+const openedUnsaved = { ...old, learn: "", process: "", form: "", audience: "", finance: "" };
+const filledUnsaved = withUnsavedAfDefaults(openedUnsaved, "AF", 0);
+assert.equal(filledUnsaved.why, openedUnsaved.why);
+assert.equal(filledUnsaved.profession, openedUnsaved.profession);
+assert.equal(filledUnsaved.learn, AF_DEFAULT_CONTENT.learn);
+assert.equal(filledUnsaved.start, AF_DEFAULT_CONTENT.start);
+assert.deepEqual(withUnsavedAfDefaults(filledUnsaved, "AF", 0), filledUnsaved);
+assert.equal(openedUnsaved.learn, "");
+assert.strictEqual(withUnsavedAfDefaults(openedUnsaved, "AF", 1), openedUnsaved);
+assert.strictEqual(withUnsavedAfDefaults(openedUnsaved, "Komvux", 0), openedUnsaved);
 const af = withProgramLayout(old, "AF", "Växjö");
 assert.equal(af.layout, "af");
 assert.equal(af.start, "");
