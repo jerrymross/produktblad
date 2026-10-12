@@ -1,4 +1,5 @@
 "use client";
+import {PortalReauthentication} from "@/components/PortalReauthentication";
 import { schoolVisitAddress, withVisitAddress } from "@/lib/school-addresses";
 import { withUnsavedProgramDefaults } from "@/lib/default-content";
 import { withDefaultImage } from "@/lib/education-images";
@@ -63,6 +64,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const scale = zoom ?? fitScale;
   const [overflow, setOverflow] = useState<string[]>([]);
   const [dirty, setDirty] = useState(false);
+  useEffect(()=>{if(window.parent!==window)window.parent.postMessage({type:'produktblad-dirty',dirty},'https://astar-studio-portal.vercel.app');},[dirty]);
   const [hasSaved, setHasSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -381,7 +383,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
           {(overflow.length > 0 || !validQr) && <div className="overflow-alert"><strong>{overflow.length ? "Text får inte plats på A4" : "QR-adress saknas eller är ogiltig"}</strong><button type="button" onClick={() => openField(overflow[0] ?? "qrUrl")}>Gå till {overflow.length ? shortFieldName(overflow[0]) : "QR-adress"} →{overflow.length > 1 ? ` (+${overflow.length - 1})` : ""}</button></div>}
           {finalization.finalized && dirty && <p className="message" role="status">Bladet är låst. Dina osparade ändringar finns kvar här.</p>}
           {message && <p className="message" role="status">{message}</p>}
-          {message.includes("Logga in via Astar Studio igen") && <a className="text-button" href={`/api/portal/login?returnTo=${encodeURIComponent(entry?`/?blad=${entry.id}`:"/?exempel=1")}`} target="_blank" rel="noopener noreferrer">Logga in i en ny flik och återvänd hit. Dina ändringar bevaras.</a>}
+          {message.includes("Logga in via Astar Studio igen") && <PortalReauthentication returnTo={entry?`/?blad=${encodeURIComponent(entry.id)}`:"/?exempel=1"}/>}
 
           {!locked&&!loading&&!finalization.finalized&&<button type="button" className="text-button" disabled={busy} onClick={()=>{void cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:token.current})).then(()=>{ownsSession.current=true;setLocked(true);setMessage("Du kan nu redigera bladet.");}).catch(error=>setMessage(error.message));}}>Försök öppna för redigering igen</button>}
           <details className="sheet-history"><summary onClick={()=>{void cloud<{versions:typeof history;events?:FinalizationEvent[]}>(`${sheetUrl}/history`).then(result=>{setHistory(result.versions);setLockEvents(result.events??[]);}).catch(error=>setMessage(error.message));}}>Versionshistorik</summary>{lockEvents.map((event,index)=><p className="finalization-event" key={`${event.createdAt}-${index}`}>{event.finalized?"Låst":"Upplåst"} av {event.changedBy} · {new Date(event.createdAt).toLocaleString("sv-SE")} · version {event.revision}</p>)}{history.map(version=><button type="button" className="text-button" key={version.revision} disabled={!locked||busy||finalization.finalized} onClick={()=>{if(dirty&&!window.confirm("Ersätt osparade ändringar med den här versionen?"))return;edits.current++;setData(entry ? withVisitAddress(version.content, entry) : version.content);setDirty(true);setMessage("Tidigare version är inläst. Spara för att skapa en ny version.");}}>Version {version.revision} · {new Date(version.createdAt).toLocaleString("sv-SE")}</button>)}</details>

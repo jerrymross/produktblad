@@ -1,0 +1,2 @@
+import {PortalReauthentication} from "@/components/PortalReauthentication";
+export default function EmbeddedLogin(){return <main className="login-page"><section className="login-card"><h1>Förnya appinloggningen</h1><p>Öppna appen igen från portalen om sessionen har gått ut. Inbäddningen kräver en aktuell webbläsare som stöder partitionerade cookies.</p><PortalReauthentication reload/></section></main>;}

@@ -4,6 +4,7 @@ import { issuer, clientId, callback, randomSecret, hash, challenge, safeReturnTo
 import { cookieOptions, transactionCookie } from "@/lib/portal-session";
 
 export async function GET(request: Request) {
+  if(request.headers.get('sec-fetch-dest')==='iframe')return NextResponse.redirect(new URL('/embed-login',request.url));
   if (new URL(request.url).origin !== new URL(callback).origin) return Response.json({ error: "Portalinloggning kräver den registrerade produktionsadressen." }, { status: 400 });
   const state = randomSecret(), verifier = randomSecret(), cookie = randomSecret();
   const returnTo = safeReturnTo(new URL(request.url).searchParams.get("returnTo"));
