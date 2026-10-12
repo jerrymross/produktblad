@@ -149,3 +149,10 @@ Under **Omslag → Välj från bildbiblioteket** är bladets utbildning automati
 Vid val av en förinställd bild kopieras JPEG-data till bladet. Den befintliga serversparningen skapar sedan privat media och fryser mediereferensen med bladversionen. Befintliga privata biblioteksbilder använder fortsatt `/api/media/…` och befintliga åtkomstkontroller. Preview och PDF använder samma frysta innehåll. Import av tidigare lokala bilder bevarar befintliga gemensamma uppladdningar, men kan ersätta en förinställd bild.
 
 Ingen databasmigration eller ny molnresurs behövs för dessa förinställda bilder. Denna ändring har inte manuellt publicerats till Vercel och har inte verifierats med en inloggad session i den faktiska molnmiljön.
+## Adminläge
+
+Logga in på `/login` med användarnamn **admin** och samma lösenord som kontot **jerrymross@gmail.com**. E-postinloggningen finns kvar. `admin` är ett serverstyrt alias till det befintliga kontot; det skapar inget nytt konto och ger ingen ny roll.
+
+Inloggning med aliaset öppnar `/admin`, med ingångar till alla produktblad, inbjudningar och mallen. Bildbiblioteket öppnas via Inställningar. Adminläge finns även i menyn för centrala administratörer. Servern verifierar sessionen och den skyddade centralrollen före åtkomst till adminsidan. Skolredaktörer skickas till biblioteket. En oinloggad användare skickas till inloggningen. Behörighets- och databasreglerna gäller fortsatt på varje underliggande operation.
+
+Tekniskt använder `lib/admin-login.ts` en före-hook i Better Auth 1.7.7, begränsad till `/sign-in/email`, enligt [officiell hook-dokumentation](https://better-auth.com/docs/concepts/hooks). Lösenordskontroll, sessioner, cookies och rate limiting går via den befintliga Better Auth-inloggningen. Ingen databasmigration behövs. `npx tsx scripts/test-admin-login.ts` kör integrationstest med isolerad minnesdatabas.

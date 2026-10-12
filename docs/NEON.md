@@ -33,3 +33,5 @@ Kontroller: inloggning/utloggning, stängd registrering, anonym avvisning, sparn
 Neons Free-kvoter gäller hela projektet; bilder, blad och historik delar lagring. Backup/återställningspolicy och eventuellt byte av plan behöver beslutas efter faktisk användning. Appen innehåller inget automatiskt godkännande- eller utskicksflöde.
 
 Bilduppladdning 10 oktober 2026: nya filer överförs direkt som multipart och lagras binärt i Neon. Uppladdning direkt på bladet är skolskyddad och sker innan Spara utkast; sparningen kopplar därefter filreferensen till en bladversion. Filformatet identifieras från filinnehållet. scripts/test-upload.ts verifierar lagring, privata bildsvar, MIME och storleksgräns.
+
+Adminalias 12 oktober 2026: användarnamnet admin kopplas serverledes till jerrymross@gmail.com och kontots befintliga lösenord. Aliaset ändrar inte central_roles, skolmedlemskap eller kontots data. /admin använder pageIdentity och requireAdmin innan sidan renderas. Ingen migration eller live-databasändring ingår.
