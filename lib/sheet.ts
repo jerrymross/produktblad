@@ -1,4 +1,27 @@
 export const TEMPLATE_VERSION = "kock-1.3.0-prototyp";
+export const AF_TEMPLATE_VERSION = "af-1.0.0-prototyp";
+
+export function isAfProgram(program?: string) {
+  return program === "AF" || program === "AF RUB";
+}
+
+export function templateVersion(data: SheetData) {
+  return data.layout === "af" ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION;
+}
+
+// The assignment controls the layout. Old frozen revisions are never upgraded here.
+export function withProgramLayout(data: SheetData, program?: string, school?: string): SheetData {
+  if (!isAfProgram(program)) return { ...data, layout: "standard" };
+  const previous = defaultHeadings(data.profession);
+  const firstAfLayout = data.layout !== "af";
+  return { ...data, layout: "af", schoolName: school ?? data.schoolName ?? "",
+    startTitle: data.startTitle ?? "Utbildningsstart", start: data.start ?? "",
+    whyTitle: firstAfLayout && data.whyTitle === previous.whyTitle ? `Varför bli ${data.profession.toLocaleLowerCase("sv")}?` : data.whyTitle,
+    processTitle: firstAfLayout && data.processTitle === previous.processTitle ? "Så här går det till" : data.processTitle,
+    formTitle: firstAfLayout && data.formTitle === previous.formTitle ? "Utbildningsfakta" : data.formTitle,
+    financeTitle: firstAfLayout && data.financeTitle === previous.financeTitle ? "Ekonomisk kompensation" : data.financeTitle,
+  };
+}
 export const TITLE_DEFAULTS = { titleRows: "2", titleLineColor: "auto", titlePrefixColor: "auto", professionColor: "coral" } as const;
 export const EYEBROW_OPTIONS = ["KOMVUX", "ARBETSMARKNADSUTBILDNING", "PRAKTISK UTBILDNING\nMED STORA MÖJLIGHETER TILL JOBB"] as const;
 export const GRADIENT_STRENGTHS = ["1", "2", "3", "4"] as const;
@@ -16,6 +39,10 @@ export function defaultHeadings(profession: string) {
 }
 
 export type SheetData = {
+  layout?: "standard" | "af";
+  schoolName?: string;
+  startTitle?: string;
+  start?: string;
   titleRows: "2" | "3";
   titleLineColor: "auto" | "blue" | "coral";
   titlePrefixColor: "auto" | "blue" | "coral";
@@ -85,7 +112,7 @@ export const exampleSheet: SheetData = {
   gradientStrength: "2",
 };
 
-export const textFields: { key: keyof SheetData; label: string; multiline?: boolean; group: string }[] = [
+export const textFields: { key: keyof SheetData; label: string; multiline?: boolean; group: string; afOnly?: boolean }[] = [
   { key: "eyebrow", label: "Övre etikett", group: "Omslag" },
   { key: "titleLine", label: "Rubrik, rad 1", group: "Omslag" },
   { key: "titlePrefix", label: "Rubrik, inledande ord rad 2", group: "Omslag" },
@@ -103,6 +130,8 @@ export const textFields: { key: keyof SheetData; label: string; multiline?: bool
   { key: "audience", label: "Vem kan söka?", multiline: true, group: "Innehåll" },
   { key: "financeTitle", label: "Rubrik – Ekonomisk kompensation", group: "Innehåll" },
   { key: "finance", label: "Ekonomisk kompensation", multiline: true, group: "Innehåll" },
+  { key: "startTitle", label: "Rubrik – Utbildningsstart", group: "Innehåll", afOnly: true },
+  { key: "start", label: "Utbildningsstart", multiline: true, group: "Innehåll", afOnly: true },
   { key: "about", label: "Om Astar", multiline: true, group: "Nederdel" },
   { key: "address", label: "Skolans adress", group: "Nederdel" },
   { key: "contactOneName", label: "Kontakt 1 – namn", group: "Nederdel" },
@@ -118,18 +147,20 @@ export function isSheetData(value: unknown): value is SheetData {
   if (!value || typeof value !== "object") return false;
   const object = value as Record<string, unknown>;
   return ["2", "3"].includes(object.titleRows as string)
+    && (object.layout === undefined || ["standard", "af"].includes(object.layout as string))
+    && ["startTitle", "start", "schoolName"].every(key => object[key] === undefined || (typeof object[key] === "string" && object[key].length <= 15_000))
     && ["titleLineColor", "titlePrefixColor", "professionColor"].every(key => ["auto", "blue", "coral"].includes(object[key] as string))
     && EYEBROW_OPTIONS.some(option => object.eyebrow === option)
     && ["none", "white", "navy"].includes(object.gradientStyle as string)
     && GRADIENT_STRENGTHS.some(level => object.gradientStrength === level)
-    && [...textFields.map(field => field.key), "image"].every(key => typeof object[key] === "string" && object[key].length <= (key === "image" ? 7_000_000 : 15_000));
+    && [...textFields.filter(field => !field.afOnly).map(field => field.key), "image"].every(key => typeof object[key] === "string" && object[key].length <= (key === "image" ? 7_000_000 : 15_000));
 }
 
 // Read old prototype drafts without rewriting their stored snapshots.
 export function upgradePreviousDraft(value: unknown, program = "Komvux"): SheetData | null {
   if (!value || typeof value !== "object") return null;
   const old = value as Record<string, unknown>;
-  const keys = textFields.map(field => field.key).filter(key => !key.endsWith("Title"));
+  const keys = textFields.filter(field => !field.afOnly).map(field => field.key).filter(key => !key.endsWith("Title"));
   if (![...keys, "image"].every(key => typeof old[key] === "string" && old[key].length <= (key === "image" ? 7_000_000 : 15_000))) return null;
   const headings = defaultHeadings(old.profession as string);
   const data = { ...TITLE_DEFAULTS, ...headings, ...old,

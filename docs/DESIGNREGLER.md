@@ -76,3 +76,7 @@ Jämför referens, förhandsvisning och renderad export vid samma skala. Kontrol
 Text- och bildändringar ska ge samma synliga resultat i preview och export för samma sparade version. Ingen klippning, överlappning, dold text eller oavsiktlig andra sida accepteras. Prova även tomma valfria fält och långa kontaktuppgifter. Dokumentera avvikelser med bilder och tydlig status; en lokal build är inte visuell QA.
 
 Detta definierar en vanlig produktblads-PDF. Särskilda tryckkrav som PDF/X, CMYK, utfall eller skärmärken är inte beslutade och ska utredas om tryckleverantören kräver dem.
+
+## AF-textupplägg, beställt 12 oktober 2026
+
+AF och AF RUB har en separat fast mall enligt `references/AF.pdf` (användarens Rityta 1.pdf). Avsnittsordning, huvudmått, versionshantering, fontavvikelser och verifiering beskrivs i [AF-MALL.md](AF-MALL.md). Skolredaktören ändrar innehållsfält, inklusive utbildningsstart och fakta, men inte spalter, kontaktplacering eller sidfot. Referensens sakuppgifter blir inte nya standardtexter. Äldre frysta versioner behåller sitt ursprungliga upplägg.

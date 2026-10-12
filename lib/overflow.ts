@@ -10,6 +10,8 @@ export function measureSheetOverflow(): string[] {
     column.querySelectorAll<HTMLElement>(".sheet-section").forEach(section => {
       if (section.getBoundingClientRect().bottom > limit) violations.add(section.dataset.field ?? "innehåll");
       const heading = section.querySelector<HTMLElement>("h2");
+      const paragraph = section.querySelector<HTMLElement>("p");
+      if (paragraph && paragraph.scrollWidth > paragraph.clientWidth + 1) violations.add(section.dataset.field ?? "innehåll");
       if (heading && (heading.scrollWidth > heading.clientWidth + 1 || heading.getBoundingClientRect().bottom > limit)) violations.add(heading.dataset.field ?? "rubrik");
     });
   });
@@ -30,11 +32,13 @@ export function measureSheetOverflow(): string[] {
   }
   const pageBottom = root.getBoundingClientRect().bottom;
   const footer = root.querySelector<HTMLElement>(".sheet-footer");
-  if (footer && footer.getBoundingClientRect().bottom > pageBottom - 2 * visualScale) violations.add("contactOneEmail");
+  if (footer && footer.getBoundingClientRect().bottom > pageBottom - 2 * visualScale) violations.add(root.dataset.layout === "af" ? "address" : "contactOneEmail");
   const about = root.querySelector<HTMLElement>(".sheet-about");
+  if (root.dataset.layout === "af" && about && about.getBoundingClientRect().height / visualScale > parseFloat(getComputedStyle(about).minHeight) + 0.67) violations.add("about");
   if (about && footer && about.getBoundingClientRect().bottom > footer.getBoundingClientRect().top - 5 * visualScale) violations.add("about");
   root.querySelectorAll<HTMLElement>(".sheet-contact, .sheet-address").forEach(item => {
-    if (item.scrollWidth > item.clientWidth + 1 || item.getBoundingClientRect().bottom > pageBottom - 2 * visualScale) violations.add(item.dataset.field ?? "address");
+    const contactLimit = root.dataset.layout === "af" && item.classList.contains("sheet-contact") && about ? about.getBoundingClientRect().top - 8 * visualScale : pageBottom - 2 * visualScale;
+    if (item.scrollWidth > item.clientWidth + 1 || item.getBoundingClientRect().bottom > contactLimit) violations.add(item.dataset.field ?? "address");
   });
   return [...violations];
 }

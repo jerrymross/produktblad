@@ -1,0 +1,42 @@
+import assert from "node:assert/strict";
+import { catalog, initialSheet, draftKey, readPreviousDraft } from "../lib/catalog";
+import { AF_TEMPLATE_VERSION, TEMPLATE_VERSION, exampleSheet, isAfProgram, isSheetData, templateVersion, withProgramLayout } from "../lib/sheet";
+
+const old = { ...exampleSheet, profession: "VVS-isolerare", whyTitle: "Om utbildningen", why: "Befintlig text", form: "Befintliga fakta", address: "Manuellt vald adress" };
+const frozen = JSON.stringify(old);
+const af = withProgramLayout(old, "AF", "Växjö");
+assert.equal(af.layout, "af");
+assert.equal(af.start, "");
+assert.equal(af.startTitle, "Utbildningsstart");
+assert.equal(af.formTitle, "Utbildningsfakta");
+assert.equal(af.why, old.why);
+assert.equal(af.form, old.form);
+assert.equal(af.address, old.address);
+assert.equal(JSON.stringify(old), frozen);
+assert.equal(templateVersion(old), TEMPLATE_VERSION);
+assert.equal(templateVersion(af), AF_TEMPLATE_VERSION);
+assert.ok(isSheetData(old));
+assert.ok(isSheetData(af));
+assert.ok(!isSheetData({ ...af, start: 42 }));
+assert.ok(!isSheetData({ ...af, layout: "client-invented" }));
+const custom = withProgramLayout({ ...af, formTitle: "Egen rubrik", startTitle: "Startdatum", start: "Planerad start", whyTitle: "Egen inledning" }, "AF RUB", "Umeå");
+assert.equal(custom.startTitle, "Startdatum");
+assert.equal(custom.start, "Planerad start");
+assert.equal(custom.formTitle, "Egen rubrik");
+assert.equal(custom.whyTitle, "Egen inledning");
+assert.equal(withProgramLayout(custom, "Komvux").layout, "standard");
+for (const entry of catalog) {
+  const initial = initialSheet(entry);
+  assert.ok(isSheetData(initial));
+  assert.equal(initial.layout, isAfProgram(entry.program) ? "af" : "standard");
+  assert.equal(templateVersion(initial), isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION);
+  assert.ok(draftKey(entry.id).endsWith(templateVersion(initial)));
+  if (isAfProgram(entry.program)) { assert.equal(initial.start, ""); assert.equal(initial.form, ""); assert.equal(initial.schoolName, entry.school); }
+}
+const entry = catalog.find(item => item.program === "AF")!;
+const local = new Map([[`produktbladsapp:blad:${entry.id}:${TEMPLATE_VERSION}`, frozen]]);
+Object.defineProperty(globalThis, "localStorage", { value: { getItem: (key: string) => local.get(key) ?? null }, configurable: true });
+assert.equal(readPreviousDraft(entry)?.why, old.why);
+local.set(`produktbladsapp:blad:${entry.id}:${TEMPLATE_VERSION}:reset`, "1");
+assert.equal(readPreviousDraft(entry), null);
+console.log(`OK: ${catalog.filter(item => isAfProgram(item.program)).length} AF/AF RUB-blad får AF-mallen; övriga blad behåller standardmallen. Befintligt innehåll, egna rubriker, adress, historik och gamla lokala utkast bevaras. Ogiltiga fält avvisas.`);

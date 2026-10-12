@@ -8,7 +8,7 @@ import Link from "next/link";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ImagePicker } from "@/components/images/ImagePicker";
 import { Sheet } from "@/components/sheet/Sheet";
-import { exampleSheet, EYEBROW_OPTIONS, GRADIENT_STRENGTHS, isSheetData, TEMPLATE_VERSION, textFields, type SheetData } from "@/lib/sheet";
+import { exampleSheet, EYEBROW_OPTIONS, GRADIENT_STRENGTHS, isSheetData, templateVersion, isAfProgram, withProgramLayout, textFields, type SheetData } from "@/lib/sheet";
 import { measureSheetOverflow } from "@/lib/overflow";
 import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, schoolQrUrl, type CatalogEntry } from "@/lib/catalog";
 import { cloud,jsonRequest } from "@/lib/cloud-client";
@@ -38,7 +38,15 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const hasKomvuxDefaults = entry?.program === "Komvux";
   const [storedData, setData] = useState<SheetData>(() => entry ? initialSheet(entry) : exampleSheet);
   const school = entry?.school;
-  const data = useMemo(() => school ? { ...storedData, qrUrl: schoolQrUrl(school) } : storedData, [storedData, school]);
+  const program = entry?.program;
+  const af = isAfProgram(program);
+  const sections = af ? [SECTIONS[0], SECTIONS[1], SECTIONS[2], SECTIONS[4],
+    { id: "start", label: "Utbildningsstart", group: "Innehåll", keys: ["startTitle", "start"] as (keyof SheetData)[] },
+    SECTIONS[5], { ...SECTIONS[3], label: "Utbildningsfakta" }, ...SECTIONS.slice(6)] : SECTIONS;
+  const data = useMemo(() => {
+    const resolved = withProgramLayout(storedData, program, school);
+    return school ? { ...resolved, qrUrl: schoolQrUrl(school) } : resolved;
+  }, [storedData, school, program]);
   const [activeGroup, setActiveGroup] = useState<(typeof GROUPS)[number]>("Omslag");
   const [fitScale, setFitScale] = useState(0.5);
   const [zoom, setZoom] = useState<number | null>(null);
@@ -70,6 +78,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const load=async()=>{try{
       const sheet=await cloud<{content:SheetData;revision:number}>(sheetUrl);
       if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
+      if(isAfProgram(entry?.program) && sheet.content.layout !== "af") { setDirty(true); setMessage("Bladet visas med det nya AF-upplägget. Spara för att skapa en version med den nya mallen. Äldre versioner behåller sitt upplägg."); }
       if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(entry ? withVisitAddress(previous, entry) : previous);setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
       await lock();
     }catch(error){if(live)setMessage(error instanceof Error?error.message:"Bladet kunde inte öppnas.");}finally{if(live)setLoading(false);}};
@@ -154,7 +163,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const actualKey = key === "title" ? "profession" : key === "image" ? "image-input" : key;
     const field = textFields.find(field => field.key === actualKey);
     setActiveGroup(field ? field.group as (typeof GROUPS)[number] : "Omslag");
-    setActiveSection(SECTIONS.find(section => section.keys.includes(actualKey as keyof SheetData))?.id ?? null);
+    setActiveSection(sections.find(section => section.keys.includes(actualKey as keyof SheetData))?.id ?? null);
     setMobilePane("editor");
     setExpanded(false);
     setFocusKey(actualKey === "image-input" ? "change-image" : actualKey);
@@ -214,9 +223,11 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     setMessage("Standardinnehållet är inläst. Spara för att behålla ändringen.");
   }
 
-  const visibleFields = textFields.filter(field => field.group === activeGroup).map(field => {
+  const visibleFields = textFields.filter(field => field.group === activeGroup && (!field.afOnly || af)).map(field => {
     if (entry && field.key === "why") return { ...field, label: `Text – ${defaults.whyTitle}` };
     if (entry && field.key === "whyTitle") return { ...field, label: `Rubrik – ${defaults.whyTitle}` };
+    if (af && field.key === "form") return { ...field, label: "Utbildningsfakta" };
+    if (af && field.key === "formTitle") return { ...field, label: "Rubrik – Utbildningsfakta" };
     if (entry && field.key === "qrUrl") return { ...field, label: "QR-adress" };
     return field;
   });
@@ -228,11 +239,12 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const label = activeGroup === "Innehåll" ? field.key.endsWith("Title") ? "Rubrik" : "Text" : field.key === "qrUrl" ? "QR-adress" : field.label;
     return <div className={`field ${tooLong || qrError ? "field-error" : ""}`} key={field.key}>
       <div className="field-top"><label htmlFor={field.key}>{label}</label><div className="field-tools">{tooLong && <span className="overflow-label">Får inte plats</span>}{(field.group === "Innehåll" || field.key === "about") && <button type="button" className="reset-field" title={`Återställ standardtext: ${field.label}`} aria-label={`Återställ standardtext: ${field.label}`} disabled={data[field.key] === defaults[field.key]} onClick={() => { change(field.key, defaults[field.key]); setMessage("Fältets standardtext är återställd. Spara för att behålla ändringen."); }}>↺</button>}</div></div>
-      {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "profession" ? 2 : field.key === "learn" || field.key === "why" ? 7 : 4} value={data[field.key]} aria-invalid={tooLong || undefined} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key]} readOnly={field.key === "qrUrl" && !!entry} aria-invalid={tooLong || qrError || undefined} aria-describedby={field.key === "qrUrl" ? "qr-help" : undefined} onChange={event => change(field.key, event.target.value)} />}
+      {field.key === "eyebrow" ? <select id={field.key} value={data.eyebrow} onChange={event => change("eyebrow", event.target.value)}>{EYEBROW_OPTIONS.map(option => <option key={option} value={option}>{option}</option>)}</select> : field.multiline ? <textarea id={field.key} rows={field.key === "profession" ? 2 : field.key === "learn" || field.key === "why" ? 7 : 4} value={data[field.key] ?? ""} aria-invalid={tooLong || undefined} onChange={event => change(field.key, event.target.value)} /> : <input id={field.key} value={data[field.key] ?? ""} readOnly={field.key === "qrUrl" && !!entry} aria-invalid={tooLong || qrError || undefined} aria-describedby={field.key === "qrUrl" ? "qr-help" : undefined} onChange={event => change(field.key, event.target.value)} />}
       {colorKey && <div className="title-color"><label htmlFor={`${field.key}-color`}>Textfärg</label><select id={`${field.key}-color`} title="Automatisk: blå text, eller vit text med mörkblå gradient" value={data[colorKey]} onChange={event => change(colorKey, event.target.value as SheetData[typeof colorKey])}><option value="auto">Automatisk</option><option value="blue">Blå</option><option value="coral">Korall</option></select></div>}
       {field.key === "address" && entry && <small>{schoolVisitAddress(entry) ? `Standard för denna utbildning: ${schoolVisitAddress(entry)}. Du kan ändra adressen för bladet. Ett tomt fält använder standardadressen när du sparar.` : "Besöksadress för denna utbildning behöver bekräftas. Fyll i rätt utbildningsplats."}</small>}
+      {af && field.key === "form" && <small>Skriv en uppgift per rad. Etiketterna Ort:, Studieform:, Omfattning:, Längd:, APL: och Mål: visas i fet stil.</small>}
       {field.key === "profession" && <small>Med tre rader bryts yrkesnamnet automatiskt. Enter ger en egen radbrytning. Färgen väljs separat för varje rubrikdel.</small>}
-      {field.multiline && <span className="field-count">{data[field.key].length} tecken</span>}
+      {field.multiline && <span className="field-count">{(data[field.key] ?? "").length} tecken</span>}
       {field.key === "qrUrl" && <small id="qr-help">{entry ? `QR-koden genereras automatiskt för ${entry.school}. Adressen använder a och o i stället för å, ä och ö.` : validQr ? "QR-koden uppdateras direkt. Kontrollera att adressen leder till rätt utbildning." : "Ange skolans eller utbildningens webbadress med https://. Adressen behövs för PDF-export."}</small>}
     </div>;
   }
@@ -262,13 +274,13 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
               <span className="gradient-label">Styrka</span><div className="gradient-levels" role="group" aria-label="Gradientens styrka">{GRADIENT_STRENGTHS.map((level, index) => <button type="button" key={level} disabled={data.gradientStyle === "none"} aria-pressed={data.gradientStrength === level} onClick={() => change("gradientStrength", level)}>{level}<small>{["Lätt", "Mjuk", "Tydlig", "Stark"][index]}</small></button>)}</div>
               <p>Tonas från vänster till höger. Mörkblå gradient ger vit rubrik och ingress.</p>
             </fieldset>{visibleFields.filter(field => !["profession", "titleLine", "titlePrefix"].includes(field.key)).map(renderField)}</>}
-          {SECTIONS.filter(section => section.group === activeGroup).map(section => {
+          {sections.filter(section => section.group === activeGroup).map(section => {
             const sectionError = section.keys.some(key => overflow.includes(key)) || (section.id === "qr" && !validQr);
             const bodyKey = section.keys.find(key => !key.endsWith("Title"));
             const titleKey = section.keys.find(key => key.endsWith("Title"));
             const label = titleKey ? data[titleKey] || section.label : section.label;
             return <section className={`editor-section ${activeSection === section.id ? "is-open" : ""} ${sectionError ? "has-error" : ""}`} key={section.id}>
-              <button type="button" className="section-toggle" id={`toggle-${section.id}`} aria-expanded={activeSection === section.id} aria-controls={`section-${section.id}`} onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}><span><strong>{label}</strong><small>{sectionError ? "Behöver rättas" : bodyKey && data[bodyKey].trim() ? "Innehåll finns" : "Inte ifyllt"}</small></span><span aria-hidden="true">{activeSection === section.id ? "−" : "+"}</span></button>
+              <button type="button" className="section-toggle" id={`toggle-${section.id}`} aria-expanded={activeSection === section.id} aria-controls={`section-${section.id}`} onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}><span><strong>{label}</strong><small>{sectionError ? "Behöver rättas" : bodyKey && (data[bodyKey] ?? "").trim() ? "Innehåll finns" : "Inte ifyllt"}</small></span><span aria-hidden="true">{activeSection === section.id ? "−" : "+"}</span></button>
               <div id={`section-${section.id}`} hidden={activeSection !== section.id} aria-labelledby={`toggle-${section.id}`}>{section.keys.map(key => visibleFields.find(field => field.key === key)).filter((field): field is (typeof textFields)[number] => Boolean(field)).map(renderField)}</div>
             </section>;
           })}
@@ -285,7 +297,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       </aside>
 
       <main className="preview-panel">
-        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">A4 · 210 × 297 mm</span></p></div><div className="preview-meta"><span className="meta-pill" title={TEMPLATE_VERSION}>Mall 01</span><button type="button" className="expand-preview" aria-label={expanded ? "Visa redigeraren" : "Förstora förhandsvisningen"} aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "↙" : "⤢"}</button></div></div>
+        <div className="preview-toolbar"><div><h2>Förhandsvisning</h2><p><span className="preview-context">{entry ? `${entry.school} · ${entry.title}` : "Exempelblad · Kock"}</span><span className="preview-instruction">A4 · 210 × 297 mm</span></p></div><div className="preview-meta"><span className="meta-pill" title={templateVersion(data)}>{af ? "AF" : "Mall 01"}</span><button type="button" className="expand-preview" aria-label={expanded ? "Visa redigeraren" : "Förstora förhandsvisningen"} aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "↙" : "⤢"}</button></div></div>
         <div className="preview-zoom" role="group" aria-label="Zoom för förhandsvisningen">
           <button type="button" aria-label="Zooma ut" disabled={scale <= 0.05} onClick={() => setZoom(Math.max(0.05, scale - 0.1))}>−</button>
           <output className="zoom-value" aria-label="Zoomnivå">{Math.round(scale * 100)} %</output>

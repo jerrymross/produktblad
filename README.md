@@ -167,3 +167,13 @@ Adminläget visar ett **medlemsregister** med namn, e-post, Admin/Vanlig använd
 Under **Bjud in användare** väljer du uttryckligen **Admin** eller **Vanlig användare**. Vanlig användare måste tilldelas minst en skola. Admin får alla skolor. Rollen lagras i inbjudan och tilldelas av den befintliga skyddade acceptfunktionen. Medlemsregistret är en läsvy; att ändra roller eller skolmedlemskap för befintliga konton ingår inte i denna uppdatering.
 
 `/api/admin/overview` kräver en giltig session och kontrollerar centralrollen i samma transaktion som uppgifterna läses. Svaren använder private, no-store. Inbjudningsrouten validerar roll och skolor och kontrollerar rollen igen i skrivtransaktionen. Inga nya tabeller, rättigheter eller migrationer behövs; uppgifterna finns redan i användare, medlemskap, inbjudningar och versionshistorik.
+
+## AF-produktblad: textupplägg enligt Rityta 1.pdf
+
+Alla 32 katalogblad med program **AF** eller **AF RUB** använder en särskild AF-mall. Vänsterspalten innehåller Varför, Det här lär du dig och Så här går det till. Högerspalten innehåller Vem kan söka?, Utbildningsstart, Ekonomisk kompensation och Utbildningsfakta. Kontaktpersonerna ligger under högerspalten; Om Astar, logotyp, skolnamn/adress och QR-kod ligger längst ner.
+
+Utbildningsstart har egna rubrik- och textfält. Befintligt innehåll i Utbildningsform bevaras i Utbildningsfakta. Skriv en faktauppgift per rad; Ort:, Studieform:, Omfattning:, Längd:, APL: och Mål: visas i fet stil. Inga utbildningsfakta från referensen fylls automatiskt i andra blad. Rubriker som redaktören själv ändrat bevaras.
+
+Ett äldre AF-blad visas med det nya upplägget när det öppnas i redigeraren. Spara skapar en ny version med `af-1.0.0-prototyp`. Äldre sparade versioner/exporter behåller standardmallen. Programmet i katalogen styr mallvalet på servern. Komvux och andra program behåller `kock-1.3.0-prototyp`. Ingen datamigration krävs.
+
+Referens, uppmätta mått och lokal verifiering finns i [docs/AF-MALL.md](docs/AF-MALL.md). Kör `npx tsx scripts/test-af-layout.ts` för kontroll av katalogval, innehåll, bakåtkompatibilitet och lokal utkastimport. Preview och PDF använder samma `Sheet`-komponent och overflow-kontroll.

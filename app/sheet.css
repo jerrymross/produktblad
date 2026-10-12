@@ -91,6 +91,34 @@
 .sheet-contact { padding: 11pt 7pt 0 16.5pt; display: flex; flex-direction: column; overflow-wrap: anywhere; }
 .sheet-contact strong { font-weight: 700; }
 
+/* AF reference: Rityta 1.pdf, measured in points on its A4 media box. */
+.sheet-page[data-layout="af"] .sheet-columns { left: 58.755pt; right: 36.688pt; top: 319.9pt; height: 408pt; grid-template-columns: 228pt 243.13pt; column-gap: 28.703pt; }
+.sheet-page[data-layout="af"] .sheet-left { height: 408pt; }
+.sheet-page[data-layout="af"] .sheet-right { height: 324.3pt; }
+.sheet-page[data-layout="af"] .sheet-section { margin-bottom: 18pt; }
+.sheet-page[data-layout="af"] .sheet-left .sheet-section:first-child { margin-bottom: 11pt; }
+.sheet-page[data-layout="af"] .sheet-left .sheet-section:nth-child(2) { margin-bottom: 22pt; }
+.sheet-page[data-layout="af"] .sheet-right .sheet-section { margin-bottom: 10pt; }
+.sheet-page[data-layout="af"] .sheet-right .sheet-section[data-field="start"] { margin-bottom: 8pt; }
+.sheet-page[data-layout="af"] .sheet-right .sheet-section[data-field="finance"] { margin-bottom: 7pt; }
+.sheet-page[data-layout="af"] .sheet-section h2 { margin-bottom: 4pt; letter-spacing: 0; }
+.sheet-page[data-layout="af"] .sheet-section p { font-size: 9pt; line-height: 12pt; letter-spacing: -.16pt; overflow-wrap: anywhere; }
+.sheet-page[data-layout="af"] .sheet-section p strong { font-weight: 700; }
+.sheet-af-contacts { position: absolute; left: 315.458pt; top: 644.667pt; width: 234.642pt; height: 80pt; border-top: .4pt solid #cbd6e4; padding-top: 17pt; }
+.sheet-af-contacts h2 { margin: 0 0 8pt; font: 700 9pt/12pt "Sheet Inter", Arial, sans-serif; }
+.sheet-af-contact-grid { display: grid; grid-template-columns: 1fr; gap: 10pt; }
+.sheet-af-contacts[data-two-contacts="true"] .sheet-af-contact-grid { grid-template-columns: 1fr 1fr; }
+.sheet-af-contacts .sheet-contact { padding: 0; font: 300 9pt/12pt "Sheet Inter", Arial, sans-serif; }
+.sheet-af-contacts .sheet-contact span:empty { display: none; }
+.sheet-page[data-layout="af"] .sheet-bottom { left: 46.759pt; right: 45.176pt; top: 735.101pt; height: 101pt; }
+.sheet-page[data-layout="af"] .sheet-about { min-height: 45.087pt; padding: 5.5pt 10.264pt; font-size: 9pt; line-height: 10.8pt; }
+.sheet-page[data-layout="af"] .sheet-footer { grid-template-columns: 126pt 46pt; justify-content: center; column-gap: 15pt; margin-top: 6.7pt; }
+.sheet-page[data-layout="af"] .sheet-logo-group { padding: 0; }
+.sheet-page[data-layout="af"] .astar-mark { height: 28pt; }
+.sheet-page[data-layout="af"] .sheet-qr { border: 0; min-height: 32.25pt; }
+.sheet-school { margin-top: 2pt; text-align: center; font: 700 5.6pt/6.2pt "Sheet Inter", Arial, sans-serif; }
+.sheet-page[data-layout="af"] .sheet-address { margin-top: 1pt; font-size: 5.6pt; line-height: 6.2pt; white-space: pre-wrap; overflow-wrap: anywhere; }
+
 @page { size: A4 portrait; margin: 0; }
 @media print {
   html, body { margin: 0 !important; padding: 0 !important; width: 210mm; height: 297mm; }

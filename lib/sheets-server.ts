@@ -4,7 +4,7 @@ import { type PoolClient } from "pg";
 import { transaction } from "@/lib/db";
 import { HttpError } from "@/lib/access";
 import { catalog, initialSheet, schoolQrUrl } from "@/lib/catalog";
-import { exampleSheet, isSheetData, TEMPLATE_VERSION, type SheetData } from "@/lib/sheet";
+import { exampleSheet, isSheetData, templateVersion, type SheetData } from "@/lib/sheet";
 
 export function sheetEntry(id: string) {
   if (id === "example") return { id, school: "__templates__", title: "Kock – exempel", defaults: exampleSheet };
@@ -17,7 +17,7 @@ export async function ensureSheet(client: PoolClient, id: string) {
   const permitted = await client.query("SELECT can_access_school($1) AS allowed", [entry.school]);
   if (!permitted.rows[0].allowed) throw new HttpError(403, "Du har inte åtkomst till skolans blad.");
   await client.query("INSERT INTO sheets(id,school_id,title,content,template_version) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING",
-    [id, entry.school, entry.title, entry.defaults, TEMPLATE_VERSION]);
+    [id, entry.school, entry.title, entry.defaults, templateVersion(entry.defaults)]);
 }
 export async function readSheet(userId: string, id: string, revision?: number) {
   return transaction(userId, async client => {

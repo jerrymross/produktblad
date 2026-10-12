@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useEffect, useState } from "react";
 import { catalog,readDraft, readPreviousDraft, schools } from "@/lib/catalog";
-import { TEMPLATE_VERSION } from "@/lib/sheet";
+import { TEMPLATE_VERSION, AF_TEMPLATE_VERSION, isAfProgram } from "@/lib/sheet";
 import { cloud,jsonRequest } from "@/lib/cloud-client";
 
 const emptyFilters = { school: "", query: "", program: "", status: "all" };
@@ -86,7 +86,7 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
         {filtered.map(entry => <article className={`catalog-card ${saved.has(entry.id) ? "card-saved" : ""}`} key={entry.id} data-school={entry.school}>
           <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
           <p className="catalog-school">{entry.school}</p><h2>{entry.title}</h2>
-          <div className="catalog-card-bottom"><span title={TEMPLATE_VERSION}>Mall 01 · A4</span><Link aria-label={`${saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
+          <div className="catalog-card-bottom"><span title={isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}>{isAfProgram(entry.program) ? "AF" : "Mall 01"} · A4</span><Link aria-label={`${saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
         </article>)}
       </div>
       {!filtered.length && <div className="catalog-empty"><h2>Inga blad matchar ditt val</h2><p>{filters.status === "saved" ? "Här visas bara gemensamt sparade blad. Prova Alla för att skapa ett nytt blad." : "Prova ett annat sökord eller ta bort ett filter."}</p><button type="button" className="save-button" onClick={() => setFilters(emptyFilters)}>Visa alla produktblad</button></div>}
