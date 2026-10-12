@@ -307,3 +307,20 @@ Publicerat på https://produktblad.vercel.app: dpl_68CMpNkSPqEEX4UDWLR9RiBVSZqm,
 - Lokal browser: riktiga Login-komponenten provades med simulerat inloggningssvar. admin accepteras i textfältet, fel visas på svenska, lyckad inloggning navigerar till /admin. Desktop och mobil visuellt granskade. Riktiga AdminPage-komponenten provades med injicerad identitet/roll: anonym och redaktör nekas, admin ser rätt länkar. Layout granskad på 1440 och 390 px. Rollen i Neon och RLS har inte återtestats genom detta komponentprov.
 - Statiskt: typecheck och lint passerade. Build passerade med oanvändbar lokal databasadress och tillfällig testhemlighet; Better Auth loggade förväntat att databasschemat inte kunde valideras. Detta är kompileringskontroll, inte verifierad drift.
 - Ingen manuell Vercel-deployment, miljövariabeländring, migration eller live-databasändring. Inloggning med användarens verkliga lösenord och faktisk Vercel-miljö är inte verifierade. A4-renderare och PDF-route är oförändrade; ingen ny PDF-kontroll behövdes för denna inloggningsändring.
+## Medlemsregister och logg 12 oktober 2026
+
+- Beställning: tydligt val Admin/Vanlig användare vid inbjudan, register över medlemmar och logg över senast sparade produktblad med ändrare. Översikt över inbjudningsstatus tillagd. Ingen rolländring för befintliga medlemmar eller automatisk sändning.
+- Lokal SQL/RLS: scripts/test-admin-register.mts kördes med PGlite 0.5.8 i minne, installerat separat i temporärt QA-utrymme. Testet använder originalmigrationen 001-studio.sql och begränsad roll NOBYPASSRLS. Verkliga queries verifierade: anonym/skolredaktör nekas, admin ser skolmedlemskap och roller, 100 senaste versionsposter sorteras, ändraren hämtas rätt och saknad ändrare hanteras. Inbjudningar visar pending/expired/accepted och saknar token_hash. Direktskrivning till central_roles nekas; originalets acceptfunktion ger rätt adminroll respektive skolmedlemskap. Neon anslöts inte.
+- Lokal API: faktiska overview- och invitations-routehandlers provade med simulerade identitets-/databasadaptrar. 401 anonym, 403 redaktör och fel origin, 400 fel rolltyp/okänd skola/vanlig användare utan skola, admin utan skolbegränsning, deduplicerade skolor, no-store och nekad skrivning om adminrollen försvinner innan transaktionens kontroll. Test: work/test-admin-api.mjs.
+- Lokal browser: verkliga AdminOverview- och Accounts-komponenter med simulerade API-svar. Medlems-, roll-, skol- och inbjudningsfilter, ändrarens namn, 100 ändringar, tomlägen, fel och manuell uppdatering, rätt payload för båda inbjudningsrollerna samt rensning av tidigare inbjudningslänk efter ändrat val provade. Desktop/mobil visuellt granskade; inga browserfel eller horisontellt sidöverflöde. Tabellen scrollas inom sin yta. Test och bilder under work/test-admin-register-browser.mjs och work/admin-register-*.png / admin-invite-mobile.png.
+- Statiskt: lint och typecheck passerade. Build passerade med oanvändbar lokal databasadress och tillfällig testhemlighet; Better Auth loggade förväntat att schemat inte kunde valideras. Ingen verklig databasanslutning bekräftas av build.
+- Vercel/Neon: inga manuella deployments, migrationer, live-databasändringar eller nya resurser. Faktiskt inloggat liveflöde och Neon/RLS är inte återtestade. A4-renderaren/PDF-route är oförändrade och kräver inget nytt PDF-prov för denna adminändring.
+
+Återskapa det isolerade SQL-provet i PowerShell:
+
+```powershell
+npm.cmd install --prefix "$env:TEMP/produktblad-admin-qa" --no-save --package-lock=false --ignore-scripts @electric-sql/pglite@0.5.8
+npx.cmd tsx scripts/test-admin-register.mts
+```
+
+PGlite är enbart ett temporärt verifieringsverktyg, inte ett nytt beroende i appen. Provet skapar endast syntetiska data i minnet och skriver en lokal fixture under work/.

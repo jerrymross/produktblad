@@ -156,3 +156,14 @@ Logga in på `/login` med användarnamn **admin** och samma lösenord som kontot
 Inloggning med aliaset öppnar `/admin`, med ingångar till alla produktblad, inbjudningar och mallen. Bildbiblioteket öppnas via Inställningar. Adminläge finns även i menyn för centrala administratörer. Servern verifierar sessionen och den skyddade centralrollen före åtkomst till adminsidan. Skolredaktörer skickas till biblioteket. En oinloggad användare skickas till inloggningen. Behörighets- och databasreglerna gäller fortsatt på varje underliggande operation.
 
 Tekniskt använder `lib/admin-login.ts` en före-hook i Better Auth 1.7.7, begränsad till `/sign-in/email`, enligt [officiell hook-dokumentation](https://better-auth.com/docs/concepts/hooks). Lösenordskontroll, sessioner, cookies och rate limiting går via den befintliga Better Auth-inloggningen. Ingen databasmigration behövs. `npx tsx scripts/test-admin-login.ts` kör integrationstest med isolerad minnesdatabas.
+## Medlemsregister, ändringslogg och inbjudningar
+
+Adminläget visar ett **medlemsregister** med namn, e-post, Admin/Vanlig användare, skolåtkomst och datum då kontot skapades. Sök på namn, e-post eller skola och filtrera på roll. Admin har åtkomst till alla skolor. Ett konto utan skolmedlemskap markeras tydligt.
+
+**Senast ändrade produktblad** visar de 100 senaste sparade versionerna med tidpunkt, produktblad, skola, namn/e-post på personen som sparade och versionsnummer. Klicka på bladets namn för att öppna dess aktuella version. Sök på produktblad/person eller filtrera på skola inom dessa 100 ändringar. Flera ändringar av samma blad visas separat. Osparade ändringar ingår inte. Saknad historisk personuppgift visas som Uppgift saknas. Tider visas i Europe/Stockholm.
+
+**Inbjudningar** visar e-post, tilldelad roll och skolor samt Väntar på svar, Accepterad eller Utgången. Status beräknas mot databastid vid hämtning. Registret visar inga inbjudningstoken eller återanvändbara länkar. Uppdatera översikten hämtar nya uppgifter; inget automatiskt utskick görs.
+
+Under **Bjud in användare** väljer du uttryckligen **Admin** eller **Vanlig användare**. Vanlig användare måste tilldelas minst en skola. Admin får alla skolor. Rollen lagras i inbjudan och tilldelas av den befintliga skyddade acceptfunktionen. Medlemsregistret är en läsvy; att ändra roller eller skolmedlemskap för befintliga konton ingår inte i denna uppdatering.
+
+`/api/admin/overview` kräver en giltig session och kontrollerar centralrollen i samma transaktion som uppgifterna läses. Svaren använder private, no-store. Inbjudningsrouten validerar roll och skolor och kontrollerar rollen igen i skrivtransaktionen. Inga nya tabeller, rättigheter eller migrationer behövs; uppgifterna finns redan i användare, medlemskap, inbjudningar och versionshistorik.

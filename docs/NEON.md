@@ -35,3 +35,5 @@ Neons Free-kvoter gäller hela projektet; bilder, blad och historik delar lagrin
 Bilduppladdning 10 oktober 2026: nya filer överförs direkt som multipart och lagras binärt i Neon. Uppladdning direkt på bladet är skolskyddad och sker innan Spara utkast; sparningen kopplar därefter filreferensen till en bladversion. Filformatet identifieras från filinnehållet. scripts/test-upload.ts verifierar lagring, privata bildsvar, MIME och storleksgräns.
 
 Adminalias 12 oktober 2026: användarnamnet admin kopplas serverledes till jerrymross@gmail.com och kontots befintliga lösenord. Aliaset ändrar inte central_roles, skolmedlemskap eller kontots data. /admin använder pageIdentity och requireAdmin innan sidan renderas. Ingen migration eller live-databasändring ingår.
+
+Adminöversikt 12 oktober 2026: medlemsregister och ändringslogg hämtar befintliga tabeller via /api/admin/overview, med is_central-kontroll inom samma transaktion. Inbjudningar använder uttrycklig boolesk adminroll och deduplicerade skolor; rollen kontrolleras även före INSERT i transaktionen. Ingen migration eller privilegieutökning. Registret är en läsvy för befintliga konton.
