@@ -55,3 +55,11 @@ npx.cmd tsx scripts/import-umea-content.ts prod SÖKVÄG_TILL_ANSLUTNINGSKATALOG
 - Vercel: inloggat browser-/PDF-flöde har inte provats för denna import. Ny rendering måste finnas i drift innan innehåll med layout umea sparas.
 
 För nya blad i Umeåvarianten används appens befintliga vita gradient, styrka 4, så att den blå omslagstexten syns över de befintliga yrkesbilderna. Tidigare sparade bild-/gradientval bevaras vid import. Bildfilerna byts inte ut.
+
+## Slutlig sparning och driftkontroll
+
+- Alla 14 matchade blad sparades som revision 1 i Neon DEV och därefter produktion. Återläsning via begränsade runtime-roller verifierade exakt samtliga importerade fält, komvux-umea-1.0.0, identisk innehållshistorik, tillgängliga privata bildreferenser samt frigjorda redigeringssessioner. QA: work/verify-umea-import.ts, dev-applied.json och prod-applied.json.
+- Inga Umeå-blad fanns sparade före importen. AF och påbyggnadsbladet skapades inte av importen. Andra skolor, kopior och befintliga historikposter ändrades inte.
+- Vercels automatiska Git-deployment för f65391b blev READY: dpl_HFjJqVMH2FNoytuQ2X1GMvrtTMXA. Den var kopplad till produktblad.vercel.app och publik CSS innehöll Umeå-renderaren innan produktionens innehåll sparades. Ingen manuell deployment eller ny molnresurs skapades.
+- Detta verifierar faktisk deployment och faktisk databasåterläsning, men inte en ny inloggad Vercel-browser-/PDF-session. De 14 lokala PDF-exporterna verifierades separat enligt ovan.
+- Upprepad provimport jämför innehåll semantiskt och lämnar oförändrade blad utan en ny revision.

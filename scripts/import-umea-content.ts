@@ -2,6 +2,7 @@
 import {Pool} from 'pg';
 import {parse} from 'dotenv';
 import {randomUUID} from 'node:crypto';
+import {isDeepStrictEqual} from 'node:util';
 import {catalog,initialSheet} from '../lib/catalog';
 import {templateVersion,type SheetData} from '../lib/sheet';
 import {ensureSheet,privateImage,validateContent} from '../lib/sheets-server';
@@ -28,7 +29,7 @@ async function main(){
   if((await client.query('SELECT 1 FROM editing_locks WHERE sheet_id=$1 AND expires_at>clock_timestamp() FOR UPDATE',[entry.id])).rowCount)throw Error(`${entry.title} har en aktiv redigeringssession. Ingen import genomfördes.`);
   const base:SheetData=current.revision>0?current.content:initialSheet(entry);
   const content:SheetData={...base,...row.fields as Partial<SheetData>,layout:'umea',qrUrl:'http://astar.se/umea'};validateContent(content);
-  if(JSON.stringify(content)===JSON.stringify(current.content)&&current.revision>0&&current.template_version===templateVersion(content)){report.push({title:entry.title,status:'oförändrat',revision:current.revision});continue;}
+  if(isDeepStrictEqual(content,current.content)&&current.revision>0&&current.template_version===templateVersion(content)){report.push({title:entry.title,status:'oförändrat',revision:current.revision});continue;}
   const token=randomUUID();await client.query("INSERT INTO editing_locks(sheet_id,user_id,token,expires_at) VALUES($1,$2,$3,clock_timestamp()+interval '120 seconds') ON CONFLICT(sheet_id) DO UPDATE SET user_id=$2,token=$3,expires_at=EXCLUDED.expires_at",[entry.id,actor,token]);
   content.image=await privateImage(client,content.image,entry.school);
   const lock=await client.query('SELECT 1 FROM editing_locks WHERE sheet_id=$1 AND token=$2 AND user_id=$3 AND expires_at>clock_timestamp() FOR UPDATE',[entry.id,token,actor]);if(!lock.rowCount)throw Error('Redigeringslåset gick ut.');
