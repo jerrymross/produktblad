@@ -1,5 +1,7 @@
 # Neon-installation och drift
 
+12 oktober 2026: migration 005 aktiverar versionskontrollerad administration från portalen via begränsade databasfunktioner. Roller och skolor förblir i Produktblads befintliga tabeller. Se [PORTAL-BEHORIGHETER.md](PORTAL-BEHORIGHETER.md) för säkerhetskontrakt, kontolänkar och faktisk produktionsverifiering.
+
 12 oktober 2026: Produktblad använder nu portalens SSO för åtkomst. Better Auth-tabellerna och gamla konton bevaras, men lokal lösenordssession ger inte appåtkomst. Migration 004 och kontrollerad identitetskoppling beskrivs i [PORTAL-SSO.md](PORTAL-SSO.md). Äldre lösenords-/inbjudningsinstruktioner nedan är historik.
 
 Beställd 9 oktober 2026: koppla produktblad till Neon och färdigställ hela kopplingen. Detta ersätter den tidigare planens Supabase-val för detta steg.

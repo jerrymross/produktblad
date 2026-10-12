@@ -43,6 +43,23 @@ npx tsx scripts/migrate-portal-management.ts prod /privat/.env.owner
 npx tsx scripts/test-portal-management.ts /privat/miljokatalog dev prod
 ```
 
-Lokala kryptoprov och DEV SQL-prov är genomförda: metod/body/path-bindning, fel issuer/audience/typ/scope/expiry, tilldelning/indragning, okänd skola, adminbekräftelse, revisionskonflikt, replay, explicit koppling med bevarade roller/skolor, nekad omlänkning och själveskalering. Databasproven återställs med ROLLBACK. Produktions- och browserresultat dokumenteras efter faktisk publicering.
+Lokala kryptoprov och DEV SQL-prov är genomförda: metod/body/path-bindning, fel issuer/audience/typ/scope/expiry, tilldelning/indragning, okänd skola, adminbekräftelse, revisionskonflikt, replay, explicit koppling med bevarade roller/skolor, nekad omlänkning och själveskalering. Databasproven återställs med ROLLBACK. Produktions- och browserresultat följer nedan.
+
+### Verifierad produktion 12 oktober 2026
+
+- Produktblad: commit `154779a`, deployment `dpl_5rDamW7DJYTGPrKtm4FnBWV7APw1`, READY på produktionsdomänen.
+- Portalen: commit `f174505`, deployment `dpl_FCJ47zZ2QDNcS1bZfHkFXEiPjV4e`, READY på produktionsdomänen.
+- Migration 005 tillämpad i studio_dev och studio. Databasproven ovan passerade med båda verkliga runtime-rollerna och återställdes med ROLLBACK.
+- `scripts/test-portal-management-production.mjs` passerade mot publicerade HTTPS-endpoints med separata syntetiska portal-admins, en portalinbjuden medlem och ett syntetiskt äldre lokalt konto. Ingen verklig persons lösenord ändrades.
+- Riktig Chrome-browser: Administration → Bjud in användare → Produktblad → Vanlig användare → vald skola → en portalinbjudan. Personen aktiverade sitt konto och fick rätt skola direkt via SSO, utan andra Produktblad-inbjudan. Vanlig medlem nekades administrations-API.
+- Riktig Chrome-browser: Hantera → Produktblads roll/skolor → välj Admin och bekräfta → Spara. Samma inloggade Produktblad-session blev admin; nedgradering/indragna skolor slog igenom direkt och blad-/PDF-anrop avvisades med 403.
+- Explicit kontolänk bevarade det valda äldre kontots skolor. Farlig omlänkning, obekräftad admin, okänd skola och gammal revision nekades.
+- Portal-admin utan lokal adminlänk nekades. Ändrad signerad body nekades med 401; återanvänt lyckat administrationsanrop gav 409. Indragen portal-adminroll stoppade redan utfärdat management-token med 401. Självdemotion gav 403.
+- Inga JavaScriptfel i portalbrowsern. Inbjudnings- och adminformulär granskades visuellt.
+- Efter återställning jämfördes en SHA256-snapshot av alla befintliga blad, bladversioner, skolmedlemskap och centralroller med snapshoten före testet: exakt match. Endast egna syntetiska provkonton och deras länkar/rättigheter/audit återställdes. Ursprungliga kontolänken för Jerry Ross bevarades.
+
+Lokalt: Produktblads typecheck/build/kryptoprov passerade; lint har inga fel och en äldre varning i ignorerade work-filer. Portalens syntax- och konfigurationsprov samt dess SQLite- och isolerade pg/PGlite-browser/SSO-flöden passerade. Windows-testet med flera Chrome-contexts fick 150 sekunders totalbudget; första 60-sekundersförsöken nådde testtimeout under andra navigationen. Lokal portal gör inga administrationsanrop till produktionen. Den faktiska nya integrationens browserprov är produktionsprovet ovan.
+
+Denna uppdatering ändrar ingen mall eller PDF-renderare. Produktionsprovet verifierade att PDF nekas efter skolindragning; en ny lyckad/renderad PDF kördes inte i detta behörighetssteg. Tidigare fungerande SSO/PDF-export är dokumenterad i PORTAL-SSO.md. Databasen är Neon/Postgres med RLS; ingen Supabase-miljö finns i denna implementation.
 
 Tekniska källor: [jose jwtVerify](https://github.com/panva/jose/blob/main/docs/jwt/verify/functions/jwtVerify.md), [PostgreSQL SECURITY DEFINER](https://www.postgresql.org/docs/current/sql-createfunction.html). Next.js route handlers lästes i installerade 16.4.0-dokumentationen.

@@ -16,7 +16,7 @@ const pb=new Pool({connectionString:ownerEnv.DATABASE_URL_UNPOOLED??ownerEnv.POS
 const portal='https://astar-studio-portal.vercel.app',product='https://produktblad.vercel.app',run=randomUUID();
 const password=randomBytes(32).toString('hex'),actors=[],targets=[],localIds=[],subjects=[];let browser;
 const passes=[];const pass=s=>{passes.push(s);console.log('PASS:',s);};
-const digestRows=async()=>createHash('sha256').update(JSON.stringify((await pb.query(`SELECT 'sheets' kind,to_jsonb(s) data FROM studio.sheets s UNION ALL SELECT 'versions',to_jsonb(v) FROM studio.sheet_versions v UNION ALL SELECT 'schools',to_jsonb(s) FROM studio.school_memberships s UNION ALL SELECT 'roles',to_jsonb(r) FROM studio.central_roles r ORDER BY kind,data::text`)).rows)).digest('hex');
+const digestRows=async()=>createHash('sha256').update(JSON.stringify((await pb.query(`SELECT * FROM (SELECT 'sheets' kind,to_jsonb(s) data FROM studio.sheets s UNION ALL SELECT 'versions',to_jsonb(v) FROM studio.sheet_versions v UNION ALL SELECT 'schools',to_jsonb(s) FROM studio.school_memberships s UNION ALL SELECT 'roles',to_jsonb(r) FROM studio.central_roles r) snapshot ORDER BY kind,data::text`)).rows)).digest('hex');
 const before=await digestRows();
 const portalPost=async(cookie,path,body,method='POST')=>fetch(portal+path,{method,headers:{Cookie:cookie,Origin:portal,'Content-Type':'application/json'},body:JSON.stringify(body)});
 const login=async(user)=>{const response=await portalPost('', '/api/auth/sign-in/email',{email:user.email,password,rememberMe:false});assert.equal(response.status,200);const json=await response.json();return {cookie:response.headers.getSetCookie().map(c=>c.split(';')[0]).join('; '),token:json.token};};
