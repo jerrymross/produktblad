@@ -6,7 +6,7 @@ Beställd 12 oktober 2026: annat textupplägg för alla AF-produktblad. Implemen
 
 `references/AF.pdf` är en oförändrad kopia av användarens `Rityta 1.pdf`. SHA-256: `F15004B8045DB6C5A1271AFB0CFBA9D7272A2D6ED3D2E24DBB8DB789EDB9FA11`. Originalets A4 är 595,276 × 841,890 pt. `references/Kock.pdf` är oförändrad.
 
-Referensen används för avsnittens ordning, textstorlek, spaltplacering, kontaktblock och sidfot. Omslagets befintliga bild-, rubrik-, färg- och gradientfunktioner behålls. Referensens bild och slogans blir inte standardinnehåll. Utbildningsfakta, ersättningsinformation och kontakter i referensen är inte faktagranskade och importeras inte till användarnas blad.
+Referensen används för avsnittens ordning, textstorlek, spaltplacering, kontaktblock och sidfot. Omslagets befintliga bild-, rubrik-, färg- och gradientfunktioner behålls. Referensens bild och slogans blir inte standardinnehåll. Efter användarens följdbeställning 12 oktober används den allmänna PDF-texten som standard för orörda AF/AF RUB-blad. Yrke, arbetsuppgifter, utbildningsområde, ort, studieform, omfattning, poäng, längd, APL och kontaktuppgifter ersätts med `****`. Innehållet är användarbeställd malltext, inte en faktagranskning av utbildningar.
 
 ## Uppmätta huvudpositioner
 
@@ -34,7 +34,9 @@ Referensens kompletta originalfonter och deras användningsrätt är inte fastst
 
 ## Modell, sparning och historik
 
-`SheetData` har bakåtkompatibla valfria fält `layout`, `startTitle`, `start` och `schoolName`. Nya AF-blad får tom utbildningsstart och tomma fakta. Utbildningsfakta använder befintliga `form`/`formTitle`; ingen befintlig text raderas eller omtolkas till gissade sakuppgifter. Endast kända labelprefix i början av en rad visas i fet stil; HTML från användaren körs inte.
+`SheetData` har bakåtkompatibla valfria fält `layout`, `startTitle`, `start` och `schoolName`. Nya AF-blad får `AF_DEFAULT_CONTENT` från `lib/af-default-content.ts`, inklusive PDF-textens utbildningsstart och faktarader med `****`. Utbildningsfakta använder befintliga `form`/`formTitle`; ingen befintlig text raderas eller omtolkas till gissade sakuppgifter. Endast kända labelprefix i början av en rad visas i fet stil; HTML från användaren körs inte.
+
+`ensureSheet` använder fortsatt INSERT ON CONFLICT DO NOTHING. Endast blad utan databaspost får standardtexten vid första öppning. En befintlig post skyddas även vid revision 0, eftersom den kan ha skapats när bladet öppnades utan att sparas. Sparade versioner och importerade lokala utkast ersätts inte. Ingen live-bulkändring eller datamigration utförs. Ett uttryckligt val av Återställ standardinnehåll använder däremot den nya standardtexten.
 
 `withProgramLayout` väljer mall utifrån katalogprogram. Standardrubriker anpassas första gången AF-mallen används; egna rubriker bevaras. `schoolName` hämtas från katalogen på servern. Ändrad övre etikett byter inte mall. Servern normaliserar mallval före sparning och lagrar samma mallversion i `sheets` och `sheet_versions` i befintlig transaktion med lås, revisionskontroll och historik.
 
@@ -53,3 +55,5 @@ Nuvarande AF-innehåll anpassas i redigeraren. Spara skapar en ny fryst AF-versi
 - Faktisk Vercel/Neon: inte verifierat och ingen manuell publicering eller live-dataändring utförd i detta arbete. Ingen Supabase-anslutning ingår.
 
 Testfiler, browserbilder och provexporter finns lokalt i den ignorerade katalogen `work/`. Referenstext i dessa prov är en QA-fixture, inte produktinnehåll.
+
+Följdbeställningens standardtexter har också provats lokalt: nya databasposter får text och `****`, befintliga poster vid revision 0 bevaras vid upprepad öppning, sparade revisioner och historik bevaras. Standardtexten renderades i browser och exporterades till en stående A4 utan overflow; PDF-bilden granskades visuellt. Inga liveposter uppdaterades.

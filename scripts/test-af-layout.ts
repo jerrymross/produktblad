@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { catalog, initialSheet, draftKey, readPreviousDraft } from "../lib/catalog";
 import { AF_TEMPLATE_VERSION, TEMPLATE_VERSION, exampleSheet, isAfProgram, isSheetData, templateVersion, withProgramLayout } from "../lib/sheet";
+import { AF_DEFAULT_CONTENT } from "../lib/af-default-content";
 
 const old = { ...exampleSheet, profession: "VVS-isolerare", whyTitle: "Om utbildningen", why: "Befintlig text", form: "Befintliga fakta", address: "Manuellt vald adress" };
 const frozen = JSON.stringify(old);
@@ -31,7 +32,14 @@ for (const entry of catalog) {
   assert.equal(initial.layout, isAfProgram(entry.program) ? "af" : "standard");
   assert.equal(templateVersion(initial), isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION);
   assert.ok(draftKey(entry.id).endsWith(templateVersion(initial)));
-  if (isAfProgram(entry.program)) { assert.equal(initial.start, ""); assert.equal(initial.form, ""); assert.equal(initial.schoolName, entry.school); }
+  if (isAfProgram(entry.program)) {
+    assert.equal(initial.start, AF_DEFAULT_CONTENT.start);
+    assert.equal(initial.profession, "****");
+    assert.ok(initial.form.includes("Poäng: ****"));
+    assert.ok(!initial.why.includes("VVS"));
+    assert.ok(!initial.learn.includes("isolering"));
+    assert.equal(initial.schoolName, entry.school);
+  } else { assert.notEqual(initial.profession, "****"); }
 }
 const entry = catalog.find(item => item.program === "AF")!;
 const local = new Map([[`produktbladsapp:blad:${entry.id}:${TEMPLATE_VERSION}`, frozen]]);
