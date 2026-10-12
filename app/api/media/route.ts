@@ -1,6 +1,7 @@
 import { api, identity, sameOrigin, HttpError } from "@/lib/access";
 import { transaction } from "@/lib/db";
-import { sheetEntry, storeImage } from "@/lib/sheets-server";
+import { sheetEntry, storeImage, ensureSheet } from "@/lib/sheets-server";
+import { assertNotFinalized } from "@/lib/finalization-server";
 export async function POST(request: Request) { return api(async () => {
   sameOrigin(request); const user = await identity(request);
   const form = await request.formData(); const file = form.get("file"); const sheetId = form.get("sheetId");
@@ -10,6 +11,9 @@ export async function POST(request: Request) { return api(async () => {
   return transaction(user.id, async client => {
     const access = await client.query("SELECT can_access_school($1) AS allowed", [entry.school]);
     if (!access.rows[0].allowed) throw new HttpError(403, "Du har inte åtkomst till skolans bilder.");
+    await ensureSheet(client,sheetId);
+    await client.query("SELECT id FROM sheets WHERE id=$1 FOR UPDATE",[sheetId]);
+    await assertNotFinalized(client,sheetId);
     return Response.json({ dataUrl: await storeImage(client, bytes, entry.school) });
   });
 }); }

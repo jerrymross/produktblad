@@ -187,3 +187,7 @@ Följdbeställning 12 oktober: oöppnade och osparade AF/AF RUB-blad får PDF-te
 Ett äldre AF-blad visas med det nya upplägget när det öppnas i redigeraren. Spara skapar en ny version med `af-1.0.0-prototyp`. Äldre sparade versioner/exporter behåller standardmallen. Programmet i katalogen styr mallvalet på servern. Komvux och andra program behåller `kock-1.3.0-prototyp`. Ingen datamigration krävs.
 
 Referens, uppmätta mått och lokal verifiering finns i [docs/AF-MALL.md](docs/AF-MALL.md). Kör `npx tsx scripts/test-af-layout.ts` för kontroll av katalogval, innehåll, bakåtkompatibilitet och lokal utkastimport. Preview och PDF använder samma `Sheet`-komponent och overflow-kontroll.
+
+## Adminlås för färdiga produktblad
+
+Adminlås utan PIN är implementerat. Admin sparar bladet, väljer **Lås färdigt produktblad** och använder **Lås upp … → Bekräfta upplåsning** för att öppna redigering igen. Läsning och PDF-export fortsätter för behöriga användare. Funktionen visas först efter aktivering med databasens migration 002. Se [Adminlås och aktivering](docs/ADMINLAS.md).

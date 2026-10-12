@@ -37,3 +37,5 @@ Bilduppladdning 10 oktober 2026: nya filer överförs direkt som multipart och l
 Adminalias 12 oktober 2026: användarnamnet admin kopplas serverledes till jerrymross@gmail.com och kontots befintliga lösenord. Aliaset ändrar inte central_roles, skolmedlemskap eller kontots data. /admin använder pageIdentity och requireAdmin innan sidan renderas. Ingen migration eller live-databasändring ingår.
 
 Adminöversikt 12 oktober 2026: medlemsregister och ändringslogg hämtar befintliga tabeller via /api/admin/overview, med is_central-kontroll inom samma transaktion. Inbjudningar använder uttrycklig boolesk adminroll och deduplicerade skolor; rollen kontrolleras även före INSERT i transaktionen. Ingen migration eller privilegieutökning. Registret är en läsvy för befintliga konton.
+
+Adminlås 12 oktober 2026: implementation och isolerade SQL/RLS/API-/browserprov finns i [ADMINLAS.md](ADMINLAS.md). Ny migration 002 krävs; den är inte tillämpad i Neon ännu. Funktionen döljs i en miljö innan migrationen är aktiverad. Inga befintliga blad låses automatiskt.

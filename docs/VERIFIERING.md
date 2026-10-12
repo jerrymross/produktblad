@@ -339,3 +339,7 @@ PGlite är enbart ett temporärt verifieringsverktyg, inte ett nytt beroende i a
 - Statiskt: lint och git diff --check passerade. Endast mall-CSS ändrad.
 - Lokal browser: samma riktiga Sheet-renderare och resurser som föregående prov, med noll/en/två kontakter samt AF. Centreringsavvikelse högst 0,008 px. Kontaktkolumnerna i tvåkontaktsprovet blev cirka 94,4 respektive 116,6 pt. Exporten med två kontakter granskades efter Poppler-rendering; en stående A4 verifierad med pypdf. QA: work/check-footer-compact.mjs, footer-compact.pdf och footer-compact-render.png.
 - Vercel/Neon/RLS: inte återtestade. Ingen manuell deployment eller databasändring.
+
+## Adminlås 12 oktober 2026
+
+Se [ADMINLAS.md](ADMINLAS.md) för beställt beteende, migreringsgräns och verifieringsresultat. Admin kan låsa ett sparat produktblad och låsa upp via separat bekräftelse utan PIN. Låsningens status/logg är separata från innehållsversioner. Isolerade SQL/RLS- och verkliga routehandlerprov samt lokal browser med simulerade API-svar har passerat. Vercel/Neon-aktivering återstår; ingen live-migration är gjord. A4-renderaren och PDF-routen är oförändrade.

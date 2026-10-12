@@ -5,6 +5,7 @@ import { ensureSheet, readSheet, privateImage, validateContent } from "@/lib/she
 import { templateVersion, withProgramLayout } from "@/lib/sheet";
 import { withVisitAddress } from "@/lib/school-addresses";
 import { catalog, schoolQrUrl } from "@/lib/catalog";
+import { assertNotFinalized } from "@/lib/finalization-server";
 type Context = { params: Promise<{ id: string }> };
 export async function GET(request: Request, context: Context) { return api(async () => { const user=await identity(request); return Response.json(await readSheet(user.id,decodeSheetId((await context.params).id)), { headers: { "Cache-Control":"no-store" } }); }); }
 export async function PUT(request: Request, context: Context) { return api(async () => {
@@ -15,6 +16,7 @@ export async function PUT(request: Request, context: Context) { return api(async
   return transaction(user.id,async client => {
     await ensureSheet(client,id);
     const current=await client.query("SELECT * FROM sheets WHERE id=$1 FOR UPDATE",[id]);
+    await assertNotFinalized(client,id);
     const lock=await client.query("SELECT 1 FROM editing_locks WHERE sheet_id=$1 AND user_id=$2 AND token=$3 AND expires_at>clock_timestamp() FOR UPDATE",[id,user.id,body.token]);
     if(!lock.rowCount) throw new HttpError(409,"Redigeringslåset har gått ut eller tagits av en annan session. Dina ändringar finns kvar här.");
     if(current.rows[0].revision!==body.revision) throw new HttpError(409,"En nyare version finns. Dina ändringar finns kvar; öppna senaste versionen i en ny flik.");

@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { withUnsavedProgramDefaults } from "@/lib/default-content";
 import { randomUUID } from "node:crypto";
 import { type PoolClient } from "pg";
+import { readFinalization } from "@/lib/finalization-server";
 import { transaction } from "@/lib/db";
 import { HttpError } from "@/lib/access";
 import { catalog, initialSheet, schoolQrUrl } from "@/lib/catalog";
@@ -27,12 +28,13 @@ export async function readSheet(userId: string, id: string, revision?: number) {
   return transaction(userId, async client => {
     await ensureSheet(client, id);
     const result = revision === undefined
-      ? await client.query("SELECT content,revision,updated_at AS \"updatedAt\" FROM sheets WHERE id=$1", [id])
+      ? await client.query("SELECT content,revision,updated_at AS \"updatedAt\" FROM sheets WHERE id=$1 FOR SHARE", [id])
       : await client.query("SELECT content,revision,created_at AS \"updatedAt\" FROM sheet_versions WHERE sheet_id=$1 AND revision=$2", [id, revision]);
     if (!result.rowCount) throw new HttpError(404, "Bladversionen finns inte.");
     const sheet = result.rows[0] as { content: SheetData; revision: number; updatedAt: string };
-    if (revision === undefined && id !== "example") { const entry = catalog.find(item => item.id === id)!; sheet.content = { ...withVisitAddress(withUnsavedProgramDefaults(sheet.content, entry.program, sheet.revision), entry), qrUrl: schoolQrUrl(entry.school) }; }
-    if (revision === undefined && sheet.revision === 0) {
+    const finalization = await readFinalization(client,id);
+    if (revision === undefined && !finalization.finalized && id !== "example") { const entry = catalog.find(item => item.id === id)!; sheet.content = { ...withVisitAddress(withUnsavedProgramDefaults(sheet.content, entry.program, sheet.revision), entry), qrUrl: schoolQrUrl(entry.school) }; }
+    if (revision === undefined && !finalization.finalized && sheet.revision === 0) {
       const title = id === "example" ? "Kock" : catalog.find(item => item.id === id)!.title;
       sheet.content = withDefaultImage(sheet.content, title, 0);
       if (sheet.content.image === defaultImagePath(title)) {
@@ -40,7 +42,7 @@ export async function readSheet(userId: string, id: string, revision?: number) {
         if (chosen.rows[0]) sheet.content = { ...sheet.content, image: chosen.rows[0].image };
       }
     }
-    return sheet;
+    return { ...sheet, finalization };
   });
 }
 export async function privateImage(client: PoolClient, image: string, school: string): Promise<string> {

@@ -22,10 +22,11 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
   const [filters, setFilters] = useState(emptyFilters);
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [finalized, setFinalized] = useState<Set<string>>(new Set());
   const [previous, setPrevious] = useState<Set<string>>(new Set());
   useEffect(() => {
     const refresh = () => {
-      void cloud<{sheets:{id:string}[]}>("/api/sheets").then(result=>{setSaved(new Set(result.sheets.filter(sheet=>catalog.some(entry=>entry.id===sheet.id)).map(sheet=>sheet.id)));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
+      void cloud<{sheets:{id:string;finalized?:boolean}[]}>("/api/sheets").then(result=>{setSaved(new Set(result.sheets.filter(sheet=>catalog.some(entry=>entry.id===sheet.id)).map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
       setPrevious(new Set(catalog.filter(entry => readPreviousDraft(entry)).map(entry => entry.id)));
     };
     queueMicrotask(() => {
@@ -84,9 +85,9 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
       <div className="catalog-summary"><span role="status" aria-live="polite"><strong>{filtered.length}</strong> produktblad{filters.school ? ` · ${filters.school}` : " · Alla skolor"}</span><span className="saved-legend"><span className="status-dot" /> Grönt = ett sparat utkast i aktuell mall</span></div>
       <div className="catalog-grid">
         {filtered.map(entry => <article className={`catalog-card ${saved.has(entry.id) ? "card-saved" : ""}`} key={entry.id} data-school={entry.school}>
-          <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
+          <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{finalized.has(entry.id) ? "🔒 Låst av admin" : saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
           <p className="catalog-school">{entry.school}</p><h2>{entry.title}</h2>
-          <div className="catalog-card-bottom"><span title={isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}>{isAfProgram(entry.program) ? "AF" : "Mall 01"} · A4</span><Link aria-label={`${saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
+          <div className="catalog-card-bottom"><span title={isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}>{isAfProgram(entry.program) ? "AF" : "Mall 01"} · A4</span><Link aria-label={`${finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
         </article>)}
       </div>
       {!filtered.length && <div className="catalog-empty"><h2>Inga blad matchar ditt val</h2><p>{filters.status === "saved" ? "Här visas bara gemensamt sparade blad. Prova Alla för att skapa ett nytt blad." : "Prova ett annat sökord eller ta bort ett filter."}</p><button type="button" className="save-button" onClick={() => setFilters(emptyFilters)}>Visa alla produktblad</button></div>}
