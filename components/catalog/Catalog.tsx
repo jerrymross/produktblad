@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { catalog,readDraft, readPreviousDraft, schools } from "@/lib/catalog";
 import { TEMPLATE_VERSION, AF_TEMPLATE_VERSION, isAfProgram } from "@/lib/sheet";
 import { cloud,jsonRequest } from "@/lib/cloud-client";
+import type {SheetCopy} from "@/lib/copies";
 
 const emptyFilters = { school: "", query: "", program: "", status: "all" };
 const filterKey = "produktbladsapp:biblioteksfilter:v1";
@@ -23,10 +24,11 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [finalized, setFinalized] = useState<Set<string>>(new Set());
+  const [copies,setCopies]=useState<SheetCopy[]>([]);
   const [previous, setPrevious] = useState<Set<string>>(new Set());
   useEffect(() => {
     const refresh = () => {
-      void cloud<{sheets:{id:string;finalized?:boolean}[]}>("/api/sheets").then(result=>{setSaved(new Set(result.sheets.filter(sheet=>catalog.some(entry=>entry.id===sheet.id)).map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
+      void cloud<{sheets:{id:string;finalized?:boolean;sourceId?:string;copyNumber?:number}[]}>("/api/sheets").then(result=>{setSaved(new Set(result.sheets.filter(sheet=>catalog.some(entry=>entry.id===sheet.id)).map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));setCopies(result.sheets.filter(sheet=>sheet.sourceId&&sheet.copyNumber).map(sheet=>({id:sheet.id,sourceId:sheet.sourceId!,copyNumber:sheet.copyNumber!,sourceRevision:0})));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
       setPrevious(new Set(catalog.filter(entry => readPreviousDraft(entry)).map(entry => entry.id)));
     };
     queueMicrotask(() => {
@@ -87,6 +89,7 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
         {filtered.map(entry => <article className={`catalog-card ${saved.has(entry.id) ? "card-saved" : ""}`} key={entry.id} data-school={entry.school}>
           <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{finalized.has(entry.id) ? "🔒 Låst av admin" : saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
           <p className="catalog-school">{entry.school}</p><h2>{entry.title}</h2>
+          {copies.some(copy=>copy.sourceId===entry.id) && <div className="catalog-copies">{copies.filter(copy=>copy.sourceId===entry.id).sort((a,b)=>a.copyNumber-b.copyNumber).map(copy=><Link key={copy.id} href={`/?blad=${encodeURIComponent(copy.id)}`}>Kopia {copy.copyNumber}{finalized.has(copy.id)?" · Låst":" · Redigera"} →</Link>)}</div>}
           <div className="catalog-card-bottom"><span title={isAfProgram(entry.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}>{isAfProgram(entry.program) ? "AF" : "Mall 01"} · A4</span><Link aria-label={`${finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}: ${entry.title}, ${entry.school}, ${entry.program}`} href={`/?blad=${encodeURIComponent(entry.id)}`}>{finalized.has(entry.id) ? "Visa produktblad" : saved.has(entry.id) || previous.has(entry.id) ? "Fortsätt redigera" : "Skapa produktblad"}<span aria-hidden="true"> →</span></Link></div>
         </article>)}
       </div>

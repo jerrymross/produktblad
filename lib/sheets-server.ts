@@ -6,14 +6,15 @@ import { withUnsavedProgramDefaults } from "@/lib/default-content";
 import { randomUUID } from "node:crypto";
 import { type PoolClient } from "pg";
 import { readFinalization } from "@/lib/finalization-server";
+import { readCopies } from "@/lib/copies-server";
 import { transaction } from "@/lib/db";
 import { HttpError } from "@/lib/access";
-import { catalog, initialSheet, schoolQrUrl } from "@/lib/catalog";
+import { catalogEntry, initialSheet, schoolQrUrl } from "@/lib/catalog";
 import { exampleSheet, isSheetData, templateVersion, type SheetData } from "@/lib/sheet";
 
 export function sheetEntry(id: string) {
-  if (id === "example") return { id, school: "__templates__", title: "Kock – exempel", defaults: exampleSheet };
-  const entry = catalog.find(item => item.id === id);
+  if (id === "example") return { id, school: "__templates__", title: "Kock – exempel", defaults: exampleSheet,sourceId:undefined };
+  const entry = catalogEntry(id);
   if (!entry) throw new HttpError(404, "Bladet finns inte.");
   return { ...entry, defaults: initialSheet(entry) };
 }
@@ -21,6 +22,11 @@ export async function ensureSheet(client: PoolClient, id: string) {
   const entry = sheetEntry(id);
   const permitted = await client.query("SELECT can_access_school($1) AS allowed", [entry.school]);
   if (!permitted.rows[0].allowed) throw new HttpError(403, "Du har inte åtkomst till skolans blad.");
+  if(entry.sourceId){
+    const copy=await client.query("SELECT id FROM sheets WHERE id=$1 AND school_id=$2",[id,entry.school]);
+    if(!copy.rowCount)throw new HttpError(404,"Kopian finns inte.");
+    return;
+  }
   await client.query("INSERT INTO sheets(id,school_id,title,content,template_version) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING",
     [id, entry.school, entry.title, entry.defaults, templateVersion(entry.defaults)]);
 }
@@ -33,16 +39,16 @@ export async function readSheet(userId: string, id: string, revision?: number) {
     if (!result.rowCount) throw new HttpError(404, "Bladversionen finns inte.");
     const sheet = result.rows[0] as { content: SheetData; revision: number; updatedAt: string };
     const finalization = await readFinalization(client,id);
-    if (revision === undefined && !finalization.finalized && id !== "example") { const entry = catalog.find(item => item.id === id)!; sheet.content = { ...withVisitAddress(withUnsavedProgramDefaults(sheet.content, entry.program, sheet.revision), entry), qrUrl: schoolQrUrl(entry.school) }; }
+    if (revision === undefined && !finalization.finalized && id !== "example" && !catalogEntry(id)?.sourceId) { const entry = catalogEntry(id)!; sheet.content = { ...withVisitAddress(withUnsavedProgramDefaults(sheet.content, entry.program, sheet.revision), entry), qrUrl: schoolQrUrl(entry.school) }; }
     if (revision === undefined && !finalization.finalized && sheet.revision === 0) {
-      const title = id === "example" ? "Kock" : catalog.find(item => item.id === id)!.title;
+      const title = id === "example" ? "Kock" : catalogEntry(id)!.title;
       sheet.content = withDefaultImage(sheet.content, title, 0);
       if (sheet.content.image === defaultImagePath(title)) {
         const chosen = await client.query("SELECT '/api/media/' || media_id AS image FROM library_images WHERE education=$1 AND slot=1", [educationKey(title)]);
         if (chosen.rows[0]) sheet.content = { ...sheet.content, image: chosen.rows[0].image };
       }
     }
-    return { ...sheet, finalization };
+    return { ...sheet, finalization,copyStatus:await readCopies(client,id) };
   });
 }
 export async function privateImage(client: PoolClient, image: string, school: string): Promise<string> {

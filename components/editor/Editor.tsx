@@ -7,6 +7,7 @@ import { sheetApiPath } from "@/lib/sheet-id";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import {useRouter} from "next/navigation";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ImagePicker } from "@/components/images/ImagePicker";
 import { Sheet } from "@/components/sheet/Sheet";
@@ -15,6 +16,7 @@ import { measureSheetOverflow } from "@/lib/overflow";
 import { draftKey, EXAMPLE_STORAGE_KEY, initialSheet, readPreviousDraft, schoolQrUrl, type CatalogEntry } from "@/lib/catalog";
 import { cloud,jsonRequest } from "@/lib/cloud-client";
 import { unavailableFinalization, type Finalization, type FinalizationEvent } from "@/lib/finalization";
+import {unavailableCopies,type CopyStatus} from "@/lib/copies";
 
 const GROUPS = ["Omslag", "Innehåll", "Nederdel"] as const;
 const GROUP_LABELS = { Omslag: "Omslag", Innehåll: "Utbildning", Nederdel: "Kontakt" };
@@ -36,6 +38,9 @@ function shortFieldName(key: string) {
 }
 
 export function Editor({ entry }: { entry?: CatalogEntry }) {
+  const router=useRouter();
+  const displayTitle=`${entry?.title??"Kock"}${entry?.copyNumber?` · Kopia ${entry.copyNumber}`:""}`;
+  const [copyStatus,setCopyStatus]=useState<CopyStatus>(unavailableCopies);
   const storageKey = entry ? draftKey(entry.id) : EXAMPLE_STORAGE_KEY;
   const defaults = entry ? initialSheet(entry) : exampleSheet;
   const hasKomvuxDefaults = entry?.program === "Komvux";
@@ -96,9 +101,10 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     let loaded=false;
     const lock=async(renew=false)=>{await cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:session,renew}));if(live){ownsSession.current=true;setLocked(true);}else void fetch(`${sheetUrl}/lock`,{...jsonRequest("DELETE",{token:session}),keepalive:true});};
     const load=async()=>{try{
-      const [sheet,profile]=await Promise.all([cloud<{content:SheetData;revision:number;finalization?:Finalization}>(sheetUrl),cloud<{admin:boolean}>("/api/me")]);
+      const [sheet,profile]=await Promise.all([cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus}>(sheetUrl),cloud<{admin:boolean}>("/api/me")]);
       if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
       setAdmin(profile.admin);applyFinalization(sheet.finalization??unavailableFinalization);
+      setCopyStatus(sheet.copyStatus??unavailableCopies);
       if(!sheet.finalization?.finalized && isAfProgram(entry?.program) && sheet.content.layout !== "af") { setDirty(true); setMessage("Bladet visas med det nya AF-upplägget. Spara för att skapa en version med den nya mallen. Äldre versioner behåller sitt upplägg."); }
       if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(entry ? withVisitAddress(withDefaultImage(withUnsavedProgramDefaults(previous, entry.program, 0), entry.title, 0, sheet.content.image), entry) : withDefaultImage(previous, "Kock", 0, sheet.content.image));setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
       loaded=true;
@@ -108,12 +114,13 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const refresh=async()=>{
       if(!live||!loaded||transitionPending.current)return;
       try{
-        const sheet=await cloud<{content:SheetData;revision:number;finalization?:Finalization}>(sheetUrl);
+        const sheet=await cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus}>(sheetUrl);
         if(!live||transitionPending.current)return;
         if(sheet.finalization?.finalized && sheet.finalization.stateVersion>=finalizationRef.current.stateVersion && !dirtyRef.current){
           setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
         }
         applyFinalization(sheet.finalization??unavailableFinalization);
+        setCopyStatus(sheet.copyStatus??unavailableCopies);
         if(ownsSession.current&&!finalizationRef.current.finalized)await lock(true);
       }catch(error){if(live){ownsSession.current=false;setLocked(false);setMessage(error instanceof Error?error.message:"Status kunde inte uppdateras. Dina ändringar finns kvar här.");}}
     };
@@ -242,7 +249,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `produktblad-${entry ? `${entry.school}-${entry.title}` : "kock-exempel"}.pdf`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-");
+      anchor.download = `produktblad-${entry ? `${entry.school}-${entry.title}${entry.copyNumber?`-kopia-${entry.copyNumber}`:""}` : "kock-exempel"}.pdf`.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-");
       anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
       setMessage("PDF är klar och bygger på den sparade bladversionen.");
@@ -283,6 +290,22 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     }finally{transitionPending.current=false;setBusy(false);}
   }
 
+  async function createCopy(){
+    if(transitionPending.current||busy||loading||!finalizationRef.current.finalized||dirty)return;
+    transitionPending.current=true;setBusy(true);
+    try{
+      const result=await cloud<{id:string}>(`${sheetUrl}/copies`,jsonRequest("POST",{revision}));
+      window.dispatchEvent(new Event("studio-sheets"));
+      router.push(`/?blad=${encodeURIComponent(result.id)}`);
+      setMessage("Kopian är skapad och öppnas för redigering.");
+    }catch(error){
+      setMessage(error instanceof Error?error.message:"Kopian kunde inte skapas.");
+    }finally{
+      try{const sheet=await cloud<{copyStatus?:CopyStatus}>(sheetUrl);setCopyStatus(sheet.copyStatus??unavailableCopies);}catch{/* Keep the current contents on connection failures. */}
+      transitionPending.current=false;setBusy(false);
+    }
+  }
+
   const visibleFields = textFields.filter(field => field.group === activeGroup && (!field.afOnly || af)).map(field => {
     if (entry && field.key === "why") return { ...field, label: `Text – ${defaults.whyTitle}` };
     if (entry && field.key === "whyTitle") return { ...field, label: `Rubrik – ${defaults.whyTitle}` };
@@ -310,9 +333,9 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   }
 
   return <div className={`workspace editor-workspace mobile-${mobilePane} ${expanded ? "preview-expanded" : ""}`}>
-    <AppSidebar dirty={dirty} example={!entry} currentTitle={entry?.title ?? "Kock"} />
+    <AppSidebar dirty={dirty} example={!entry} currentTitle={displayTitle} />
     <header className="app-header">
-      <div className="header-center"><div className="breadcrumbs"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>Bibliotek</Link><span>/</span><span>{entry?.school ?? "Exempelblad"}</span><span>/</span><span>{entry?.program ?? "Komvux"}</span></div><h1 className="header-title">{entry?.title ?? "Kock"}</h1></div>
+      <div className="header-center"><div className="breadcrumbs"><Link className="back-to-catalog" href="/produktblad" onClick={event => { if (dirty && !window.confirm("Lämna bladet med osparade ändringar? Spara utkast först om du vill behålla dem.")) event.preventDefault(); }}>Bibliotek</Link><span>/</span><span>{entry?.school ?? "Exempelblad"}</span><span>/</span><span>{entry?.program ?? "Komvux"}</span></div><h1 className="header-title">{displayTitle}</h1></div>
       <div className={`header-right save-state ${dirty ? "is-dirty" : hasSaved ? "is-saved" : ""}`}><span className="status-dot" />{loading?"Öppnar …":finalization.finalized ? "Låst av admin" : dirty ? "Osparade ändringar" : hasSaved ? `Sparat · version ${revision}` : "Inte sparat än"}</div>
           <div className="action-row"><button type="button" className="save-button" onClick={()=>void save()} disabled={busy||loading||!locked||finalization.finalized} title="Spara utkast (Ctrl+S eller ⌘S)">{busy?"Arbetar …":"Spara utkast"}</button><button type="button" className="export-button" onClick={() => void exportPdf()} disabled={busy || loading || (!locked && !finalization.finalized) || (finalization.finalized && dirty) || overflow.length > 0 || !validQr}>Ladda ner PDF ↓</button></div>
     </header>
@@ -322,9 +345,15 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     <div className="workspace-body">
       <aside className="editor-panel">
         <div className="panel-heading"><span className="eyebrow-ui">REDIGERA PRODUKTBLAD</span><h2>Innehåll</h2><p>Dina ändringar syns direkt på bladet.</p></div>
+        {entry?.sourceId && <div className="copy-origin"><strong>Kopia {entry.copyNumber} av 2</strong><p>Du ändrar en separat kopia. Originalbladet påverkas inte.</p><Link href={`/?blad=${encodeURIComponent(entry.sourceId)}`} onClick={event=>{if(dirty&&!window.confirm("Lämna kopian med osparade ändringar?"))event.preventDefault();}}>Visa originalbladet →</Link></div>}
         {finalization.available && <div className={`finalization-panel ${finalization.finalized?"is-finalized":""}`}>
           {finalization.finalized ? <><strong>🔒 Låst av admin</strong><p>{finalization.changedBy}{finalization.changedAt && ` · ${new Date(finalization.changedAt).toLocaleString("sv-SE")}`}<br />Bladet kan visas och exporteras. {dirty && "Dina osparade ändringar finns kvar här."}</p></> : admin && <><strong>Lås när bladet är färdigt</strong><p>{dirty||revision<1?"Spara bladet först. Låsningen skyddar sedan innehållet mot ändringar.":"Lås innehållet när du är klar. Upplåsning kräver en bekräftelse."}</p></>}
           {admin && <button type="button" className="finalization-button" disabled={busy||loading||(!finalization.finalized&&(dirty||!locked||revision<1))} onClick={()=>finalization.finalized?confirmation.current?.showModal():void setFinished(true)}>{finalization.finalized?"Lås upp …":"Lås färdigt produktblad"}</button>}
+          {entry && !entry.sourceId && copyStatus.available && <div className="sheet-copies">
+            <p><strong>{copyStatus.copies.length} av 2 kopior skapade</strong></p>
+            {copyStatus.copies.map(copy=><Link key={copy.id} href={`/?blad=${encodeURIComponent(copy.id)}`}>Öppna kopia {copy.copyNumber} →</Link>)}
+            {finalization.finalized && <><button type="button" className="create-copy-button" disabled={busy||loading||dirty||copyStatus.copies.length>=2} onClick={()=>void createCopy()}>Skapa redigerbar kopia</button><p>{copyStatus.copies.length>=2?"Gränsen på två kopior är nådd. Öppna en befintlig kopia för att göra ändringar.":"Originalet förblir låst. Kopian får egen historik och PDF-export."}</p></>}
+          </div>}
         </div>}
         <nav className="editor-tabs" aria-label="Redigeringsdelar">
           {GROUPS.map(group => <button key={group} type="button" aria-pressed={activeGroup === group} className={activeGroup === group ? "active" : ""} onClick={() => { setActiveGroup(group); setActiveSection(group === "Innehåll" ? "why" : "school"); }}>{GROUP_LABELS[group]}{overflow.some(key => textFields.find(field => field.key === key)?.group === group) && <span className="tab-error" aria-label="Text får inte plats">!</span>}</button>)}

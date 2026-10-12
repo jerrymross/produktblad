@@ -43,3 +43,5 @@ Adminlås 12 oktober 2026: implementation och isolerade SQL/RLS/API-/browserprov
 ### Adminlås aktiverat i Neon 12 oktober 2026
 
 Efter användarens uttryckliga tillstånd kördes migration 002 först i studio_dev och sedan i studio. Databasroller, RLS, privilegier och triggers verifierade i båda miljöerna. Låsning/upplåsning och dess behörighets-/bekräftelsekrav provades i återställda transaktioner utan kvarvarande testdata. Se ADMINLAS.md. Inloggat Vercel-browserflöde är inte återtestat i denna aktivering.
+
+Kopior 12 oktober 2026: migration 003 aktiverad i studio_dev och studio. Alla skolredaktörer får skapa två kopior per låst original inom sin skolåtkomst. Databasfunktion, restriktiv INSERT-policy och kopieregistrets RLS/privilegier säkrar gränsen. Verifierat med riktiga runtime-roller i återställda testtransaktioner. Se KOPIOR.md. Inget nytt Vercel-browserprov.

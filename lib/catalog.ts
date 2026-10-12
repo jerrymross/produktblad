@@ -5,17 +5,24 @@ import { AF_DEFAULT_CONTENT } from "@/lib/af-default-content";
 import { KOMVUX_REFERENCE_CONTENT } from "@/lib/komvux-default-content";
 import { TITLE_DEFAULTS, DEFAULT_ABOUT, defaultHeadings, exampleSheet, isSheetData, TEMPLATE_VERSION, AF_TEMPLATE_VERSION, isAfProgram, withProgramLayout, upgradePreviousDraft, type SheetData } from "@/lib/sheet";
 
-export type CatalogEntry = { id: string; school: string; program: string; title: string };
+export type CatalogEntry = { id: string; school: string; program: string; title: string; sourceId?: string; copyNumber?: number };
 export const catalog: CatalogEntry[] = rows.map(row => ({
   ...row,
   id: [row.school, row.program, row.title].map(encodeURIComponent).join("|"),
 }));
 export const schools = [...new Set(catalog.map(entry => entry.school))].sort((a, b) => a.localeCompare(b, "sv"));
+export function catalogEntry(id:string):CatalogEntry|undefined {
+  const original=catalog.find(entry=>entry.id===id);
+  if(original)return original;
+  const match=/^copy:([12]):(.+)$/.exec(id);
+  const source=match&&catalog.find(entry=>entry.id===match[2]);
+  return source?{...source,id,sourceId:source.id,copyNumber:Number(match![1])}:undefined;
+}
 export const LEGACY_STORAGE_KEY = "produktbladsapp:kock:lokalt-utkast:v1";
 export const EXAMPLE_STORAGE_KEY = `produktbladsapp:exempel:${TEMPLATE_VERSION}`;
 
 export function draftKey(id: string) {
-  return `produktbladsapp:blad:${id}:${isAfProgram(catalog.find(entry => entry.id === id)?.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}`;
+  return `produktbladsapp:blad:${id}:${isAfProgram(catalogEntry(id)?.program) ? AF_TEMPLATE_VERSION : TEMPLATE_VERSION}`;
 }
 
 export function schoolQrUrl(school: string): string {

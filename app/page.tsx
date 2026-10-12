@@ -1,5 +1,5 @@
 import { Editor } from "@/components/editor/Editor";
-import { catalog } from "@/lib/catalog";
+import { catalogEntry } from "@/lib/catalog";
 import { notFound } from "next/navigation";
 import { Catalog } from "@/components/catalog/Catalog";
 import { pageIdentity,accessProfile } from "@/lib/access";
@@ -8,7 +8,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ b
   const user=await pageIdentity();const profile=await accessProfile(user.id);
   const { blad, exempel } = await searchParams;
   if (blad === undefined && exempel !== "1") return <Catalog allowedSchools={profile.admin ? null : profile.schools} />;
-  const entry = typeof blad === "string" ? catalog.find(item => item.id === blad) : undefined;
+  const entry = typeof blad === "string" ? catalogEntry(blad) : undefined;
   if (blad !== undefined && !entry) notFound();
   if(!profile.admin && (!entry || !profile.schools.includes(entry.school))) notFound();
   return <Editor key={entry?.id ?? "example"} entry={entry} />;

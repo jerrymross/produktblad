@@ -341,6 +341,13 @@ button:disabled { cursor: default; }
 .finalization-button { padding: 9px 12px; border: 1px solid #bac7d5; border-radius: 7px; background: white; color: #172943; font-size: 12px; font-weight: 600; }
 .finalization-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
 .finalization-dialog-actions .save-button { padding: 12px 16px; border-radius: 7px; }
+.copy-origin { margin: 0 24px 12px; padding: 12px 16px; border: 1px solid #d6dfeb; border-radius: 10px; background: #f5f7fb; color: #24364b; font-size: 12px; }
+.copy-origin p { font-size: 11px; line-height: 1.5; }
+.sheet-copies { margin-top: 12px; padding-top: 10px; border-top: 1px solid #cad9d0; }
+.sheet-copies a { display: block; font-size: 12px; margin: 8px 0; }
+.create-copy-button { padding: 9px 12px; margin-top: 8px; border: 1px solid #b1c3b8; border-radius: 7px; background: #fff; color: #172943; font-size: 12px; font-weight: 600; }
+.catalog-copies { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 10px 0; position: relative; z-index: 2; }
+.catalog-copies a { font-size: 12px; font-weight: 600; }
 
 .title-color { margin-top: 8px; }
 .title-color label { display: block; font-size: 10px; color: var(--ui-muted); margin-bottom: 4px; }

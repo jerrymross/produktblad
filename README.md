@@ -191,3 +191,7 @@ Referens, uppmätta mått och lokal verifiering finns i [docs/AF-MALL.md](docs/A
 ## Adminlås för färdiga produktblad
 
 Adminlås utan PIN är implementerat. Admin sparar bladet, väljer **Lås färdigt produktblad** och använder **Lås upp … → Bekräfta upplåsning** för att öppna redigering igen. Läsning och PDF-export fortsätter för behöriga användare. Funktionen visas först efter aktivering med databasens migration 002. Se [Adminlås och aktivering](docs/ADMINLAS.md).
+
+## Kopior av låsta blad
+
+Alla skolredaktörer kan skapa högst två redigerbara kopior per låst skolblad. Originalet behåller sitt lås. Kopior har egen historik och PDF-export och nås från originalet och biblioteket. Migration 003 är aktiverad i Neon DEV och produktion. Se [Kopior och verifiering](docs/KOPIOR.md).

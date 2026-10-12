@@ -23,6 +23,7 @@ const exists=await admin.query("SELECT to_regclass($1) AS name",[`${schema}.sche
 if(!exists.rows[0].name){await admin.query("BEGIN");try{await admin.query(readFileSync("migrations/001-studio.sql","utf8"));await admin.query("INSERT INTO schema_migrations(version) VALUES('001')");await admin.query("COMMIT");}catch(error){await admin.query("ROLLBACK");throw error;}}
 if(!(await admin.query("SELECT 1 FROM schema_migrations WHERE version='002'")).rowCount){await admin.query("BEGIN");try{await admin.query(readFileSync("migrations/002-sheet-finalization.sql","utf8"));await admin.query("INSERT INTO schema_migrations(version) VALUES('002')");await admin.query("COMMIT");}catch(error){await admin.query("ROLLBACK");throw error;}}
 for(const school of [...new Set(rows.map(row=>row.school)),"__templates__"]){await admin.query("INSERT INTO schools(id) VALUES($1) ON CONFLICT DO NOTHING",[school]);}
+if(!(await admin.query("SELECT 1 FROM schema_migrations WHERE version='003'")).rowCount){await admin.query("BEGIN");try{await admin.query(readFileSync("migrations/003-sheet-copies.sql","utf8"));await admin.query("INSERT INTO schema_migrations(version) VALUES('003')");await admin.query("COMMIT");}catch(error){await admin.query("ROLLBACK");throw error;}}
 const roleExists=await admin.query("SELECT 1 FROM pg_roles WHERE rolname=$1",[role]);
 if(!roleExists.rowCount)await admin.query(`CREATE ROLE ${role} LOGIN PASSWORD '${password}' NOBYPASSRLS`);
 await admin.query(`GRANT USAGE ON SCHEMA ${schema} TO ${role}`);
@@ -35,6 +36,8 @@ await admin.query(`GRANT INSERT,UPDATE,DELETE ON editing_locks,library_images TO
 await admin.query(`GRANT EXECUTE ON FUNCTION accept_invitation(text,text,text) TO ${role}`);
 await admin.query(`GRANT EXECUTE ON FUNCTION set_sheet_finalization(text,boolean,int,int,uuid,boolean) TO ${role}`);
 await admin.query(`REVOKE INSERT,UPDATE,DELETE ON sheet_finalizations,sheet_finalization_events FROM ${role}`);
+await admin.query(`GRANT EXECUTE ON FUNCTION create_sheet_copy(text,int) TO ${role}`);
+await admin.query(`REVOKE INSERT,UPDATE,DELETE ON sheet_copies FROM ${role}`);
 const appURL=new URL(owner.DATABASE_URL);appURL.username=role;appURL.password=password;
 const secret=runtime.BETTER_AUTH_SECRET??randomBytes(48).toString("hex");
 writeFileSync(runtimeFile,`APP_DATABASE_URL=${appURL.toString()}\nDATABASE_SCHEMA=${schema}\nBETTER_AUTH_SECRET=${secret}\nBETTER_AUTH_URL=${mode==="prod"?"https://produktblad.vercel.app":"http://localhost:3000"}\n`);
