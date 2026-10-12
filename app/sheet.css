@@ -82,7 +82,7 @@
 .sheet-bottom { position: absolute; left: 57pt; right: 57pt; top: 707.7pt; height: 117pt; }
 .sheet-about { min-height: 42pt; border-top: .4pt solid #cbd6e4; border-bottom: .4pt solid #cbd6e4; padding: 4pt 0 4pt; font: 300 8.4pt/1.13 "Sheet Inter", Arial, sans-serif; }
 .sheet-about strong { font-weight: 700; }
-.sheet-footer { display: grid; grid-template-columns: 154pt 70pt; grid-auto-flow: column; grid-auto-columns: 125pt; justify-content: center; align-items: start; margin-top: 20pt; font: 400 7.8pt/1.1 "Sheet Inter", Arial, sans-serif; }
+.sheet-footer { display: grid; grid-template-columns: 154pt 70pt; grid-auto-flow: column; grid-auto-columns: fit-content(125pt); justify-content: center; align-items: start; margin-top: 20pt; font: 400 7.8pt/1.1 "Sheet Inter", Arial, sans-serif; }
 .sheet-logo-group { padding-right: 10pt; }
 .astar-mark { height: 31pt; display: flex; align-items: center; justify-content: center; }
 .astar-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
@@ -90,6 +90,7 @@
 .sheet-qr { min-height: 44pt; border-left: .4pt solid #d4deed; border-right: .4pt solid #d4deed; display: flex; justify-content: center; align-items: center; }
 .sheet-contact { padding: 11pt 7pt 0 16.5pt; display: flex; flex-direction: column; overflow-wrap: anywhere; }
 .sheet-contact strong { font-weight: 700; }
+.sheet-footer .sheet-contact + .sheet-contact { padding-left: 12pt; }
 
 /* AF reference: Rityta 1.pdf, measured in points on its A4 media box. */
 .sheet-page[data-layout="af"] .sheet-columns { left: 58.755pt; right: 36.688pt; top: 319.9pt; height: 408pt; grid-template-columns: 228pt 243.13pt; column-gap: 28.703pt; }

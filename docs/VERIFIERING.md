@@ -332,3 +332,10 @@ PGlite är enbart ett temporärt verifieringsverktyg, inte ett nytt beroende i a
 - Lokal browser: faktiska Sheet-komponenten körd i isolerat browserharness med samma CSS och resurser. Noll, en och två kontakter samt AF kontrollerade; gruppens mittpunkt sammanfaller med footerytans mittpunkt (0 px avvikelse). Browserbild med användarens kontakt/adress visuellt granskad. Tomma kontaktblock tar ingen plats.
 - Lokal PDF: samma komponent och innehåll exporterade med Chrome. pypdf verifierade en stående A4 (594,96 × 841,92 pt) och fontresurser för Lora Bold samt Inter Bold/Light/Regular. Exporten renderades med Poppler och granskades visuellt. QA-filer: work/check-footer.mjs, footer-0/1/2/af.png, footer-centered.pdf och footer-centered-render.png. Detta är ett rendererprov, inte ett autentiserat API-exportprov. Referensens övriga layoutmått behålls; footerns nya centrering är den beställda avvikelsen.
 - Vercel/Neon/RLS: inte återtestade. Ingen manuell deployment, molnresurs, migration eller live-databasändring.
+
+## Tätare kontaktgrupp 12 oktober 2026
+
+- Beställning: mindre och mer sammanhållet mellanrum mellan footer-kontakterna. Standardmallens kontaktkolumner anpassas nu till innehållet med fit-content(125pt), i stället för att alltid reservera 125 pt. Andra kontaktens vänsterpadding minskas från 16,5 till 12 pt. Kortare kontaktuppgifter får därför ett naturligt mindre avstånd; långa uppgifter behåller tidigare maximal kolumnbredd och radbrytning. Gruppen förblir centrerad.
+- Statiskt: lint och git diff --check passerade. Endast mall-CSS ändrad.
+- Lokal browser: samma riktiga Sheet-renderare och resurser som föregående prov, med noll/en/två kontakter samt AF. Centreringsavvikelse högst 0,008 px. Kontaktkolumnerna i tvåkontaktsprovet blev cirka 94,4 respektive 116,6 pt. Exporten med två kontakter granskades efter Poppler-rendering; en stående A4 verifierad med pypdf. QA: work/check-footer-compact.mjs, footer-compact.pdf och footer-compact-render.png.
+- Vercel/Neon/RLS: inte återtestade. Ingen manuell deployment eller databasändring.
