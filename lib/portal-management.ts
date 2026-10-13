@@ -1,3 +1,4 @@
+import { previewFetch } from "@/lib/preview-access";
 import { createHash } from "node:crypto";
 import { jwtVerify, type JWTVerifyGetKey } from "jose";
 import { HttpError } from "@/lib/access";
@@ -28,7 +29,7 @@ export async function management(request: Request, operation: (db: PoolClient, t
     const pathname = new URL(request.url).pathname;
     const canonicalPath = appBasePath && pathname.startsWith(appBasePath + "/") ? pathname.slice(appBasePath.length) : pathname;
     claims = await verifyManagementToken(auth.slice(7), request.method, canonicalPath, body);
-    const response = await fetch(`${issuer}/api/sso/management/introspect`, { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json" }, body: "{}",
+    const response = await previewFetch(`${issuer}/api/sso/management/introspect`, { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json" }, body: "{}",
       cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
     if (!response.ok) throw Error();
     live = await response.json();

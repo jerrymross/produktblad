@@ -13,3 +13,7 @@ Global navigation använder portalens `/platform/v1/navigation.js`, utan kopiera
 Kopiera `.env.platform.example` till `.env.platform.local` och ange en **isolerad utvecklingsdatabas med begränsad approll**, migrerad enligt `docs/NEON.md`. Öppna `../Astarstudioportal/Astar.code-workspace` och starta alla tre tasks. Backend kör på 3002; besök `http://localhost:3000/produktblad`. Miljöfiler ska aldrig committas. Ändra inte befintlig `.env.local` eller produktionsdatabas för att köra tester.
 
 Verifiera `npm run typecheck`, `npm run lint`, `npm run build` och `node node_modules/tsx/dist/cli.mjs scripts/test-platform.ts`. Portalens `tests/platform-e2e.mjs` kör de tre apparna med disponibla databaser och syntetiska identiteter. Det ersätter inte produktions-RLS eller stagingtest av externa rewrites och faktisk PDF-export. Routingens fullständiga migrationsplan finns i portalens `docs/MODULAR-PLATFORM.md`. Ingen driftsättning är godkänd genom dessa lokala ändringar.
+
+## Skyddad Vercel Preview
+
+Serveranrop till portalens konfigurerade HTTPS-origin skickar en kortlivad Vercel OIDC-identitet endast i Preview. SSO och lokala behörigheter kontrolleras separat. Preview till Preview måste tillåtas mellan denna app och portalen i Vercel Trusted Sources. Se portalrepots `docs/PREVIEW-PLATFORM.md` för isolerade Neon-brancher och verifieringsstatus.

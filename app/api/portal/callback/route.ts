@@ -1,3 +1,4 @@
+import { previewFetch } from "@/lib/preview-access";
 import { appPath } from "@/lib/app-path";
 import { NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
     const tx = (await getPool().query("DELETE FROM portal_transactions WHERE cookie_hash=$1 RETURNING *", [hash(cookie)])).rows[0];
     const code = url.searchParams.get("code"), state = url.searchParams.get("state");
     if (!tx || tx.expires_at.getTime() <= Date.now() || !state || hash(state) !== tx.state_hash || !code || code.length > 1024 || url.searchParams.getAll("code").length !== 1 || url.searchParams.getAll("state").length !== 1) return failure;
-    const exchange = await fetch(`${issuer}/api/sso/token`, {
+    const exchange = await previewFetch(`${issuer}/api/sso/token`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ grant_type: "authorization_code", client_id: clientId, redirect_uri: callback, code, code_verifier: tx.verifier }),
       cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000),

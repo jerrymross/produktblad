@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
-import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from "jose";
+import { createRemoteJWKSet, customFetch, jwtVerify, type JWTVerifyGetKey } from "jose";
 
+import { previewFetch } from './preview-access';
 import { appBasePath, appPath } from "./app-path";
 import { publicAppUrl } from "./app-origin";
 export const issuer = process.env.PORTAL_ISSUER || "https://astar-studio-portal.vercel.app";
@@ -18,7 +19,7 @@ export function safeReturnTo(value: unknown) {
   if (/^\/(api|login|logged-out)(\/|$)/.test(local)) return appBasePath || "/produktblad";
   return appPath(url.pathname + url.search + url.hash);
 }
-export const keys = createRemoteJWKSet(new URL(`${issuer}/api/sso/jwks`), { timeoutDuration: 5000 });
+export const keys = createRemoteJWKSet(new URL(`${issuer}/api/sso/jwks`), { timeoutDuration: 5000, [customFetch]: previewFetch });
 export async function verifyPortalToken(token: string, key: JWTVerifyGetKey = keys) {
   const { payload, protectedHeader } = await jwtVerify(token, key, {
     algorithms: ["RS256"], issuer, audience: clientId, typ: "at+jwt",
@@ -30,7 +31,7 @@ export async function verifyPortalToken(token: string, key: JWTVerifyGetKey = ke
       typeof payload.email !== "string" || typeof payload.name !== "string") throw new Error("Ogiltig portalidentitet.");
   return { sub: payload.sub!, exp: payload.exp, email: payload.email, name: payload.name };
 }
-export async function introspect(token: string, sub: string, exp: number, fetcher: typeof fetch = fetch) {
+export async function introspect(token: string, sub: string, exp: number, fetcher: typeof fetch = previewFetch) {
   const response = await fetcher(`${issuer}/api/sso/introspect`, {
     method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: "{}", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000),

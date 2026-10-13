@@ -1,3 +1,4 @@
+import { previewHeaders } from "@/lib/preview-access";
 import { appPath } from "@/lib/app-path";
 import { appOrigin } from "@/lib/app-origin";
 import {existsSync} from "node:fs";
@@ -19,12 +20,13 @@ export async function POST(request:Request){return api(async()=>{
   try{
     const page=await browser.newPage();await page.setViewport({width:794,height:1123,deviceScaleFactor:1});
     const origin=appOrigin;
+    const infrastructureHeaders=await previewHeaders(origin);
     await page.setRequestInterception(true);
     page.on("request",incoming=>{
       const target=new URL(incoming.url());
       if(target.origin!==origin && target.protocol!=="data:"){void incoming.abort();return;}
       const forwarded:Record<string,string>={...incoming.headers()};
-      if(target.origin===origin){forwarded.cookie=request.headers.get("cookie")??"";const bypass=request.headers.get("x-vercel-protection-bypass");if(bypass)forwarded["x-vercel-protection-bypass"]=bypass;}
+      if(target.origin===origin){Object.assign(forwarded,infrastructureHeaders);forwarded.cookie=request.headers.get("cookie")??"";const bypass=request.headers.get("x-vercel-protection-bypass");if(bypass)forwarded["x-vercel-protection-bypass"]=bypass;}
       void incoming.continue({headers:forwarded});
     });
     await page.goto(`${origin}${appPath("/render")}?id=${encodeURIComponent(id)}&revision=${revision}`,{waitUntil:"networkidle0",timeout:40_000});
