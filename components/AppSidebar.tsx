@@ -1,4 +1,8 @@
 "use client";
+import { portalUrl } from "@/lib/app-path";
+
+import { appPath } from "@/lib/app-path";
+
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -24,14 +28,14 @@ export function AppSidebar({ dirty = false, example = false, currentTitle = "Koc
     <aside className="app-sidebar" aria-label="Huvudmeny">
       <Link href="/produktblad" className="sidebar-brand" aria-label="Astar Studio – bibliotek" onClick={event => { if (!canLeave()) event.preventDefault(); }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/astar-studio-logo-staende.png" alt="Astar Studio" width="1186" height="1326" />
+        <img src={appPath("/astar-studio-logo-staende.png")} alt="Astar Studio" width="1186" height="1326" />
       </Link>
       <nav>
         <Link href="/produktblad" className={!example ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
         <Link href="/?exempel=1" className={example ? "selected" : ""} title="Öppna KOMVUX med exempeldata" onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h10l4 4v16H5zM8 9h8M8 13h3v5H8zM14 13h2M14 17h2" /></svg>Mallar</Link>
         <button type="button" onClick={openSettings}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 1-2h4l1 2 3 2 2 1-1 4 1 4-2 1-3 2-1 3h-4l-1-3-3-2-2-1 1-4-1-4 2-1z" /><circle cx="12" cy="10" r="3" /></svg>Inställningar</button>
       </nav>
-      {admin&&<><Link className="sidebar-account-link" href="/admin" onClick={event=>{if(!canLeave())event.preventDefault();}}>Adminläge</Link><a className="sidebar-account-link" href="https://astar-studio-portal.vercel.app/?admin=1" onClick={event=>{if(!canLeave())event.preventDefault();else if(window.parent!==window){event.preventDefault();window.parent.postMessage({type:'portal-administration'},'https://astar-studio-portal.vercel.app');}}}>Hantera användare i portalen</a></>}
+      {admin&&<><Link className="sidebar-account-link" href="/admin" onClick={event=>{if(!canLeave())event.preventDefault();}}>Adminläge</Link><a className="sidebar-account-link" href={portalUrl + "/?admin=1"} onClick={event=>{if(!canLeave())event.preventDefault();else if(window.parent!==window){event.preventDefault();window.parent.postMessage({type:'portal-administration'},'https://astar-studio-portal.vercel.app');}}}>Hantera användare i portalen</a></>}
       <button type="button" className="sidebar-signout" onClick={()=>{if(canLeave())void cloud("/api/portal/logout",{method:"POST"}).then(()=>{router.push("/logged-out");router.refresh();});}}>Logga ut</button>
       <span className="sidebar-local" title="Utkast sparas i det gemensamma biblioteket">Gemensamt bibliotek</span>
     </aside>

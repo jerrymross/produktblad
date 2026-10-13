@@ -1,4 +1,6 @@
 "use client";
+import { appPath } from "@/lib/app-path";
+
 import { useState } from "react";
 import { educationKey, educations, snapshotLibraryImage } from "@/lib/image-library";
 import { useImageLibrary } from "./useImageLibrary";
@@ -25,7 +27,7 @@ export function ImagePicker({ title, onChoose, onManage }: { title: string; onCh
     {loading ? <p role="status">Läser bilder …</p> : error ? <p role="alert">{error}</p> : <>
       <div className="field"><label htmlFor="image-variant">Bildvariant</label><select id="image-variant" value={slot} onChange={event => setSlot(event.target.value)}>{[1, 2].map(value => <option key={value} value={value}>Bild {value}{images.some(image => image.education === education && image.slot === value) ? "" : " – saknas"}</option>)}</select></div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      {selected ? <img className="library-choice-preview" src={selected.dataUrl} alt={`Bild ${slot} för ${education}`} /> : <p className="library-choice-empty">Bild {slot} saknas för den här utbildningen. Lägg till den i Inställningar.</p>}
+      {selected ? <img className="library-choice-preview" src={appPath(selected.dataUrl)} alt={`Bild ${slot} för ${education}`} /> : <p className="library-choice-empty">Bild {slot} saknas för den här utbildningen. Lägg till den i Inställningar.</p>}
       <button type="button" className="use-library-image" disabled={!selected || choosing} onClick={() => void choose()}>{choosing ? "Hämtar bild …" : `Använd bild ${slot} på bladet`}</button>
       {choiceError && <p role="alert">{choiceError}</p>}
     </>}

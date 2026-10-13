@@ -1,9 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from "jose";
 
-export const issuer = "https://astar-studio-portal.vercel.app";
+import { appBasePath, appPath } from "./app-path";
+import { publicAppUrl } from "./app-origin";
+export const issuer = process.env.PORTAL_ISSUER || "https://astar-studio-portal.vercel.app";
 export const clientId = "produktblad";
-export const callback = "https://produktblad.vercel.app/api/portal/callback";
+export const callback = `${publicAppUrl.replace(/\/$/, "")}/api/portal/callback`;
 export const randomSecret = () => randomBytes(32).toString("base64url");
 export const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 export const challenge = (value: string) => createHash("sha256").update(value).digest("base64url");
@@ -11,7 +13,10 @@ export function safeReturnTo(value: unknown) {
   if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || /[\\\x00-\x20]/.test(value)) return "/produktblad";
   const url = new URL(value, callback);
   if (url.origin !== new URL(callback).origin || /^\/(api|login|logged-out)(\/|\?|$)/.test(value)) return "/produktblad";
-  return url.pathname + url.search + url.hash;
+  if (appBasePath && !(url.pathname === appBasePath || url.pathname.startsWith(appBasePath + "/"))) return appBasePath;
+  const local = appBasePath ? url.pathname.slice(appBasePath.length) : url.pathname;
+  if (/^\/(api|login|logged-out)(\/|$)/.test(local)) return appBasePath || "/produktblad";
+  return appPath(url.pathname + url.search + url.hash);
 }
 export const keys = createRemoteJWKSet(new URL(`${issuer}/api/sso/jwks`), { timeoutDuration: 5000 });
 export async function verifyPortalToken(token: string, key: JWTVerifyGetKey = keys) {

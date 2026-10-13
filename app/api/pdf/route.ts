@@ -1,3 +1,5 @@
+import { appPath } from "@/lib/app-path";
+import { appOrigin } from "@/lib/app-origin";
 import {existsSync} from "node:fs";
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
@@ -16,7 +18,7 @@ export async function POST(request:Request){return api(async()=>{
   const browser=await puppeteer.launch({executablePath:local??await chromium.executablePath(),headless:true,args:local?["--no-sandbox","--disable-gpu"]:chromium.args});
   try{
     const page=await browser.newPage();await page.setViewport({width:794,height:1123,deviceScaleFactor:1});
-    const origin=new URL(request.url).origin;
+    const origin=appOrigin;
     await page.setRequestInterception(true);
     page.on("request",incoming=>{
       const target=new URL(incoming.url());
@@ -25,7 +27,7 @@ export async function POST(request:Request){return api(async()=>{
       if(target.origin===origin){forwarded.cookie=request.headers.get("cookie")??"";const bypass=request.headers.get("x-vercel-protection-bypass");if(bypass)forwarded["x-vercel-protection-bypass"]=bypass;}
       void incoming.continue({headers:forwarded});
     });
-    await page.goto(`${origin}/render?id=${encodeURIComponent(id)}&revision=${revision}`,{waitUntil:"networkidle0",timeout:40_000});
+    await page.goto(`${origin}${appPath("/render")}?id=${encodeURIComponent(id)}&revision=${revision}`,{waitUntil:"networkidle0",timeout:40_000});
     await page.waitForSelector(".sheet-page",{timeout:10_000});
     await page.emulateMediaType("print");
     await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(image=>image.decode()));document.body.style.margin="0";document.body.style.background="white";});

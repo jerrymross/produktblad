@@ -1,3 +1,4 @@
+import { appBasePath } from "./app-path";
 import { getPool } from "@/lib/db";
 import { hash, introspect, verifyPortalToken } from "@/lib/portal-protocol";
 
@@ -5,13 +6,13 @@ export const sessionCookie = "produktblad-portal";
 export const embeddedCookie = "__Host-produktblad-embedded";
 export const embeddedCookieOptions = {httpOnly:true,secure:true,sameSite:"none" as const,path:"/",partitioned:true};
 export const transactionCookie = "produktblad-portal-login";
-export const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/" };
+export const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: appBasePath || "/" };
 export function cookieValue(headers: Headers, name: string) {
   const value = headers.get("cookie")?.split(";").map(part => part.trim()).find(part => part.startsWith(`${name}=`))?.slice(name.length + 1);
   return value && /^[A-Za-z0-9_-]{43}$/.test(value) ? value : undefined;
 }
 export async function portalIdentity(headers: Headers) {
-  const cookie = cookieValue(headers, embeddedCookie) ?? cookieValue(headers, sessionCookie);
+  const cookie = (appBasePath ? undefined : cookieValue(headers, embeddedCookie)) ?? cookieValue(headers, sessionCookie);
   if (!cookie) return null;
   const pool = getPool();
   const row = (await pool.query(`SELECT s.access_token,s.portal_sub,u.id,u.name FROM portal_sessions s

@@ -1,4 +1,6 @@
-﻿"use client";
+"use client";
+import { appPath } from "@/lib/app-path";
+
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { schools } from "@/lib/catalog";
@@ -14,7 +16,7 @@ export function Accounts() {
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError(""); setUrl("");
     try {
-      const response = await fetch("/api/invitations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, central: role === "admin", schools: role === "admin" ? [] : selected }) });
+      const response = await fetch(appPath("/api/invitations"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, central: role === "admin", schools: role === "admin" ? [] : selected }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
       setUrl(result.url); setInvitedRole(role === "admin" ? "Admin" : "Vanlig användare");

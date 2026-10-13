@@ -1,3 +1,5 @@
+import { appPath } from "./app-path";
+import { appOrigin } from "./app-origin";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { portalIdentity } from "@/lib/portal-session";
@@ -11,11 +13,11 @@ export async function identity(request?: Request) {
   return user;
 }
 export async function pageIdentity(returnTo = "/produktblad") {
-  try { return await identity(); } catch (error) { if (error instanceof HttpError && error.status === 401) redirect(`/api/portal/login?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`); throw error; }
+  try { return await identity(); } catch (error) { if (error instanceof HttpError && error.status === 401) redirect(`/api/portal/login?returnTo=${encodeURIComponent(safeReturnTo(appPath(returnTo)))}`); throw error; }
 }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  if (!origin || origin !== new URL(request.url).origin) throw new HttpError(403, "Förfrågan måste komma från appen.");
+  if (!origin || origin !== appOrigin) throw new HttpError(403, "Förfrågan måste komma från appen.");
 }
 export async function accessProfile(userId: string) {
   return transaction(userId, async client => {

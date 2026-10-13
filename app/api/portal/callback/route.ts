@@ -1,16 +1,17 @@
+import { appPath } from "@/lib/app-path";
 import { NextResponse } from "next/server";
 import { getPool } from "@/lib/db";
 import { issuer, clientId, callback, hash, randomSecret, verifyPortalToken, introspect, safeReturnTo } from "@/lib/portal-protocol";
 import { cookieOptions, cookieValue, transactionCookie, sessionCookie } from "@/lib/portal-session";
 
 export async function GET(request: Request) {
-  const failure = NextResponse.redirect(new URL("/login?error=portal", callback));
+  const failure = NextResponse.redirect(new URL(appPath("/login?error=portal"), callback));
   failure.cookies.set(transactionCookie, "", { ...cookieOptions, maxAge: 0 });
   failure.headers.set("Cache-Control", "no-store");
   failure.headers.set("Referrer-Policy", "no-referrer");
   try {
     const url = new URL(request.url), cookie = cookieValue(request.headers, transactionCookie);
-    if (url.origin !== new URL(callback).origin || !cookie) return failure;
+    if (!cookie) return failure;
     const tx = (await getPool().query("DELETE FROM portal_transactions WHERE cookie_hash=$1 RETURNING *", [hash(cookie)])).rows[0];
     const code = url.searchParams.get("code"), state = url.searchParams.get("state");
     if (!tx || tx.expires_at.getTime() <= Date.now() || !state || hash(state) !== tx.state_hash || !code || code.length > 1024 || url.searchParams.getAll("code").length !== 1 || url.searchParams.getAll("state").length !== 1) return failure;

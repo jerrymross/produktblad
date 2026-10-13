@@ -1,27 +1,27 @@
 @font-face {
   font-family: "Sheet Inter";
-  src: url("/fonts/inter-latin-300-normal.woff2") format("woff2");
+  src: url("../public/fonts/inter-latin-300-normal.woff2") format("woff2");
   font-style: normal;
   font-weight: 300;
   font-display: block;
 }
 @font-face {
   font-family: "Sheet Inter";
-  src: url("/fonts/inter-latin-400-normal.woff2") format("woff2");
+  src: url("../public/fonts/inter-latin-400-normal.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   font-display: block;
 }
 @font-face {
   font-family: "Sheet Inter";
-  src: url("/fonts/inter-latin-700-normal.woff2") format("woff2");
+  src: url("../public/fonts/inter-latin-700-normal.woff2") format("woff2");
   font-style: normal;
   font-weight: 700;
   font-display: block;
 }
 @font-face {
   font-family: "Sheet Lora";
-  src: url("/fonts/lora-latin-700-normal.woff2") format("woff2");
+  src: url("../public/fonts/lora-latin-700-normal.woff2") format("woff2");
   font-style: normal;
   font-weight: 700;
   font-display: block;

@@ -1,4 +1,6 @@
 "use client";
+import { appPath } from "@/lib/app-path";
+
 import {PortalReauthentication} from "@/components/PortalReauthentication";
 import { schoolVisitAddress, withVisitAddress } from "@/lib/school-addresses";
 import { withUnsavedProgramDefaults } from "@/lib/default-content";
@@ -101,7 +103,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   useEffect(() => {
     let live=true;token.current=crypto.randomUUID();const session=token.current;
     let loaded=false;
-    const lock=async(renew=false)=>{await cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:session,renew}));if(live){ownsSession.current=true;setLocked(true);}else void fetch(`${sheetUrl}/lock`,{...jsonRequest("DELETE",{token:session}),keepalive:true});};
+    const lock=async(renew=false)=>{await cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:session,renew}));if(live){ownsSession.current=true;setLocked(true);}else void fetch(appPath(`${sheetUrl}/lock`),{...jsonRequest("DELETE",{token:session}),keepalive:true});};
     const load=async()=>{try{
       const [sheet,profile]=await Promise.all([cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus}>(sheetUrl),cloud<{admin:boolean}>("/api/me")]);
       if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
@@ -128,7 +130,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     };
     const timer=window.setInterval(()=>void refresh(),30_000);
     window.addEventListener("focus",refresh);
-    const release=()=>{void fetch(`${sheetUrl}/lock`,{...jsonRequest("DELETE",{token:session}),keepalive:true});};
+    const release=()=>{void fetch(appPath(`${sheetUrl}/lock`),{...jsonRequest("DELETE",{token:session}),keepalive:true});};
     window.addEventListener("pagehide",release);
     return()=>{live=false;ownsSession.current=false;window.clearInterval(timer);window.removeEventListener("focus",refresh);window.removeEventListener("pagehide",release);release();};
   }, [storageKey, entry,sheetUrl,applyFinalization]);
@@ -241,7 +243,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     setBusy(true);
     setMessage("PDF skapas …");
     try {
-      const response = await fetch("/api/pdf", {
+      const response = await fetch(appPath("/api/pdf"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({id:sheetId,revision:saved.revision}),
@@ -360,7 +362,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
         </nav>
         <fieldset className="fields-scroll editor-fields" disabled={loading||!locked||finalization.finalized||busy}>
           <p className="section-help">{activeGroup === "Omslag" ? "Bild, rubrik och ingress är det första läsaren ser." : activeGroup === "Innehåll" ? "Öppna ett avsnitt i taget. Rubrik och text ändras var för sig." : "Fyll i rätt skoluppgifter och adressen till QR-koden."}</p>
-          {activeGroup === "Omslag" && <><div className="field"><div className="field-top"><label htmlFor="titleRows">Rubrikens layout</label></div><select id="titleRows" value={data.titleRows} onChange={event => change("titleRows", event.target.value as SheetData["titleRows"])}><option value="2">Två rader – stor rubrik</option><option value="3">Upp till tre rader – långt yrkesnamn</option></select></div><div className="title-fields-pair">{visibleFields.filter(field => ["titleLine", "titlePrefix"].includes(field.key)).map(renderField)}</div>{visibleFields.filter(field => field.key === "profession").map(renderField)}<div className="image-field"><div className="field-top"><label htmlFor="image-input">Omslagsbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${data.image}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild vald"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Ladda upp direkt →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>
+          {activeGroup === "Omslag" && <><div className="field"><div className="field-top"><label htmlFor="titleRows">Rubrikens layout</label></div><select id="titleRows" value={data.titleRows} onChange={event => change("titleRows", event.target.value as SheetData["titleRows"])}><option value="2">Två rader – stor rubrik</option><option value="3">Upp till tre rader – långt yrkesnamn</option></select></div><div className="title-fields-pair">{visibleFields.filter(field => ["titleLine", "titlePrefix"].includes(field.key)).map(renderField)}</div>{visibleFields.filter(field => field.key === "profession").map(renderField)}<div className="image-field"><div className="field-top"><label htmlFor="image-input">Omslagsbild</label><span>{data.image === "/reference-hero.jpg" ? "Exempelbild" : "Din bild"}</span></div><div className="image-picker"><div className="image-thumb" style={{ backgroundImage: `url("${appPath(data.image)}")` }} /><div><strong>{data.image === "/reference-hero.jpg" ? "Välj en bild för utbildningen" : "Bild vald"}</strong><p>JPG, PNG eller WebP · max 2 MB</p><button id="change-image" type="button" onClick={() => fileRef.current?.click()}>Ladda upp direkt →</button></div></div><input ref={fileRef} id="image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => { void uploadImage(event.target.files?.[0]); event.target.value = ""; }} /></div>
             <ImagePicker title={entry?.title ?? "Kock"} onChoose={image => { change("image", image); setMessage("Bilden är vald. Spara utkast för att behålla den på bladet."); }} onManage={() => window.dispatchEvent(new Event("open-image-settings"))} />
             <fieldset className="gradient-control"><legend>Gradient över bilden</legend>
               <div className="gradient-colors" role="group" aria-label="Gradientfärg">{([["none", "Ingen"], ["white", "Vit"], ["navy", "Mörkblå"]] as const).map(([value, label]) => <button type="button" key={value} aria-pressed={data.gradientStyle === value} onClick={() => change("gradientStyle", value)}><span className={`gradient-swatch swatch-${value}`} aria-hidden="true" />{label}</button>)}</div>

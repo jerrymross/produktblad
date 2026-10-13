@@ -4,6 +4,7 @@ import { HttpError } from "@/lib/access";
 import { issuer, keys } from "@/lib/portal-protocol";
 import { getPool, transaction } from "@/lib/db";
 import type { PoolClient } from "pg";
+import { appBasePath } from "./app-path";
 
 export const managementAudience = "produktblad-management", managementType = "portal-management+jwt";
 export const requestDigest = (method: string, path: string, body = "") => createHash("sha256").update(`${method}\n${path}\n${body}`).digest("hex");
@@ -24,7 +25,9 @@ export async function management(request: Request, operation: (db: PoolClient, t
   if (body.length > 24000) throw new HttpError(413, "Förfrågan är för stor.");
   let claims, live;
   try {
-    claims = await verifyManagementToken(auth.slice(7), request.method, new URL(request.url).pathname, body);
+    const pathname = new URL(request.url).pathname;
+    const canonicalPath = appBasePath && pathname.startsWith(appBasePath + "/") ? pathname.slice(appBasePath.length) : pathname;
+    claims = await verifyManagementToken(auth.slice(7), request.method, canonicalPath, body);
     const response = await fetch(`${issuer}/api/sso/management/introspect`, { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json" }, body: "{}",
       cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
     if (!response.ok) throw Error();

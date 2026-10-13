@@ -9,3 +9,5 @@ work/
 .test-password
 
 .vercel
+
+!.env.platform.example

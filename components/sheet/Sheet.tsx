@@ -1,3 +1,4 @@
+import { appPath } from "@/lib/app-path";
 import { QRCodeSVG } from "qrcode.react";
 import { templateVersion, type SheetData } from "@/lib/sheet";
 
@@ -20,7 +21,7 @@ function AstarMark() {
   return <div className="astar-mark">
     {/* Use the original file directly in both preview and PDF. */}
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img className="astar-logo" src="/logo_liggande.png" alt="Astar Education" />
+    <img className="astar-logo" src={appPath("/logo_liggande.png")} alt="Astar Education" />
   </div>;
 }
 
@@ -38,7 +39,7 @@ export function Sheet({ data, imageSrc }: Props) {
     <div className="sheet-hero" data-overlay={data.gradientStyle}>
       {/* The local prototype uses an image extracted from the supplied PDF. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="sheet-hero-image" src={imageSrc ?? data.image} alt={`Utbildningsbild: ${data.profession}`} />
+      <img className="sheet-hero-image" src={appPath(imageSrc ?? data.image)} alt={`Utbildningsbild: ${data.profession}`} />
       {data.gradientStyle !== "none" && <div className="sheet-hero-gradient" data-gradient={data.gradientStyle} data-strength={data.gradientStrength} aria-hidden="true" />}
       <div className="sheet-eyebrow" data-field="eyebrow">{data.eyebrow}</div>
       <div className="sheet-red-line" />

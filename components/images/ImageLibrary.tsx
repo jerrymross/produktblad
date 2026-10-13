@@ -1,4 +1,6 @@
 "use client";
+import { appPath } from "@/lib/app-path";
+
 import { useState } from "react";
 import { deleteLibraryImage, educationKey, educations, uploadLibraryImage,importLegacyLibrary, hasDefaultImage } from "@/lib/image-library";
 import { useImageLibrary } from "./useImageLibrary";
@@ -38,7 +40,7 @@ export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string 
         const image = images.find(item => item.education === selected && item.slot === slot);
         return <article className="image-slot" key={`${selected}:${slot}`}><h3>Bild {slot} <span>{image ? "Finns" : "Saknas"}</span></h3>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {image ? <img src={image.dataUrl} alt={`Bild ${slot} för ${selected}`} /> : <div className="image-slot-empty">Ingen bild uppladdad</div>}
+          {image ? <img src={appPath(image.dataUrl)} alt={`Bild ${slot} för ${selected}`} /> : <div className="image-slot-empty">Ingen bild uppladdad</div>}
           {image && <p className="image-filename" title={image.name}>{image.name}</p>}
           <label className={`image-upload-button ${busy ? "is-busy" : ""}`}>{image ? "Ersätt bild" : "Ladda upp bild"}<input aria-label={`${image ? "Ersätt" : "Ladda upp"} bild ${slot}`} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={event => { void upload(slot, event.target.files?.[0]); event.target.value = ""; }} /></label>
           {image && !image.dataUrl.startsWith("/education-heroes/") && <button type="button" className="text-button" disabled={busy} onClick={() => void remove(image.id)}>{hasDefaultImage(image.id) ? `Återställ förinställd bild ${slot}` : `Ta bort bild ${slot}`}</button>}

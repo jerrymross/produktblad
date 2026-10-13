@@ -199,3 +199,7 @@ Alla skolredaktörer kan skapa högst två redigerbara kopior per låst skolblad
 ## Umeås produktblad
 
 De 14 Umeå-utbildningar som har PDF-underlag i användarens produktblad umeå.zip får egna texter och den fasta mallen komvux-umea-1.0.0. Användaren valde att behålla texten exakt och anpassa mallen. AF-bladet och Yrkessvetsare påbyggnad saknar underlag och behåller tidigare innehåll. Se [Matchning, mall och verifiering](docs/UMEA-INNEHALL.md).
+
+## Astar-plattformen
+
+Se [sökvägsrouting, SSO och lokal utveckling](docs/PLATFORM.md).

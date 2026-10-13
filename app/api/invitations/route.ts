@@ -1,3 +1,4 @@
+import { publicAppUrl } from "@/lib/app-origin";
 import { randomBytes,randomUUID,createHash } from "node:crypto";
 import { api,identity,requireAdmin,sameOrigin,HttpError } from "@/lib/access";
 import { transaction } from "@/lib/db";
@@ -9,5 +10,5 @@ export async function POST(request:Request) {return api(async()=>{
   const assignedSchools=body.central ? [] : [...new Set(body.schools)];
   const token=randomBytes(32).toString("hex");const hash=createHash("sha256").update(token).digest("hex");
   await transaction(user.id,async client=>{const permitted=await client.query("SELECT is_central() AS allowed");if(permitted.rows[0]?.allowed!==true)throw new HttpError(403,"Endast admin kan bjuda in användare.");await client.query("INSERT INTO invitations(id,token_hash,email,central,school_ids) VALUES($1,$2,$3,$4,$5)",[randomUUID(),hash,email,body.central,assignedSchools]);});
-  return Response.json({url:`${new URL(request.url).origin}/login?invite=${token}`,email});
+  return Response.json({url:`${publicAppUrl}/login?invite=${token}`,email});
 });}

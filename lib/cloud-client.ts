@@ -1,5 +1,6 @@
+import { appPath } from "./app-path";
 export async function cloud<T>(url:string,options?:RequestInit):Promise<T> {
-  const response=await fetch(url,{cache:"no-store",...options});
+  const response=await fetch(appPath(url),{cache:"no-store",...options});
   const result=await response.json();
   if(!response.ok)throw new Error(result.error??"Servern kunde inte nås. Försök igen.");
   return result;
