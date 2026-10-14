@@ -1,5 +1,7 @@
 # Produktblad – gemensamt skolbibliotek
 
+Gränssnittet i den monterade appen använder Astar Studios gemensamma profil `/platform/v2/`, med en ihågkommen, infällbar sidomeny och mobilpanel. Bildbiblioteket laddas när det öppnas. A4-mallar och exportens typografi är separata från gränssnittets profil. Publicera portalens v2-resurser före denna appversion.
+
 Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder, inloggning, skolmedlemskap, redigeringslås och versionshistorik sparas i databasen. Preview och A4-export använder samma bladkomponent och en sparad, fryst version.
 
 Öppna https://produktblad.vercel.app och logga in via Astar Studio. En befintlig portalsession används utan extra lösenord i Produktblad. Behörig administratör kan nu bjuda in, välja Produktblad-roll och skolor och koppla befintliga konton från portalens administration. Appåtkomst eller portal-adminroll ger inga lokala skolor/adminrättigheter automatiskt. Befintliga konton, roller och blad bevaras. Ingen e-post skickas automatiskt. Se [PORTAL-SSO.md](docs/PORTAL-SSO.md) och [behörighetshantering i portalen](docs/PORTAL-BEHORIGHETER.md).

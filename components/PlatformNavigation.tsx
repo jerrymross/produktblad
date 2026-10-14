@@ -6,5 +6,7 @@ import { appBasePath } from "@/lib/app-path";
 export function PlatformNavigation() {
   const pathname = usePathname();
   if (!appBasePath || pathname.endsWith("/render")) return null;
-  return <><Script src="/platform/v1/navigation.js" strategy="afterInteractive" />{createElement("astar-navigation", { current: "produktblad" })}</>;
+  // Shared, versioned stylesheet owned by the portal; intentionally not bundled per app.
+  // eslint-disable-next-line @next/next/no-css-tags
+  return <><link rel="stylesheet" href="/platform/v2/workspace.css" /><Script src="/platform/v2/navigation.js" strategy="afterInteractive" />{createElement("astar-navigation", { current: "produktblad" })}</>;
 }

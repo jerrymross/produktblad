@@ -1,13 +1,14 @@
 "use client";
 import { portalUrl } from "@/lib/app-path";
 
-import { appPath } from "@/lib/app-path";
+import { appPath, appBasePath } from "@/lib/app-path";
 
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 
-import { ImageLibrary } from "@/components/images/ImageLibrary";
+import dynamic from "next/dynamic";
+const ImageLibrary=dynamic(()=>import("@/components/images/ImageLibrary").then(module=>module.ImageLibrary),{loading:()=> <p role="status">Öppnar bildbiblioteket…</p>});
 import {cloud} from "@/lib/cloud-client";
 import {useRouter} from "next/navigation";
 
@@ -28,7 +29,7 @@ export function AppSidebar({ dirty = false, example = false, currentTitle = "Koc
     <aside className="app-sidebar" aria-label="Huvudmeny">
       <Link href="/produktblad" className="sidebar-brand" aria-label="Astar Studio – bibliotek" onClick={event => { if (!canLeave()) event.preventDefault(); }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={appPath("/astar-studio-logo-staende.png")} alt="Astar Studio" width="1186" height="1326" />
+        {appBasePath?createElement('astar-brand'):<img src={appPath("/astar-studio-logo-staende.png")} alt="Astar Studio" width="190" height="54" />}
       </Link>
       <nav>
         <Link href="/produktblad" className={!example ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
