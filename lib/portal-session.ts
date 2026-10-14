@@ -11,6 +11,15 @@ export function cookieValue(headers: Headers, name: string) {
   const value = headers.get("cookie")?.split(";").map(part => part.trim()).find(part => part.startsWith(`${name}=`))?.slice(name.length + 1);
   return value && /^[A-Za-z0-9_-]{43}$/.test(value) ? value : undefined;
 }
+// For server-to-server app requests only. Never include this token in a client response.
+export async function portalAccessToken(headers: Headers, userId: string) {
+  const cookie = (appBasePath ? undefined : cookieValue(headers, embeddedCookie)) ?? cookieValue(headers, sessionCookie);
+  if (!cookie) return null;
+  const row = (await getPool().query(`SELECT s.access_token FROM portal_sessions s
+    JOIN portal_identities i ON i.portal_sub=s.portal_sub
+    WHERE s.cookie_hash=$1 AND i.user_id=$2 AND s.expires_at>now()`, [hash(cookie),userId])).rows[0];
+  return typeof row?.access_token === "string" ? row.access_token : null;
+}
 export async function portalIdentity(headers: Headers) {
   const cookie = (appBasePath ? undefined : cookieValue(headers, embeddedCookie)) ?? cookieValue(headers, sessionCookie);
   if (!cookie) return null;

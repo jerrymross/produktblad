@@ -1,6 +1,8 @@
 # Produktblad – gemensamt skolbibliotek
 
-Gränssnittet använder Astar Studios referensbaserade profil `/platform/v3/`: gemensam toppnavigation, ljus sidomeny, blå accenter och kompaktare arbetsytor. Biblioteket har en detaljpanel för valt blad, redigeraren visar innehållsfälten till höger och Bildbank finns på `/images`. A4-mallarnas typografi är separat. Publicera portalens v3-resurser före denna appversion.
+Gränssnittet använder Astar Studios profil `/platform/v3/`: gemensam vänstermeny, varmvit bakgrund, rosa accenter och rundade kontroller. Biblioteket har en detaljpanel för valt blad, redigeraren visar innehållsfälten till höger och Bildbank finns på `/images`. A4-mallarnas typografi är separat. Publicera portalens v3-resurser före denna appversion.
+
+**Skapa textförslag** i redigeraren kopplar alla behöriga användare till Astar Studios gemensamma AI-tjänst. Förslaget granskas och redigeras innan det läggs in i ett valt textfält. Se [AI-textförslag](docs/AI-TEXTFORSLAG.md).
 
 Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder, inloggning, skolmedlemskap, redigeringslås och versionshistorik sparas i databasen. Preview och A4-export använder samma bladkomponent och en sparad, fryst version.
 

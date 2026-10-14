@@ -1,5 +1,7 @@
 "use client";
 import { appPath } from "@/lib/app-path";
+import { AiTextButton } from "@/components/editor/AiTextButton";
+import { isAiTextField } from "@/lib/ai-text";
 
 import {PortalReauthentication} from "@/components/PortalReauthentication";
 import { schoolVisitAddress, withVisitAddress } from "@/lib/school-addresses";
@@ -332,6 +334,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
       {af && field.key === "form" && <small>Skriv en uppgift per rad. Etiketterna Ort:, Studieform:, Omfattning:, Längd:, APL: och Mål: visas i fet stil.</small>}
       {field.key === "profession" && <small>Med tre rader bryts yrkesnamnet automatiskt. Enter ger en egen radbrytning. Färgen väljs separat för varje rubrikdel.</small>}
       {field.multiline && <span className="field-count">{(data[field.key] ?? "").length} tecken</span>}
+      {isAiTextField(field.key)&&<AiTextButton field={field.key} sheetUrl={sheetUrl} currentText={data[field.key]??""} disabled={loading||!locked||finalization.finalized||busy} onApply={text=>{if(!locked||finalizationRef.current.finalized||busy)return;change(field.key,text);setMessage("Textförslaget är inlagt. Granska förhandsvisningen och spara utkast när du är nöjd.");}}/>}
       {field.key === "qrUrl" && <small id="qr-help">{entry ? `QR-koden genereras automatiskt för ${entry.school}. Adressen använder a och o i stället för å, ä och ö.` : validQr ? "QR-koden uppdateras direkt. Kontrollera att adressen leder till rätt utbildning." : "Ange skolans eller utbildningens webbadress med https://. Adressen behövs för PDF-export."}</small>}
     </div>;
   }
