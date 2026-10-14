@@ -8,5 +8,5 @@ export function PlatformNavigation() {
   if (!appBasePath || pathname.endsWith("/render")) return null;
   // Shared, versioned stylesheet owned by the portal; intentionally not bundled per app.
   // eslint-disable-next-line @next/next/no-css-tags
-  return <><link rel="stylesheet" href="/platform/v2/workspace.css" /><Script src="/platform/v2/navigation.js" strategy="afterInteractive" />{createElement("astar-navigation", { current: "produktblad" })}</>;
+  return <><link rel="stylesheet" href="/platform/v3/workspace.css" /><Script src="/platform/v3/navigation.js" strategy="afterInteractive" />{createElement("astar-navigation", { current: "produktblad" })}</>;
 }

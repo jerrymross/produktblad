@@ -14,14 +14,14 @@ export default async function AdminPage() {
   }
   return <><AppSidebar /><main className="admin-page">
     <span className="eyebrow-ui">CENTRAL ADMINISTRATION</span>
-    <h1>Adminläge</h1>
+    <h1>Administration</h1>
     <p>Inloggad som {user.name}. Här hanterar du alla skolors produktblad, gemensamma bilder och inbjudningar.</p>
     <div className="admin-actions">
       <Link href="/produktblad"><h2>Alla produktblad</h2><p>Öppna och redigera blad för alla skolor.</p></Link>
       <PortalAdministrationLink><h2>Hantera användare i portalen</h2><p>Bjud in, välj Produktblad-roll, tilldela skolor och koppla befintliga konton.</p></PortalAdministrationLink>
       <Link href="/?exempel=1"><h2>Mallens exempelblad</h2><p>Granska den gemensamma A4-mallen.</p></Link>
     </div>
-    <p>Öppna <strong>Inställningar</strong> i menyn för att hantera Bild 1 och Bild 2 i det gemensamma bildbiblioteket.</p>
+    <p>Öppna <Link href="/images">Bildbank</Link> för att hantera utbildningsbilderna.</p>
     <nav className="admin-section-links" aria-label="Adminöversikt"><a href="#activity">Ändringslogg</a><a href="#members">Medlemsregister</a><a href="#invitations">Inbjudningar</a></nav>
     <AdminOverview />
   </main></>;

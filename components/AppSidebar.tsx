@@ -10,15 +10,16 @@ import { createElement, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 const ImageLibrary=dynamic(()=>import("@/components/images/ImageLibrary").then(module=>module.ImageLibrary),{loading:()=> <p role="status">Öppnar bildbiblioteket…</p>});
 import {cloud} from "@/lib/cloud-client";
-import {useRouter} from "next/navigation";
+import {useRouter,usePathname} from "next/navigation";
 
 export function AppSidebar({ dirty = false, example = false, currentTitle = "Kock" }: { dirty?: boolean; example?: boolean; currentTitle?: string }) {
   const router=useRouter();
+  const pathname=usePathname();
+  const imagesPage=pathname.endsWith('/images'),adminPage=pathname.endsWith('/admin')||pathname.endsWith('/accounts');
   const dialog = useRef<HTMLDialogElement>(null);
   const [opened, setOpened] = useState(false);
   const [admin,setAdmin]=useState(false);
   useEffect(()=>{void cloud<{admin:boolean}>("/api/me").then(profile=>setAdmin(profile.admin)).catch(()=>undefined);},[]);
-  function openSettings() { setOpened(true); dialog.current?.showModal(); }
   useEffect(() => {
     const open = () => { setOpened(true); dialog.current?.showModal(); };
     window.addEventListener("open-image-settings", open);
@@ -32,17 +33,17 @@ export function AppSidebar({ dirty = false, example = false, currentTitle = "Koc
         {appBasePath?createElement('astar-brand'):<img src={appPath("/astar-studio-logo-staende.png")} alt="Astar Studio" width="190" height="54" />}
       </Link>
       <nav>
-        <Link href="/produktblad" className={!example ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
+        <Link href="/produktblad" className={!example&&!imagesPage&&!adminPage ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
         <Link href="/?exempel=1" className={example ? "selected" : ""} title="Öppna KOMVUX med exempeldata" onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h10l4 4v16H5zM8 9h8M8 13h3v5H8zM14 13h2M14 17h2" /></svg>Mallar</Link>
-        <button type="button" onClick={openSettings}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3 1-2h4l1 2 3 2 2 1-1 4 1 4-2 1-3 2-1 3h-4l-1-3-3-2-2-1 1-4-1-4 2-1z" /><circle cx="12" cy="10" r="3" /></svg>Inställningar</button>
+        <Link href="/images" prefetch={false} className={imagesPage?'selected':''} onClick={event=>{if(!canLeave())event.preventDefault();}}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg>Bildbank</Link>
       </nav>
-      {admin&&<><Link className="sidebar-account-link" href="/admin" onClick={event=>{if(!canLeave())event.preventDefault();}}>Adminläge</Link><a className="sidebar-account-link" href={portalUrl + "/?admin=1"} onClick={event=>{if(!canLeave())event.preventDefault();else if(window.parent!==window){event.preventDefault();window.parent.postMessage({type:'portal-administration'},'https://astar-studio-portal.vercel.app');}}}>Hantera användare i portalen</a></>}
+      {admin&&<><Link className="sidebar-account-link" href="/admin" onClick={event=>{if(!canLeave())event.preventDefault();}}>Administration</Link><a className="sidebar-account-link" href={portalUrl + "/?admin=1"} title="Hantera användare i Astar Studio" onClick={event=>{if(!canLeave())event.preventDefault();else if(window.parent!==window){event.preventDefault();window.parent.postMessage({type:'portal-administration'},'https://astar-studio-portal.vercel.app');}}}>Användaråtkomst</a></>}
       <button type="button" className="sidebar-signout" onClick={()=>{if(canLeave())void cloud("/api/portal/logout",{method:"POST"}).then(()=>{router.push("/logged-out");router.refresh();});}}>Logga ut</button>
       <span className="sidebar-local" title="Utkast sparas i det gemensamma biblioteket">Gemensamt bibliotek</span>
     </aside>
     <dialog ref={dialog} className="settings-dialog image-settings-dialog" aria-labelledby="settings-title">
       <div className="image-settings-header"><div><span className="eyebrow-ui">INSTÄLLNINGAR</span><h2 id="settings-title">Bildbibliotek</h2></div><form method="dialog"><button className="dialog-close">Stäng</button></form></div>
-      {opened && <ImageLibrary currentTitle={currentTitle} />}
+      {opened && <ImageLibrary currentTitle={currentTitle} readOnly={!admin} />}
       <details className="local-settings-info"><summary>Om sparning och återställning</summary><p>Utkast sparas i det gemensamma biblioteket. Använd Spara utkast eller Ctrl+S / ⌘S. Versionshistoriken behålls när du återställer ett blad.</p></details>
     </dialog>
   </>;

@@ -1,6 +1,6 @@
 # Produktblad – gemensamt skolbibliotek
 
-Gränssnittet i den monterade appen använder Astar Studios gemensamma profil `/platform/v2/`, med en ihågkommen, infällbar sidomeny och mobilpanel. Bildbiblioteket laddas när det öppnas. A4-mallar och exportens typografi är separata från gränssnittets profil. Publicera portalens v2-resurser före denna appversion.
+Gränssnittet använder Astar Studios referensbaserade profil `/platform/v3/`: gemensam toppnavigation, ljus sidomeny, blå accenter och kompaktare arbetsytor. Biblioteket har en detaljpanel för valt blad, redigeraren visar innehållsfälten till höger och Bildbank finns på `/images`. A4-mallarnas typografi är separat. Publicera portalens v3-resurser före denna appversion.
 
 Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder, inloggning, skolmedlemskap, redigeringslås och versionshistorik sparas i databasen. Preview och A4-export använder samma bladkomponent och en sparad, fryst version.
 

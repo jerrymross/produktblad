@@ -5,7 +5,7 @@ import { useState } from "react";
 import { deleteLibraryImage, educationKey, educations, uploadLibraryImage,importLegacyLibrary, hasDefaultImage } from "@/lib/image-library";
 import { useImageLibrary } from "./useImageLibrary";
 
-export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string }) {
+export function ImageLibrary({ currentTitle = "Kock", readOnly=false }: { currentTitle?: string; readOnly?:boolean }) {
   const { images, loading, error } = useImageLibrary();
   const [selected, setSelected] = useState(() => educationKey(currentTitle));
   const [query, setQuery] = useState("");
@@ -32,18 +32,18 @@ export function ImageLibrary({ currentTitle = "Kock" }: { currentTitle?: string 
   }
   return <section className="image-library" aria-label="Bildbibliotek">
     <p>Två bildvarianter per utbildning. Samma utbildningsnamn delar bilder mellan skolorna.</p>
-    <p className="library-local-note">Gemensamma bilder för alla skolor. Central administration kan ladda upp och ersätta bilder.</p><button type="button" className="text-button" disabled={busy} onClick={()=>{setBusy(true);void importLegacyLibrary().then(count=>setMessage(`${count} lokala bilder importerades. Befintliga gemensamma bilder behölls.`)).catch(error=>setMessage(error.message)).finally(()=>setBusy(false));}}>Importera mina tidigare lokala bilder</button>
+    <p className="library-local-note">Gemensamma bilder för alla skolor. Central administration kan ladda upp och ersätta bilder.</p>{!readOnly&&<button type="button" className="text-button" disabled={busy} onClick={()=>{setBusy(true);void importLegacyLibrary().then(count=>setMessage(`${count} lokala bilder importerades. Befintliga gemensamma bilder behölls.`)).catch(error=>setMessage(error.message)).finally(()=>setBusy(false));}}>Importera mina tidigare lokala bilder</button>}
     {loading ? <p role="status">Läser bildbiblioteket …</p> : error ? <p role="alert">{error}</p> : <>
       <div className="image-library-stats"><strong>{complete} av {educations.length} kompletta</strong><span>{educations.length * 2 - images.length} bilder saknas</span></div>
-      <div className="field"><label htmlFor="manage-education">Utbildning att ladda upp till</label><select id="manage-education" disabled={busy} value={selected} onChange={event => { setSelected(event.target.value); setMessage(""); }}>{educations.map(item => <option key={item.id} value={item.id}>{item.title} · {count(item.id)}/2 bilder</option>)}</select></div>
+      <div className="field"><label htmlFor="manage-education">{readOnly?'Välj utbildning':'Utbildning att ladda upp till'}</label><select id="manage-education" disabled={busy} value={selected} onChange={event => { setSelected(event.target.value); setMessage(""); }}>{educations.map(item => <option key={item.id} value={item.id}>{item.title} · {count(item.id)}/2 bilder</option>)}</select></div>
       <div className="image-slots">{([1, 2] as const).map(slot => {
         const image = images.find(item => item.education === selected && item.slot === slot);
         return <article className="image-slot" key={`${selected}:${slot}`}><h3>Bild {slot} <span>{image ? "Finns" : "Saknas"}</span></h3>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {image ? <img src={appPath(image.dataUrl)} alt={`Bild ${slot} för ${selected}`} /> : <div className="image-slot-empty">Ingen bild uppladdad</div>}
           {image && <p className="image-filename" title={image.name}>{image.name}</p>}
-          <label className={`image-upload-button ${busy ? "is-busy" : ""}`}>{image ? "Ersätt bild" : "Ladda upp bild"}<input aria-label={`${image ? "Ersätt" : "Ladda upp"} bild ${slot}`} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={event => { void upload(slot, event.target.files?.[0]); event.target.value = ""; }} /></label>
-          {image && !image.dataUrl.startsWith("/education-heroes/") && <button type="button" className="text-button" disabled={busy} onClick={() => void remove(image.id)}>{hasDefaultImage(image.id) ? `Återställ förinställd bild ${slot}` : `Ta bort bild ${slot}`}</button>}
+          {!readOnly&&<label className={`image-upload-button ${busy ? "is-busy" : ""}`}>{image ? "Ersätt bild" : "Ladda upp bild"}<input aria-label={`${image ? "Ersätt" : "Ladda upp"} bild ${slot}`} type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={event => { void upload(slot, event.target.files?.[0]); event.target.value = ""; }} /></label>}
+          {!readOnly && image && !image.dataUrl.startsWith("/education-heroes/") && <button type="button" className="text-button" disabled={busy} onClick={() => void remove(image.id)}>{hasDefaultImage(image.id) ? `Återställ förinställd bild ${slot}` : `Ta bort bild ${slot}`}</button>}
         </article>;
       })}</div>
       <p className="library-help">JPG, PNG eller WebP · högst 2 MB per bild. Använd gärna liggande bilder med lugn yta till vänster för rubriken. Uppladdningar sparas direkt. Redan valda bilder på blad påverkas inte när en biblioteksbild ersätts.</p>

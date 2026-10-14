@@ -23,7 +23,7 @@ export function Accounts() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Försök igen."); }
     finally { setBusy(false); }
   }
-  return <main className="accounts-page"><Link href="/admin">← Adminläge</Link><h1>Bjud in en användare</h1>
+  return <main className="accounts-page"><Link href="/admin">← Administration</Link><h1>Bjud in en användare</h1>
     <p>Välj roll och skapa en inbjudningslänk. Länken gäller i sju dagar; du delar den själv.</p>
     <form onSubmit={submit}><fieldset disabled={busy} className="invite-fields"><legend className="sr-only">Ny inbjudan</legend>
       <label>E-post<input type="email" required maxLength={254} value={email} onChange={event => { setEmail(event.target.value); setUrl(""); }} autoComplete="email" /></label>
