@@ -12,6 +12,9 @@ export function astarUrl(value: string): URL {
 export function extractAstarText(html: string) {
   const $ = load(html);
   const title = $("h1").first().text().trim() || $("title").text().trim();
+  $("h2,h3").each((_, element) => {
+    if (/^relaterade utbildningar$/i.test($(element).text().trim())) $(element).closest(".dnd-section").remove();
+  });
   $("script,style,noscript,iframe,nav,header,footer,form,button,svg,[hidden],[aria-hidden='true']").remove();
   const root = $("main").first().length ? $("main").first() : $("body");
   root.find("p,h1,h2,h3,h4,li,br,div,section,tr").each((_, element) => { $(element).append("\n"); });
@@ -21,7 +24,7 @@ export function extractAstarText(html: string) {
 }
 
 // Never forward portal credentials or cookies. Validate every redirect before fetching it.
-export async function fetchAstarSource(value: string, fetcher: typeof fetch = fetch) {
+export async function fetchAstarHtml(value: string, fetcher: typeof fetch = fetch, maxBytes = 1_000_000) {
   let url = astarUrl(value);
   const signal = AbortSignal.timeout(10000);
   for (let redirects = 0; redirects <= 3; redirects++) {
@@ -44,12 +47,17 @@ export async function fetchAstarSource(value: string, fetcher: typeof fetch = fe
         const { done, value: chunk } = await reader.read();
         if (done) break;
         bytes += chunk.byteLength;
-        if (bytes > 1_000_000) throw new Error("Sidan är för stor. Välj en mer avgränsad utbildningssida.");
+        if (bytes > maxBytes) throw new Error("Sidan är för stor. Välj en mer avgränsad utbildningssida.");
         html += decoder.decode(chunk, { stream: true });
       }
       html += decoder.decode();
     } finally { await reader.cancel(); }
-    return { ...extractAstarText(html), url: url.href, fetchedAt: new Date().toISOString() };
+    return { html, url: url.href, fetchedAt: new Date().toISOString() };
   }
   throw new Error("Sidan vidarebefordrar för många gånger. Ange sidans slutliga adress.");
+}
+
+export async function fetchAstarSource(value: string, fetcher: typeof fetch = fetch) {
+  const { html, ...meta } = await fetchAstarHtml(value, fetcher);
+  return { ...extractAstarText(html), ...meta };
 }

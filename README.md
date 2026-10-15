@@ -2,7 +2,7 @@
 
 Gränssnittet använder Astar Studios profil `/platform/v3/`: gemensam vänstermeny, varmvit bakgrund, rosa accenter och rundade kontroller. Biblioteket har en detaljpanel för valt blad, redigeraren visar innehållsfälten till höger och Bildbank finns på `/images`. A4-mallarnas typografi är separat. Publicera portalens v3-resurser före denna appversion.
 
-**Skapa textförslag** i redigeraren kopplar alla behöriga användare till Astar Studios gemensamma AI-tjänst. **Hämta från astar.se** läser en angiven utbildningssida till ett redigerbart faktaunderlag. Kontrollera rätt utbildning, ort och utbildningsform innan du skapar förslaget. Förslaget granskas och redigeras innan det läggs in i ett valt textfält. Se [AI-textförslag](docs/AI-TEXTFORSLAG.md).
+**Skapa textförslag** söker automatiskt på astar.se efter bladets utbildning, skola och utbildningstyp. Vid en entydig träff hämtas underlaget och Astar Studios AI skapar ett förslag; annars får du välja bland föreslagna sidor. Granska källan och förslaget innan **Använd text**. Egen länk och manuellt underlag finns som reserv. Se [AI-textförslag](docs/AI-TEXTFORSLAG.md).
 
 Produktblad körs på Vercel med Neon Postgres i Frankfurt. Blad, privata bilder, inloggning, skolmedlemskap, redigeringslås och versionshistorik sparas i databasen. Preview och A4-export använder samma bladkomponent och en sparad, fryst version.
 
