@@ -4,6 +4,31 @@ import { createPortal } from "react-dom";
 import { appPath } from "@/lib/app-path";
 import { aiTextFields, type AiTextField, type AiTextResult } from "@/lib/ai-text";
 import type { EducationCandidate } from "@/lib/astar-search";
+import { isAiQuota, type AiQuota } from "@/lib/ai-quota";
+
+function AiQuotaStatus({sheetUrl,revision}:{sheetUrl:string;revision:number}){
+  const [quota,setQuota]=useState<AiQuota|null>(null),[failed,setFailed]=useState(false);
+  useEffect(()=>{
+    let active=true,controller:AbortController;
+    async function refresh(){
+      controller?.abort();controller=new AbortController();const signal=controller.signal;
+      try{
+        const response=await fetch(appPath(`${sheetUrl}/ai/quota`),{cache:"no-store",signal});
+        const value=await response.json();
+        if(!response.ok||!isAiQuota(value))throw new Error();
+        if(active&&!signal.aborted){setQuota(value);setFailed(false);}
+      }catch{if(active&&!signal.aborted){setQuota(null);setFailed(true);}}
+    }
+    void refresh();const timer=setInterval(()=>void refresh(),30000);
+    return()=>{active=false;clearInterval(timer);controller?.abort();};
+  },[sheetUrl,revision]);
+  return <aside className="ai-quota" aria-label="Dagens AI-kvot" aria-live="polite">
+    {quota?<><strong>{quota.unlimited?"Ditt konto: obegränsad AI-kvot":"AI-tokens kvar i dag: "+quota.remaining.toLocaleString("sv-SE")}</strong>
+      <small>{quota.unlimited?`${quota.remaining.toLocaleString("sv-SE")} tokens kvar i den gemensamma dagskvoten. `:"Gemensam kvot för Astar Studio. "}{quota.reserved.toLocaleString("sv-SE")} av {quota.limit.toLocaleString("sv-SE")} tokens reserverade.</small>
+      <small>Återställs {new Date(quota.resetsAt).toLocaleString("sv-SE",{timeZone:"Europe/Stockholm",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} (svensk tid). {quota.unlimited?"Administratörer är undantagna från kvoten.":"Antals- och minutgränser kan också begränsa användningen."}</small>
+      {!quota.enabled&&<small>AI-tjänsten är pausad.</small>}</>:<small>{failed?"Dagens AI-kvot kunde inte hämtas. Försöker igen automatiskt.":"Hämtar dagens AI-kvot …"}</small>}
+  </aside>;
+}
 
 type Props={field:AiTextField;sheetUrl:string;currentText:string;disabled:boolean;onApply:(text:string)=>void};
 export function AiTextButton(props:Props){
@@ -22,7 +47,9 @@ function AiTextDialog({field,sheetUrl,currentText,disabled,onApply,onClose}:Prop
   const [candidates,setCandidates]=useState<EducationCandidate[]>([]);
   const [searchMessage,setSearchMessage]=useState("");
   const [stage,setStage]=useState("");
+  const [quotaRevision,setQuotaRevision]=useState(0);
   async function createProposal(action:"generate"|"shorten",underlag:string,signal:AbortSignal){
+    try{
     setSourceReviewed(false);
     setStage("Skapar textförslag …");
     const response=await fetch(appPath(`${sheetUrl}/ai`),{method:"POST",headers:{"Content-Type":"application/json"},cache:"no-store",signal,
@@ -31,6 +58,7 @@ function AiTextDialog({field,sheetUrl,currentText,disabled,onApply,onClose}:Prop
     if(!response.ok)throw new Error(result.error||"Textförslaget kunde inte skapas.");
     const answer=result as AiTextResult;
     setProposal(answer.text);setMissing(answer.missingFacts);setLimit(answer.maxCharacters);setGenerated(true);
+    }finally{if(!signal.aborted)setQuotaRevision(value=>value+1);}
   }
   async function search(initial=false){
     if(disabled||(!initial&&busy))return;
@@ -85,6 +113,7 @@ function AiTextDialog({field,sheetUrl,currentText,disabled,onApply,onClose}:Prop
   }
   return <dialog ref={dialog} className="ai-text-dialog" aria-labelledby="ai-text-title" onCancel={onClose} onClose={onClose}>
     <header><div><span className="eyebrow-ui">TEXTFÖRSLAG</span><h2 id="ai-text-title">{aiTextFields[field].label}</h2></div><button type="button" className="dialog-close" onClick={onClose}>Stäng</button></header>
+    <AiQuotaStatus sheetUrl={sheetUrl} revision={quotaRevision}/>
     <p>Vi söker efter bladets utbildning, skola och utbildningstyp på astar.se. Vid en tydlig träff hämtas underlaget och AI skapar ett textförslag automatiskt.</p>
     <p role="status">{stage||searchMessage}</p>
     <button type="button" className="secondary-button" disabled={busy||disabled} onClick={()=>void search()}>Sök igen på astar.se</button>
