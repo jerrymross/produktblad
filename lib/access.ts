@@ -36,6 +36,7 @@ export async function api(operation: () => Promise<Response>) {
     if(error instanceof SyntaxError)return Response.json({error:"Ogiltigt innehåll."},{status:400});
     const code=(error as {code?:string})?.code;
     if(code==='40001')return Response.json({error:"Åtkomsten har ändrats av någon annan. Läs in aktuell åtkomst och försök igen."},{status:409});
+    if(code==='55000')return Response.json({error:"Bladet är låst eller ligger i skräpkorgen. Läs in aktuell status. Dina osparade ändringar finns kvar."},{status:409});
     if(code==='42501')return Response.json({error:"Åtgärden saknar behörighet eller skulle ta bort din egen adminåtkomst."},{status:403});
     if(code==='22023')return Response.json({error:"Kontrollera vald roll, skolor och bekräftelse."},{status:400});
     console.error("Server operation failed", error instanceof Error ? error.message : "Unknown error");

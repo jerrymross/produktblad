@@ -13,6 +13,7 @@ import { sheetApiPath } from "@/lib/sheet-id";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
+import { DeleteSheetButton } from "@/components/DeleteSheetButton";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ImagePicker } from "@/components/images/ImagePicker";
 import { Sheet } from "@/components/sheet/Sheet";
@@ -81,6 +82,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
   const sheetId=entry?.id??"example";
   const sheetUrl=sheetApiPath(sheetId);
   const [revision,setRevision]=useState(0);
+  const [canDelete,setCanDelete]=useState(false);
   const [locked,setLocked]=useState(false);
   const [loading,setLoading]=useState(true);
   const token=useRef("");
@@ -107,10 +109,10 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     let loaded=false;
     const lock=async(renew=false)=>{await cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:session,renew}));if(live){ownsSession.current=true;setLocked(true);}else void fetch(appPath(`${sheetUrl}/lock`),{...jsonRequest("DELETE",{token:session}),keepalive:true});};
     const load=async()=>{try{
-      const [sheet,profile]=await Promise.all([cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus}>(sheetUrl),cloud<{admin:boolean}>("/api/me")]);
+      const [sheet,profile]=await Promise.all([cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus;canDelete?:boolean}>(sheetUrl),cloud<{admin:boolean}>("/api/me")]);
       if(!live)return;setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
       setAdmin(profile.admin);applyFinalization(sheet.finalization??unavailableFinalization);
-      setCopyStatus(sheet.copyStatus??unavailableCopies);
+      setCopyStatus(sheet.copyStatus??unavailableCopies);setCanDelete(sheet.canDelete===true);
       if(!sheet.finalization?.finalized && isAfProgram(entry?.program) && sheet.content.layout !== "af") { setDirty(true); setMessage("Bladet visas med det nya AF-upplägget. Spara för att skapa en version med den nya mallen. Äldre versioner behåller sitt upplägg."); }
       if(sheet.revision===0){try{const stored=localStorage.getItem(storageKey);const parsed=stored?JSON.parse(stored):null;const previous=isSheetData(parsed)?parsed:readPreviousDraft(entry);if(previous){setData(entry ? withVisitAddress(withDefaultImage(withUnsavedProgramDefaults(previous, entry.program, 0), entry.title, 0, sheet.content.image), entry) : withDefaultImage(previous, "Kock", 0, sheet.content.image));setDirty(true);setMessage("Ditt lokala utkast har lästs in. Spara utkast för att lägga det i det gemensamma biblioteket.");}}catch{ /* Local drafts remain optional. */ }}
       loaded=true;
@@ -120,13 +122,13 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     const refresh=async()=>{
       if(!live||!loaded||transitionPending.current)return;
       try{
-        const sheet=await cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus}>(sheetUrl);
+        const sheet=await cloud<{content:SheetData;revision:number;finalization?:Finalization;copyStatus?:CopyStatus;canDelete?:boolean}>(sheetUrl);
         if(!live||transitionPending.current)return;
         if(sheet.finalization?.finalized && sheet.finalization.stateVersion>=finalizationRef.current.stateVersion && !dirtyRef.current){
           setData(sheet.content);setRevision(sheet.revision);setHasSaved(sheet.revision>0);
         }
         applyFinalization(sheet.finalization??unavailableFinalization);
-        setCopyStatus(sheet.copyStatus??unavailableCopies);
+        setCopyStatus(sheet.copyStatus??unavailableCopies);setCanDelete(sheet.canDelete===true);
         if(ownsSession.current&&!finalizationRef.current.finalized)await lock(true);
       }catch(error){if(live){ownsSession.current=false;setLocked(false);setMessage(error instanceof Error?error.message:"Status kunde inte uppdateras. Dina ändringar finns kvar här.");}}
     };
@@ -307,7 +309,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
     }catch(error){
       setMessage(error instanceof Error?error.message:"Kopian kunde inte skapas.");
     }finally{
-      try{const sheet=await cloud<{copyStatus?:CopyStatus}>(sheetUrl);setCopyStatus(sheet.copyStatus??unavailableCopies);}catch{/* Keep the current contents on connection failures. */}
+      try{const sheet=await cloud<{copyStatus?:CopyStatus;canDelete?:boolean}>(sheetUrl);setCopyStatus(sheet.copyStatus??unavailableCopies);setCanDelete(sheet.canDelete===true);}catch{/* Keep the current contents on connection failures. */}
       transitionPending.current=false;setBusy(false);
     }
   }
@@ -391,6 +393,7 @@ export function Editor({ entry }: { entry?: CatalogEntry }) {
           {message.includes("Logga in via Astar Studio igen") && <PortalReauthentication returnTo={entry?`/?blad=${encodeURIComponent(entry.id)}`:"/?exempel=1"}/>}
 
           {!locked&&!loading&&!finalization.finalized&&<button type="button" className="text-button" disabled={busy} onClick={()=>{void cloud(`${sheetUrl}/lock`,jsonRequest("POST",{token:token.current})).then(()=>{ownsSession.current=true;setLocked(true);setMessage("Du kan nu redigera bladet.");}).catch(error=>setMessage(error.message));}}>Försök öppna för redigering igen</button>}
+          {canDelete && <><DeleteSheetButton id={sheetId} title={displayTitle} school={entry?.school??""} revision={revision} disabled={dirty||busy||loading} onDeleted={()=>{setDirty(false);window.location.assign(appPath("/produktblad"));}}/>{dirty&&<p>Spara ändringarna innan du tar bort bladet.</p>}</>}
           <details className="sheet-history"><summary onClick={()=>{void cloud<{versions:typeof history;events?:FinalizationEvent[]}>(`${sheetUrl}/history`).then(result=>{setHistory(result.versions);setLockEvents(result.events??[]);}).catch(error=>setMessage(error.message));}}>Versionshistorik</summary>{lockEvents.map((event,index)=><p className="finalization-event" key={`${event.createdAt}-${index}`}>{event.finalized?"Låst":"Upplåst"} av {event.changedBy} · {new Date(event.createdAt).toLocaleString("sv-SE")} · version {event.revision}</p>)}{history.map(version=><button type="button" className="text-button" key={version.revision} disabled={!locked||busy||finalization.finalized} onClick={()=>{if(dirty&&!window.confirm("Ersätt osparade ändringar med den här versionen?"))return;edits.current++;setData(entry ? withVisitAddress(version.content, entry) : version.content);setDirty(true);setMessage("Tidigare version är inläst. Spara för att skapa en ny version.");}}>Version {version.revision} · {new Date(version.createdAt).toLocaleString("sv-SE")}</button>)}</details>
           <p className="save-hint">Gemensamt bibliotek · Ctrl+S / ⌘S</p>
         </div>

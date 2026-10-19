@@ -3,6 +3,7 @@ import { sheetApiPath } from "@/lib/sheet-id";
 
 
 import Link from "next/link";
+import { DeleteSheetButton } from "@/components/DeleteSheetButton";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useEffect, useState } from "react";
 import { catalog,readDraft, readPreviousDraft, schools,catalogTemplateVersion } from "@/lib/catalog";
@@ -20,8 +21,9 @@ const filterKey = "produktbladsapp:biblioteksfilter:v1";
 const programs = [...new Set(catalog.map(entry => entry.program))];
 
 export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
+  const [deletedIds,setDeletedIds]=useState<string[]>([]);
   const [addedSheets,setAddedSheets]=useState<AddedSheet[]>([]);
-  const visibleCatalog=[...catalog,...addedSheets].filter(entry=>allowedSchools===null||allowedSchools.includes(entry.school));
+  const visibleCatalog=[...catalog,...addedSheets].filter(entry=>!deletedIds.includes(entry.id)&&(allowedSchools===null||allowedSchools.includes(entry.school)));
   const visibleSchools=[...new Set([...schools,...addedSheets.map(entry=>entry.school)])].filter(school=>allowedSchools===null||allowedSchools.includes(school)).sort((a,b)=>a.localeCompare(b,'sv'));
   const [error,setError]=useState("");
   const [importing,setImporting]=useState(false);
@@ -33,18 +35,18 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
   const [copies,setCopies]=useState<SheetCopy[]>([]);
   const [previous, setPrevious] = useState<Set<string>>(new Set());
   const [selected,setSelected]=useState<string|null>(null);
-  const [detail,setDetail]=useState<{content:SheetData;revision:number}|null>(null);
+  const [detail,setDetail]=useState<{content:SheetData;revision:number;canDelete?:boolean}|null>(null);
   const [detailError,setDetailError]=useState('');
   const selectedEntry=visibleCatalog.find(entry=>entry.id===selected);
   useEffect(()=>{
     const controller=new AbortController();
     queueMicrotask(()=>{setDetail(null);setDetailError('');});
-    if(selectedEntry)void cloud<{content:SheetData;revision:number}>(sheetApiPath(selectedEntry.id),{signal:controller.signal}).then(result=>{if(!controller.signal.aborted)setDetail(result);}).catch(error=>{if(!controller.signal.aborted)setDetailError(error.message);});
+    if(selectedEntry)void cloud<{content:SheetData;revision:number;canDelete?:boolean}>(sheetApiPath(selectedEntry.id),{signal:controller.signal}).then(result=>{if(!controller.signal.aborted)setDetail(result);}).catch(error=>{if(!controller.signal.aborted)setDetailError(error.message);});
     return()=>controller.abort();
   },[selectedEntry]);
   useEffect(() => {
     const refresh = () => {
-      void cloud<{addedSheets?:AddedSheet[];sheets:{id:string;finalized?:boolean;sourceId?:string;copyNumber?:number}[]}>("/api/sheets").then(result=>{setAddedSheets(result.addedSheets??[]);setSaved(new Set(result.sheets.filter(sheet=>!sheet.sourceId&&sheet.id!=="example").map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));setCopies(result.sheets.filter(sheet=>sheet.sourceId&&sheet.copyNumber).map(sheet=>({id:sheet.id,sourceId:sheet.sourceId!,copyNumber:sheet.copyNumber!,sourceRevision:0})));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
+      void cloud<{deletedIds?:string[];addedSheets?:AddedSheet[];sheets:{id:string;finalized?:boolean;sourceId?:string;copyNumber?:number}[]}>("/api/sheets").then(result=>{setDeletedIds(result.deletedIds??[]);setAddedSheets(result.addedSheets??[]);setSaved(new Set(result.sheets.filter(sheet=>!sheet.sourceId&&sheet.id!=="example").map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));setCopies(result.sheets.filter(sheet=>sheet.sourceId&&sheet.copyNumber).map(sheet=>({id:sheet.id,sourceId:sheet.sourceId!,copyNumber:sheet.copyNumber!,sourceRevision:0})));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
       setPrevious(new Set(catalog.filter(entry => readPreviousDraft(entry)).map(entry => entry.id)));
     };
     queueMicrotask(() => {
@@ -118,7 +120,7 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
       {!filtered.length && <div className="catalog-empty"><h2>Inga blad matchar ditt val</h2><p>{filters.status === "saved" ? "Här visas bara gemensamt sparade blad. Prova Alla för att skapa ett nytt blad." : "Prova ett annat sökord eller ta bort ett filter."}</p><button type="button" className="save-button" onClick={() => setFilters(emptyFilters)}>Visa alla produktblad</button></div>}
       <footer className="catalog-note"><p>Grönt visar sparning, inte godkännande eller faktagranskning. Nya Komvuxblad har förinställda standardtexter. Alla nya blad har en exempelbild. Utkasten sparas i skolans gemensamma bibliotek.</p><Link className="catalog-example" href="/?exempel=1">Se hur ett ifyllt exempelblad ser ut →</Link></footer>
     </main><aside className="catalog-inspector" aria-label="Produktbladsdetaljer"><h2>Detaljer</h2>
-      {selectedEntry?<><div className="catalog-inspector-preview">{detail?<div className="catalog-inspector-sheet"><div className="catalog-inspector-scale"><SheetPreview data={detail.content}/></div></div>:<p role="status">{detailError||'Läser produktbladet…'}</p>}</div><h3>{selectedEntry.title}</h3><dl><dt>Skola</dt><dd>{selectedEntry.school}</dd><dt>Format</dt><dd>{selectedEntry.program} · A4</dd><dt>Status</dt><dd>{finalized.has(selectedEntry.id)?'Låst':detail?.revision?'Sparat utkast':'Ej sparat'}</dd></dl><Link className="button primary" href={`/?blad=${encodeURIComponent(selectedEntry.id)}`}>Öppna produktblad →</Link><p>Förhandsvisningen visar aktuellt innehåll. Bilden i bibliotekskortet visar utbildningens standardbild.</p></>:<><div className="catalog-inspector-preview"><p>Välj ett produktblad för att se en förhandsvisning och dess uppgifter.</p></div><p>Öppna bladet när du vill redigera eller ladda ner en PDF.</p></>}
+      {selectedEntry?<><div className="catalog-inspector-preview">{detail?<div className="catalog-inspector-sheet"><div className="catalog-inspector-scale"><SheetPreview data={detail.content}/></div></div>:<p role="status">{detailError||'Läser produktbladet…'}</p>}</div><h3>{selectedEntry.title}</h3><dl><dt>Skola</dt><dd>{selectedEntry.school}</dd><dt>Format</dt><dd>{selectedEntry.program} · A4</dd><dt>Status</dt><dd>{finalized.has(selectedEntry.id)?'Låst':detail?.revision?'Sparat utkast':'Ej sparat'}</dd></dl><Link className="button primary" href={`/?blad=${encodeURIComponent(selectedEntry.id)}`}>Öppna produktblad →</Link>{detail?.canDelete && <DeleteSheetButton id={selectedEntry.id} title={selectedEntry.title} school={selectedEntry.school} revision={detail.revision} onDeleted={()=>{setDeletedIds(current=>[...current,selectedEntry.id]);setSelected(null);window.dispatchEvent(new Event("studio-sheets"));setError("Bladet har flyttats till skräpkorgen. Admin kan återställa det.");}}/>}<p>Förhandsvisningen visar aktuellt innehåll. Bilden i bibliotekskortet visar utbildningens standardbild.</p></>:<><div className="catalog-inspector-preview"><p>Välj ett produktblad för att se en förhandsvisning och dess uppgifter.</p></div><p>Öppna bladet när du vill redigera eller ladda ner en PDF.</p></>}
     </aside></div>
   </div>;
 }

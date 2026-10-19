@@ -10,5 +10,5 @@ export default async function AddedSheetsPage() {
     throw error;
   }
   return <><AppSidebar /><main className="admin-page"><span className="eyebrow-ui">CENTRAL ADMINISTRATION</span><h1>Tillagda produktblad</h1>
-    <nav className="admin-section-links" aria-label="Adminflikar"><Link href="/admin">Översikt</Link><Link href="/admin/added" aria-current="page">Tillagda produktblad</Link></nav><AddedSheets /></main></>;
+    <nav className="admin-section-links" aria-label="Adminflikar"><Link href="/admin">Översikt</Link><Link href="/admin/added" aria-current="page">Tillagda produktblad</Link><Link href="/admin/trash">Skräpkorg</Link></nav><AddedSheets /></main></>;
 }

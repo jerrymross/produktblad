@@ -11,6 +11,7 @@ import { transaction } from "@/lib/db";
 import { HttpError } from "@/lib/access";
 import { initialSheet, schoolQrUrl } from "@/lib/catalog";
 import { resolveEntry } from "@/lib/added-sheets-server";
+import { assertSheetActive, trashPermissions } from "@/lib/trash-server";
 import { exampleSheet, isSheetData, templateVersion, type SheetData } from "@/lib/sheet";
 
 export async function sheetEntry(id: string, client: PoolClient) {
@@ -23,6 +24,7 @@ export async function ensureSheet(client: PoolClient, id: string) {
   const entry = await sheetEntry(id, client);
   const permitted = await client.query("SELECT can_access_school($1) AS allowed", [entry.school]);
   if (!permitted.rows[0].allowed) throw new HttpError(403, "Du har inte åtkomst till skolans blad.");
+  await assertSheetActive(client, id);
   if(entry.sourceId || id.startsWith("new:")){
     const copy=await client.query("SELECT id FROM sheets WHERE id=$1 AND school_id=$2",[id,entry.school]);
     if(!copy.rowCount)throw new HttpError(404,"Kopian finns inte.");
@@ -50,7 +52,7 @@ export async function readSheet(userId: string, id: string, revision?: number) {
         if (chosen.rows[0]) sheet.content = { ...sheet.content, image: chosen.rows[0].image };
       }
     }
-    return { ...sheet, entry, finalization,copyStatus:await readCopies(client,id) };
+    return { ...sheet, entry, finalization,copyStatus:await readCopies(client,id),...await trashPermissions(client,id) };
   });
 }
 export async function privateImage(client: PoolClient, image: string, school: string): Promise<string> {

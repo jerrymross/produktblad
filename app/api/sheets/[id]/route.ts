@@ -16,6 +16,7 @@ export async function PUT(request: Request, context: Context) { return api(async
   return transaction(user.id,async client => {
     const entry=await ensureSheet(client,id);
     const current=await client.query("SELECT * FROM sheets WHERE id=$1 FOR UPDATE",[id]);
+    if(!current.rowCount) throw new HttpError(409,"Bladet har tagits bort. Dina osparade ändringar finns kvar här.");
     await assertNotFinalized(client,id);
     const lock=await client.query("SELECT 1 FROM editing_locks WHERE sheet_id=$1 AND user_id=$2 AND token=$3 AND expires_at>clock_timestamp() FOR UPDATE",[id,user.id,body.token]);
     if(!lock.rowCount) throw new HttpError(409,"Redigeringslåset har gått ut eller tagits av en annan session. Dina ändringar finns kvar här.");
