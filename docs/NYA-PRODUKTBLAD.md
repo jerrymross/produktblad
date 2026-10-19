@@ -23,9 +23,15 @@ Under **Administration → Tillagda produktblad** (`/admin/added`) ser admin nyt
 
 Säkrad `search_path` och begränsad EXECUTE-rätt följer [PostgreSQLs instruktioner för SECURITY DEFINER](https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY).
 
-## Aktivering – separat beställning krävs
+## Aktivering
 
-Ingen live-migration eller manuell deployment har utförts i denna uppdatering. När aktivering beställs: kör och verifiera först i DEV, därefter i produktion. Befintliga resurser används.
+### Aktiverat 19 oktober 2026
+
+Efter användarens uttryckliga instruktion **aktivera direkt** kördes migration 007 i `studio_dev` och därefter `studio` via produktionsprojektets befintliga ägaranslutning. Båda schemana verifierades med `scripts/verify-added-sheets-live.ts`: skapande, identiskt återförsök, skaparmetadata och nekad skolåtkomst passerade i transaktioner som rullades tillbaka. Inga testblad finns kvar. RLS-status och runtime-rollens läs-/skriv-/EXECUTE-rättigheter kontrollerades i databaskatalogen. Detta liveprov använder ägaranslutningen; det är inte ett fullständigt runtime-RLS-prov. Isolerade runtime/RLS-tester beskrivs nedan.
+
+Vercels produktionsalias bekräftades som READY på implementationens commit `b8c394aec5fdd7b54705d8e2f72d1dd8f249c1dd`, deployment `dpl_9C8noFwPxz9nncPARR7EZiMcGZof`. Inloggat browserflöde och PDF-export har inte återtestats i produktion. `studio_dev` avser utvecklingsschemat i migrationsanslutningen; en äldre lokal preview-anslutning pekade på en annan gren och användes inte för aktiveringen. Inga roller ändrades för att möjliggöra verifieringen.
+
+Nedanstående instruktioner beskriver hur migrationen kan aktiveras i ytterligare miljöer efter separat beställning. Kör och verifiera först i DEV, därefter i produktion. Befintliga resurser används.
 
 ```powershell
 npx tsx scripts/migrate-added-sheets.ts dev .env.owner
@@ -42,7 +48,7 @@ Skriptet kräver rätt existerande schema och migration 003, låser migrationshi
 - `node scripts/test-copies.mjs`: befintliga kopior, lås, skolåtkomst och versionskontroller passerar efter uppslagsändringen.
 - `node scripts/test-added-sheets-ui.mjs`: verkliga React-komponenter i lokal Chrome med simulerade API-svar/router. Formulär, menylänk, mobilbredd, misslyckat skapande/återförsök, navigeringsmål, nya biblioteksposter, adminsökning och skaparnamn passerar. Skärmbilder granskade i `work/added-sheets/`. Portalens externa v3-stilmall och inloggning ingår inte i detta isolerade prov.
 - `node scripts/test-added-sheets-pdf.mjs`: använder sparade versionssnapshotar från databastestet och den riktiga `Sheet`-komponenten. Alla tre utbildningsformer ger en A4, läsbar text, inbäddade fonter och inga overflow-fält. PDF:erna renderades till PNG och granskades mot referensen. Befintliga skillnader i mallar, exempelbild och standardtext kvarstår; A4-mallarnas CSS har inte ändrats. Detta är lokal rendering, inte ett autentiserat anrop till produktions-PDF-routen.
-- Faktisk Vercel/Neon: nya funktionen har inte aktiverats eller verifierats live. Ingen Supabase används.
+- Faktisk Vercel/Neon: aktivering, driftsatt commit och databasprov är bekräftade ovan. Inloggat browser-/PDF-flöde återstår. De nya API-rutterna svarar 401 för oinloggade anrop genom portalen. Ingen Supabase används.
 
 Testberoenden för PDF-inspektion installeras separat, utan ändring av appens beroenden:
 

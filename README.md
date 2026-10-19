@@ -1,6 +1,6 @@
 # Produktblad – gemensamt skolbibliotek
 
-**Nytt produktblad** låter användare lägga till utbildningar med eget namn, **Komvux, AF eller AF RUB**, och välja bland sina skolor. Admin följer skapare, datum och skolor under **Administration → Tillagda produktblad**. Funktionen kräver migration 007 och visar ett meddelande tills den aktiverats. Se [nya produktblad, behörigheter och aktivering](docs/NYA-PRODUKTBLAD.md).
+**Nytt produktblad** låter användare lägga till utbildningar med eget namn, **Komvux, AF eller AF RUB**, och välja bland sina skolor. Admin följer skapare, datum och skolor under **Administration → Tillagda produktblad**. Migration 007 är aktiverad i `studio_dev` och `studio` den 19 oktober 2026. Se [nya produktblad, behörigheter och verifiering](docs/NYA-PRODUKTBLAD.md).
 
 Gränssnittet använder Astar Studios profil `/platform/v3/`: gemensam vänstermeny, varmvit bakgrund, rosa accenter och rundade kontroller. Biblioteket har en detaljpanel för valt blad, redigeraren visar innehållsfälten till höger och Bildbank finns på `/images`. A4-mallarnas typografi är separat. Publicera portalens v3-resurser före denna appversion.
 
