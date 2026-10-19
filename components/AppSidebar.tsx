@@ -1,4 +1,5 @@
 "use client";
+import "./AppSidebar.css";
 import { portalUrl } from "@/lib/app-path";
 
 import { appPath, appBasePath } from "@/lib/app-path";
@@ -15,7 +16,7 @@ import {useRouter,usePathname} from "next/navigation";
 export function AppSidebar({ dirty = false, example = false, currentTitle = "Kock" }: { dirty?: boolean; example?: boolean; currentTitle?: string }) {
   const router=useRouter();
   const pathname=usePathname();
-  const imagesPage=pathname.endsWith('/images'),adminPage=pathname.endsWith('/admin')||pathname.endsWith('/accounts');
+  const imagesPage=pathname.endsWith('/images'),adminPage=pathname.includes('/admin')||pathname.endsWith('/accounts'),newPage=pathname.endsWith('/new');
   const dialog = useRef<HTMLDialogElement>(null);
   const [opened, setOpened] = useState(false);
   const [admin,setAdmin]=useState(false);
@@ -33,7 +34,8 @@ export function AppSidebar({ dirty = false, example = false, currentTitle = "Koc
         {appBasePath?createElement('astar-brand'):<img src={appPath("/astar-studio-logo-staende.png")} alt="Astar Studio" width="190" height="54" />}
       </Link>
       <nav>
-        <Link href="/produktblad" className={!example&&!imagesPage&&!adminPage ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
+        <Link href="/produktblad" className={!example&&!imagesPage&&!adminPage&&!newPage ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 11h6M9 15h6M9 18h4" /></svg>Bibliotek</Link>
+        <Link href="/new" className={newPage ? "selected" : ""} onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6zM14 2v5h4M9 14h6M12 11v6" /></svg>Nytt produktblad</Link>
         <Link href="/?exempel=1" className={example ? "selected" : ""} title="Öppna KOMVUX med exempeldata" onClick={event => { if (!canLeave()) event.preventDefault(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h10l4 4v16H5zM8 9h8M8 13h3v5H8zM14 13h2M14 17h2" /></svg>Mallar</Link>
         <Link href="/images" prefetch={false} className={imagesPage?'selected':''} onClick={event=>{if(!canLeave())event.preventDefault();}}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg>Bildbank</Link>
       </nav>

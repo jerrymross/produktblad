@@ -1,0 +1,7 @@
+.new-sheet-fields{border:0;padding:0;max-width:600px;display:grid;gap:12px}
+.new-sheet-fields legend{font-weight:600;margin-bottom:20px}
+.new-sheet-fields label{font-size:14px;font-weight:600;margin-top:8px}
+.new-sheet-fields input,.new-sheet-fields select{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ccd3d8;border-radius:8px;background:white;color:#173149;font:inherit}
+.new-sheet-fields p{font-size:14px;line-height:1.6}
+.new-sheet-fields:disabled{opacity:.65}
+.new-sheet-fields :focus-visible{outline:3px solid #d60068;outline-offset:2px}

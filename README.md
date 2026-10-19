@@ -1,5 +1,7 @@
 # Produktblad – gemensamt skolbibliotek
 
+**Nytt produktblad** låter användare lägga till utbildningar med eget namn, **Komvux, AF eller AF RUB**, och välja bland sina skolor. Admin följer skapare, datum och skolor under **Administration → Tillagda produktblad**. Funktionen kräver migration 007 och visar ett meddelande tills den aktiverats. Se [nya produktblad, behörigheter och aktivering](docs/NYA-PRODUKTBLAD.md).
+
 Gränssnittet använder Astar Studios profil `/platform/v3/`: gemensam vänstermeny, varmvit bakgrund, rosa accenter och rundade kontroller. Biblioteket har en detaljpanel för valt blad, redigeraren visar innehållsfälten till höger och Bildbank finns på `/images`. A4-mallarnas typografi är separat. Publicera portalens v3-resurser före denna appversion.
 
 **Skapa textförslag** söker automatiskt på astar.se efter bladets utbildning, skola och utbildningstyp. Vid en entydig träff hämtas underlaget och Astar Studios AI skapar ett förslag; annars får du välja bland föreslagna sidor. Granska källan och förslaget innan **Använd text**. Egen länk och manuellt underlag finns som reserv. Se [AI-textförslag](docs/AI-TEXTFORSLAG.md).

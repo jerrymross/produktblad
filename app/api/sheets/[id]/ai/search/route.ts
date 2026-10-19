@@ -1,6 +1,6 @@
 import { api, identity, sameOrigin, HttpError } from "@/lib/access";
 import { decodeSheetId } from "@/lib/sheet-id";
-import { readSheet, sheetEntry } from "@/lib/sheets-server";
+import { readSheet } from "@/lib/sheets-server";
 import { discoverEducation } from "@/lib/astar-search";
 
 export const maxDuration = 30;
@@ -8,8 +8,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   return api(async () => {
     sameOrigin(request);
     const user = await identity(request), id = decodeSheetId((await context.params).id);
-    if ((await readSheet(user.id, id)).finalization.finalized) throw new HttpError(409, "Bladet är låst. Lås upp det innan du söker underlag.");
-    const entry = sheetEntry(id);
+    const sheet = await readSheet(user.id, id);
+    if (sheet.finalization.finalized) throw new HttpError(409, "Bladet är låst. Lås upp det innan du söker underlag.");
+    const entry = sheet.entry;
     if (!("program" in entry)) throw new HttpError(400, "Exempelblad saknar skola och utbildningstyp. Ange en länk manuellt.");
     let result;
     try { result = await discoverEducation({ title: entry.title, school: entry.school, program: entry.program }); }

@@ -13,14 +13,16 @@ import dynamic from 'next/dynamic';
 const SheetPreview=dynamic(()=>import('@/components/sheet/Sheet').then(module=>module.Sheet),{loading:()=> <p role="status">Öppnar förhandsvisningen…</p>});
 import { cloud,jsonRequest } from "@/lib/cloud-client";
 import type {SheetCopy} from "@/lib/copies";
+import type {AddedSheet} from "@/lib/added-sheets";
 
 const emptyFilters = { school: "", query: "", program: "", status: "all" };
 const filterKey = "produktbladsapp:biblioteksfilter:v1";
 const programs = [...new Set(catalog.map(entry => entry.program))];
 
 export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
-  const visibleCatalog=catalog.filter(entry=>allowedSchools===null||allowedSchools.includes(entry.school));
-  const visibleSchools=schools.filter(school=>allowedSchools===null||allowedSchools.includes(school));
+  const [addedSheets,setAddedSheets]=useState<AddedSheet[]>([]);
+  const visibleCatalog=[...catalog,...addedSheets].filter(entry=>allowedSchools===null||allowedSchools.includes(entry.school));
+  const visibleSchools=[...new Set([...schools,...addedSheets.map(entry=>entry.school)])].filter(school=>allowedSchools===null||allowedSchools.includes(school)).sort((a,b)=>a.localeCompare(b,'sv'));
   const [error,setError]=useState("");
   const [importing,setImporting]=useState(false);
   async function importLocal(){setImporting(true);setError("");let imported=0;let skipped=0;try{for(const entry of visibleCatalog){const content=readDraft(entry.id)??readPreviousDraft(entry);if(!content)continue;const url=sheetApiPath(entry.id);const current=await cloud<{revision:number}>(url);if(current.revision>0){skipped++;continue;}const token=crypto.randomUUID();await cloud(`${url}/lock`,jsonRequest("POST",{token}));try{await cloud(url,jsonRequest("PUT",{token,revision:0,content}));imported++;}finally{await cloud(`${url}/lock`,jsonRequest("DELETE",{token}));}}setError(`${imported} utkast importerades. ${skipped} befintliga gemensamma utkast behölls.`);window.dispatchEvent(new Event("studio-sheets"));}catch(error){setError(`${imported} utkast importerades. ${error instanceof Error?error.message:"Importen avbröts."} Dina lokala utkast finns kvar.`);}finally{setImporting(false);}}
@@ -42,7 +44,7 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
   },[selectedEntry]);
   useEffect(() => {
     const refresh = () => {
-      void cloud<{sheets:{id:string;finalized?:boolean;sourceId?:string;copyNumber?:number}[]}>("/api/sheets").then(result=>{setSaved(new Set(result.sheets.filter(sheet=>catalog.some(entry=>entry.id===sheet.id)).map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));setCopies(result.sheets.filter(sheet=>sheet.sourceId&&sheet.copyNumber).map(sheet=>({id:sheet.id,sourceId:sheet.sourceId!,copyNumber:sheet.copyNumber!,sourceRevision:0})));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
+      void cloud<{addedSheets?:AddedSheet[];sheets:{id:string;finalized?:boolean;sourceId?:string;copyNumber?:number}[]}>("/api/sheets").then(result=>{setAddedSheets(result.addedSheets??[]);setSaved(new Set(result.sheets.filter(sheet=>!sheet.sourceId&&sheet.id!=="example").map(sheet=>sheet.id)));setFinalized(new Set(result.sheets.filter(sheet=>sheet.finalized).map(sheet=>sheet.id)));setCopies(result.sheets.filter(sheet=>sheet.sourceId&&sheet.copyNumber).map(sheet=>({id:sheet.id,sourceId:sheet.sourceId!,copyNumber:sheet.copyNumber!,sourceRevision:0})));}).catch(error=>setError(error instanceof Error?error.message:"Sparade blad kunde inte läsas."));
       setPrevious(new Set(catalog.filter(entry => readPreviousDraft(entry)).map(entry => entry.id)));
     };
     queueMicrotask(() => {

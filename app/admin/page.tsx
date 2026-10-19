@@ -15,6 +15,7 @@ export default async function AdminPage() {
   return <><AppSidebar /><main className="admin-page">
     <span className="eyebrow-ui">CENTRAL ADMINISTRATION</span>
     <h1>Administration</h1>
+    <nav className="admin-section-links" aria-label="Adminflikar"><Link href="/admin" aria-current="page">Översikt</Link><Link href="/admin/added">Tillagda produktblad</Link></nav>
     <p>Inloggad som {user.name}. Här hanterar du alla skolors produktblad, gemensamma bilder och inbjudningar.</p>
     <div className="admin-actions">
       <Link href="/produktblad"><h2>Alla produktblad</h2><p>Öppna och redigera blad för alla skolor.</p></Link>

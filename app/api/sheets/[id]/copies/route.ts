@@ -1,15 +1,15 @@
 import {api,identity,sameOrigin,HttpError} from "@/lib/access";
 import {transaction} from "@/lib/db";
 import {decodeSheetId} from "@/lib/sheet-id";
-import {catalogEntry} from "@/lib/catalog";
+import {resolveEntry} from "@/lib/added-sheets-server";
 import {copiesAvailable} from "@/lib/copies-server";
 
 export async function POST(request:Request,context:{params:Promise<{id:string}>}){
   return api(async()=>{
     sameOrigin(request);const user=await identity(request);const id=decodeSheetId((await context.params).id);
-    const entry=catalogEntry(id);if(!entry||entry.sourceId)throw new HttpError(400,"Välj ett låst originalblad.");
     const body=await request.json();if(!Number.isInteger(body?.revision)||body.revision<1)throw new HttpError(400,"Ogiltig originalversion.");
     return transaction(user.id,async client=>{
+      const entry=await resolveEntry(client,id);if(!entry||entry.sourceId)throw new HttpError(400,"Välj ett låst originalblad.");
       if(!await copiesAvailable(client))throw new HttpError(503,"Kopior har ännu inte aktiverats i databasen.");
       try{
         const result=await client.query("SELECT create_sheet_copy($1,$2) AS id",[id,body.revision]);

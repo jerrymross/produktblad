@@ -1,6 +1,6 @@
 import { api, identity, sameOrigin, HttpError } from "@/lib/access";
 import { decodeSheetId } from "@/lib/sheet-id";
-import { readSheet, sheetEntry } from "@/lib/sheets-server";
+import { readSheet } from "@/lib/sheets-server";
 import { portalAccessToken } from "@/lib/portal-session";
 import { issuer } from "@/lib/portal-protocol";
 import { previewFetch } from "@/lib/preview-access";
@@ -25,7 +25,7 @@ export async function POST(request:Request,context:Context){return api(async()=>
   if(sheet.finalization.finalized)throw new HttpError(409,"Bladet är låst. Lås upp det innan du skapar textförslag.");
   const token=await portalAccessToken(request.headers,user.id);
   if(!token)throw new HttpError(401,"Logga in via Astar Studio igen. Din befintliga text finns kvar.");
-  const entry=sheetEntry(id);
+  const entry=sheet.entry;
   let response:Response;
   try{
     response=await previewFetch(new URL('/api/ai/apps/v1/product-sheet-text',issuer),{
