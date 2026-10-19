@@ -16,11 +16,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
     if (!body.finalized && body.confirmed !== true) throw new HttpError(400, "Bekräfta upplåsningen först.");
     return transaction(user.id, async client => {
-      if (!(await client.query("SELECT is_central() AS admin")).rows[0].admin) {
-        throw new HttpError(403, "Endast admin får låsa eller låsa upp blad.");
+      if (!body.finalized && !(await client.query("SELECT is_central() AS admin")).rows[0].admin) {
+        throw new HttpError(403, "Endast admin får låsa upp blad.");
       }
       const state = await readFinalization(client, id);
-      if (!state.available) throw new HttpError(503, "Adminlås har ännu inte aktiverats i databasen.");
+      if (!state.available) throw new HttpError(503, "Bladlåsning har ännu inte aktiverats i databasen.");
       try {
         await client.query("SELECT set_sheet_finalization($1,$2,$3,$4,$5,$6)",
           [id, body.finalized, body.revision, body.stateVersion, body.finalized ? body.token : null, body.confirmed === true]);

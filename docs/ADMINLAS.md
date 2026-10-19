@@ -1,4 +1,12 @@
-# Adminlås för färdiga produktblad
+# Lås för färdiga produktblad
+
+Uppdatering 19 oktober 2026: alla användare med skolåtkomst kan låsa ett sparat blad, även om någon annan skapade det. Endast admin får låsa upp, fortsatt med bekräftelse. Migration `009-editor-finalization.sql` ändrar funktionen i databasen; samma krav på aktuell revision, statusversion och egen aktiv redigeringssession gäller. Befintliga lås och historik bevaras. Gränssnittet visar **Låst**, med namn och tid i statusens tooltip/historik.
+
+Aktivering: `npx.cmd tsx scripts/migrate-editor-finalization.ts dev <ägar-env>` och därefter `prod`. Kör endast efter driftinstruktion. Migrationen förutsätter 008. Verifiering: `node scripts/test-editor-finalization.mjs` testar riktiga API-handlers/PostgreSQL/RLS för användarlåsning, annan skapare, skolisolering, fel session, versionskonflikt och adminupplåsning. `node scripts/test-editor-finalization-ui.mjs` testar den riktiga redigeraren i Chrome med simulerade API-svar och förutsätter det första testets bundle. A4/PDF-renderingen ändras inte.
+
+Migration 009 är aktiverad i `studio_dev` och `studio` den 19 oktober 2026. Lokala API-/RLS-prov, Chrome-prov, typkontroll och bygge passerade. Funktionens skolkontroll, upplåsningsregel och fixerade search_path kontrollerades i faktisk databas. Inga befintliga blad låstes vid aktiveringen. Inloggad produktionsbrowser och PDF-export har inte återtestats.
+
+Nedan beskrivs den ursprungliga leveransen och dess verifiering.
 
 Beställt 12 oktober 2026: admin kan låsa ett färdigt produktblad och låsa upp med ett separat bekräftelsesteg utan PIN. Låset gäller det enskilda bladets innehåll, inte den gemensamma A4-mallen eller andra skolors blad. Ingen publicering, faktagranskning eller automatisk sändning ingår.
 

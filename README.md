@@ -1,5 +1,7 @@
 # Produktblad – gemensamt skolbibliotek
 
+**Lås blad** kan användas av alla med åtkomst till skolans blad, efter sparning och med aktiv redigeringssession. Endast admin kan låsa upp, med bekräftelse. Se [bladlåsning](docs/ADMINLAS.md).
+
 **Ta bort blad** flyttar blad till en återställningsbar skräpkorg efter bekräftelse. Admin kan ta bort skolornas blad; användare kan ta bort egna nyskapade blad och kopior. Admin återställer under **Administration → Skräpkorg**. Migration 008 är aktiverad i `studio_dev` och `studio` den 19 oktober 2026; se [borttagning, behörigheter och aktivering](docs/SKRAPKORG.md).
 
 **Nytt produktblad** låter användare lägga till utbildningar med eget namn, **Komvux, AF eller AF RUB**, och välja bland sina skolor. Admin följer skapare, datum och skolor under **Administration → Tillagda produktblad**. Migration 007 är aktiverad i `studio_dev` och `studio` den 19 oktober 2026. Se [nya produktblad, behörigheter och verifiering](docs/NYA-PRODUKTBLAD.md).

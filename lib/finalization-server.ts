@@ -19,6 +19,6 @@ export async function readFinalization(client: PoolClient, id: string): Promise<
 // Call after locking the sheet row, in the same transaction as a save/lock.
 export async function assertNotFinalized(client: PoolClient, id: string) {
   if ((await readFinalization(client, id)).finalized) {
-    throw new HttpError(423, "Bladet är låst av admin. Dina osparade ändringar finns kvar här.");
+    throw new HttpError(423, "Bladet är låst. Dina osparade ändringar finns kvar här.");
   }
 }

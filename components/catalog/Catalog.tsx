@@ -106,7 +106,7 @@ export function Catalog({allowedSchools}:{allowedSchools:string[]|null}) {
       <div className="catalog-grid">
         {filtered.map(entry => <article className={`catalog-card ${saved.has(entry.id) ? "card-saved" : ""} ${selected===entry.id?'is-selected':''}`} key={entry.id} data-school={entry.school}>
           <button type="button" className="catalog-select" aria-pressed={selected===entry.id} aria-label={`Visa detaljer: ${entry.title}, ${entry.school}`} onClick={()=>setSelected(entry.id)}>
-          <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{finalized.has(entry.id) ? "🔒 Låst av admin" : saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
+          <div className="catalog-card-top"><span className="catalog-program">{entry.program}</span><span className={`catalog-status ${saved.has(entry.id) ? "is-saved" : ""}`}><span aria-hidden="true" />{finalized.has(entry.id) ? "🔒 Låst" : saved.has(entry.id) ? "Sparat utkast" : previous.has(entry.id) ? "Tidigare mall" : "Ej påbörjat"}</span></div>
           <div className="catalog-thumbnail">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={appPath(defaultImagePath(entry.title))} alt="" loading="lazy" decoding="async" width="300" height="150"/><span className="catalog-thumbnail-label">Utbildningsbild</span>
