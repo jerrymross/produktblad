@@ -152,6 +152,8 @@ Under **Omslag → Välj från bildbiblioteket** är bladets utbildning automati
 
 Vid val av en förinställd bild kopieras JPEG-data till bladet. Den befintliga serversparningen skapar sedan privat media och fryser mediereferensen med bladversionen. Befintliga privata biblioteksbilder använder fortsatt `/api/media/…` och befintliga åtkomstkontroller. Preview och PDF använder samma frysta innehåll. Import av tidigare lokala bilder bevarar befintliga gemensamma uppladdningar, men kan ersätta en förinställd bild.
 
+Bildvalets hämtning använder `appPath`, precis som miniatyrbilden, så att **Använd bild 1/2** även fungerar när appen ligger under `/produktblad`. Kör `node scripts/test-image-picker.mjs` för ett isolerat Chrome-prov av den riktiga bildväljaren på både rotadress och portalsökväg. Provet använder riktiga JPEG-filer och simulerat biblioteks-API; det kontrollerar bildval, avkodning, bevarat val vid hämtningsfel och oförändrade privata mediereferenser. Det verifierar inte sparning mot Neon, exporterad PDF eller faktisk Vercel-miljö.
+
 Ingen databasmigration eller ny molnresurs behövs för dessa förinställda bilder. Denna ändring har inte manuellt publicerats till Vercel och har inte verifierats med en inloggad session i den faktiska molnmiljön.
 
 ### Automatiskt bildval, 12 oktober 2026

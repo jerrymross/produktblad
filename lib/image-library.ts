@@ -1,6 +1,7 @@
 import { catalog } from "@/lib/catalog";
 import bundledImages from "@/fixtures/education-images.json";
 import {cloud,jsonRequest} from "@/lib/cloud-client";
+import { appPath } from "@/lib/app-path";
 
 export const educationKey = (title: string) => title.trim().replace(/\s+/g, " ").toLocaleLowerCase("sv");
 export const educations = [...new Map(catalog.map(entry => [educationKey(entry.title), { id: educationKey(entry.title), title: entry.title.trim() }])).values()].sort((a, b) => a.title.localeCompare(b.title, "sv"));
@@ -64,7 +65,7 @@ export const deleteLibraryImage = (id: string) => mutate(id);
 export async function snapshotLibraryImage(image: LibraryImage): Promise<string> {
   // Private media keep their authorized, immutable reference.
   if (!image.dataUrl.startsWith("/education-heroes/")) return image.dataUrl;
-  const response = await fetch(image.dataUrl);
+  const response = await fetch(appPath(image.dataUrl));
   if (!response.ok) throw new Error("Bilden kunde inte hämtas. Försök igen.");
   const blob = await response.blob();
   return new Promise((resolve, reject) => {
